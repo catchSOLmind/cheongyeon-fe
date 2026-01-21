@@ -41,13 +41,14 @@
 
 ### 컴포넌트 선언
 
-- 컴포넌트는 funtion 키워드 사용을 기본으로 한다
+- 컴포넌트는 function 키워드 사용을 기본으로 한다
 
 ```tsx
 function MyComponent() {
   const handleClick = () => {};
   return <div />;
 }
+```
 
 - 일반 로직 함수는 화살표 함수 사용을 기본으로 한다
 
@@ -55,6 +56,7 @@ function MyComponent() {
 const add = (a: number, b: number) => {
   return a + b;
 };
+```
 
 ### API 함수 네이밍
 
@@ -78,6 +80,7 @@ function handleLikeButtonClick() {
 }
 
 return <FeedCard onLikeButtonClick={handleLikeButtonClick} />;
+```
 
 ## 📌 디렉터리 구조
 
