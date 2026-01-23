@@ -1,4 +1,4 @@
-// CalenderPage.tsx
+// CalendarPage.tsx
 import Header from "@/shared/components/Header";
 
 function CalendarPage() {

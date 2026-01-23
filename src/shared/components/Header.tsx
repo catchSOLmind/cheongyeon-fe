@@ -4,9 +4,8 @@ import IconLeft from '@/assets/navi/icon-left.svg';
 interface HeaderProps {
   title?: string;
   showBackButton?: boolean;
-  showMenuButton?: boolean;
-  rightButton?: React.ReactNode;
 }
+
 
 function Header({ 
   title = '', 
@@ -33,7 +32,7 @@ function Header({
               <img
                 src={IconLeft}
                 className="w-6 h-6"
-                //alt="뒤로가기"
+                alt="뒤로가기"
                 />
             </button>
           )}
