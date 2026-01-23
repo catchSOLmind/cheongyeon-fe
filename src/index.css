@@ -53,6 +53,7 @@ a {
   }
 
   .app-frame {
+    position: relative;
     max-width: 375px;
     min-height: calc(100dvh - 48px); 
     border-radius: 0px;
