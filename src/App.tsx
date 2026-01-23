@@ -1,13 +1,7 @@
-import { AppShell } from './app/AppShell';
+import { RouterProvider } from 'react-router-dom';
+import { appRouter } from '@/app/router/appRoutes';
 
-function App() {
-  return (
-    <AppShell>
-      <div style={{ padding: 16 }}>
-        <h1>Mobile App Content</h1>
-      </div>
-    </AppShell>
-  );
+export default function App() {
+  return <RouterProvider router={appRouter} />;
 }
 
-export default App;
