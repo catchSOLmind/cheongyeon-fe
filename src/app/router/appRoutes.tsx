@@ -30,7 +30,7 @@ export const appRouter = createBrowserRouter([
     path: '/invite',
     element: <DefaultLayout />,
     children: [
-      { index: true, element: <InvitePage /> },
+      { path: ':houseId', element: <InvitePage /> },
     ],
   },
   // 404

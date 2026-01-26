@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import Header from "@/shared/components/Header";
 import MemberAvatarGroup from "../components/MemberAvatarGroup";
 import MemberList from "../components/MemberList";
@@ -6,9 +7,20 @@ import InviteModal from "../components/inviteModal";
 import { useInvitedMembers } from "../hooks/useInvitedMembers";
 
 function InvitePage() {
-  const houseId = '123';
-  const { members, isLoading, error } = useInvitedMembers(houseId);
+  const { houseId = "" } = useParams<{ houseId: string }>();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  
+  // TODO: API 연결 후 실제 houseId 검증 로직으로 변경
+  const validHouseId = houseId || '123';
+  const { members, isLoading, error } = useInvitedMembers(validHouseId);
+  
+  if (!houseId) {
+    return (
+      <div className="p-5 text-center text-gray-500">
+        잘못된 접근입니다.
+      </div>
+    );
+  }
 
   const handleInviteClick = () => {
     setIsInviteModalOpen(true);

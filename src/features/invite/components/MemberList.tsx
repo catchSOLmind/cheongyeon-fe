@@ -50,7 +50,7 @@ function MemberList({ members }: MemberListProps) {
             </div>
           </div>
 
-          <div className="mt-0bg-white" />
+          <div className="bg-white" />
         </div>
       ))}
     </div>

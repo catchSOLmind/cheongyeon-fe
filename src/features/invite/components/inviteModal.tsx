@@ -32,6 +32,7 @@ function InviteModal({ isOpen, onClose, onKakaoInvite, onCopyLink }: InviteModal
         <div className="flex mt-7 justify-center gap-4">
           {/* 카카오톡 버튼 */}
           <button
+            type="button"
             onClick={onKakaoInvite}
             className="flex flex-col items-center justify-center rounded-xl"
           >
@@ -60,6 +61,7 @@ function InviteModal({ isOpen, onClose, onKakaoInvite, onCopyLink }: InviteModal
         {/* 닫기 버튼 */}
         <div className="flex justify-center mt-8">
           <button
+            type="button"
             onClick={onClose}
             className="w-[251px] md:w-[calc(100%-46px)] md:max-w-[251px] h-[51px] rounded-lg bg-white border border-gray-300 text-body-l-bold text-gray-700"
           >
