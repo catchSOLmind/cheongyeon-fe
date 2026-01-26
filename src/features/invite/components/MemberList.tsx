@@ -4,6 +4,14 @@ interface MemberListProps {
   members: InvitedMember[];
 }
 
+/**
+ * Render a vertical list of invited members or a localized placeholder when the list is empty.
+ *
+ * Displays each member's avatar (or a default placeholder), name, optional tag badge, and optional subtitle.
+ *
+ * @param members - Array of invited members to display. Each member is expected to include `id`, `name`, and may include `imageUrl`, `tag`, and `subtitle`.
+ * @returns A JSX element containing the rendered member list or a centered "no invited members" message when `members` is empty.
+ */
 function MemberList({ members }: MemberListProps) {
   if (members.length === 0) {
     return (

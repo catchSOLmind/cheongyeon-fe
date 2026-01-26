@@ -7,6 +7,14 @@ interface InviteCompleteModalProps {
   memberName?: string;
 }
 
+/**
+ * Shows a centered invite-completion modal welcoming a member.
+ *
+ * Renders a modal with an icon, a greeting that includes the member's name, and a confirmation button. Clicking the overlay invokes `onClose`; clicking the confirmation button invokes `onConfirm`.
+ *
+ * @param memberName - Display name shown in the greeting; defaults to "카카오톡 닉네임2".
+ * @returns The modal element when open, or `null` when closed.
+ */
 function InviteCompleteModal({ 
   isOpen, 
   onClose, 

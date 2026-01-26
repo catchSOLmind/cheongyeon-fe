@@ -8,6 +8,15 @@ interface InviteModalProps {
   onCopyLink: () => void;
 }
 
+/**
+ * Render a centered invite modal offering KakaoTalk and link-copy share actions when visible.
+ *
+ * @param isOpen - Whether the modal is visible.
+ * @param onClose - Callback invoked to close the modal (triggered from the backdrop and the close button).
+ * @param onKakaoInvite - Callback invoked when the KakaoTalk invite button is clicked.
+ * @param onCopyLink - Callback invoked when the link-copy button is clicked.
+ * @returns A JSX element representing the invite modal, or `null` when `isOpen` is false.
+ */
 function InviteModal({ isOpen, onClose, onKakaoInvite, onCopyLink }: InviteModalProps) {
   if (!isOpen) return null;
 

@@ -5,6 +5,14 @@ import MemberList from "../components/MemberList";
 import InviteModal from "../components/inviteModal";
 import { useInvitedMembers } from "../hooks/useInvitedMembers";
 
+/**
+ * Render the InvitePage UI for viewing invited members and sending invitations.
+ *
+ * Renders a header, member avatar group, invited-member list (with loading and error states),
+ * a sticky invite action bar, and an invite modal with handlers for KakaoTalk sharing and link copying.
+ *
+ * @returns A JSX element representing the invite page UI.
+ */
 function InvitePage() {
   const houseId = '123';
   const { members, isLoading, error } = useInvitedMembers(houseId);

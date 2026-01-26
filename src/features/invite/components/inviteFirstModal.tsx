@@ -10,6 +10,17 @@ interface InviteFirstModalProps {
   inviterImageUrl?: string;
 }
 
+/**
+ * Render an invite modal that prompts the user to log in and displays the inviter's information when open.
+ *
+ * @param isOpen - Controls modal visibility; when `false` the component renders `null`
+ * @param onClose - Callback invoked when the overlay is clicked to request closing the modal
+ * @param onKakaoLogin - Callback invoked when the Kakao login button is clicked
+ * @param onGoogleLogin - Callback invoked when the Google login button is clicked
+ * @param inviterName - Display name of the inviter; defaults to `"카카오톡 닉네임1"` when not provided
+ * @param inviterImageUrl - Optional URL of the inviter's avatar; when omitted a placeholder is shown
+ * @returns A JSX modal element when `isOpen` is `true`, otherwise `null`
+ */
 function InviteFirstModal({ 
   isOpen, 
   onClose, 
