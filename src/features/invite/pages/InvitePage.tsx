@@ -1,15 +1,31 @@
+import { useState } from "react";
 import Header from "@/shared/components/Header";
 import MemberAvatarGroup from "../components/MemberAvatarGroup";
 import MemberList from "../components/MemberList";
+import InviteModal from "../components/inviteModal";
 import { useInvitedMembers } from "../hooks/useInvitedMembers";
 
 function InvitePage() {
   const houseId = '123';
   const { members, isLoading, error } = useInvitedMembers(houseId);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const handleInviteClick = () => {
-    console.log('멤버 초대하기 클릭');
-    // TODO: 초대 로직
+    setIsInviteModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsInviteModalOpen(false);
+  };
+
+  const handleKakaoInvite = () => {
+    console.log('카카오톡 초대');
+    // TODO: 카카오톡 초대 로직
+  };
+
+  const handleCopyLink = () => {
+    console.log('링크 복사');
+    // TODO: 링크 복사 로직
   };
 
   return (
@@ -57,6 +73,14 @@ function InvitePage() {
           멤버 초대하기
         </button>
       </div>
+
+      {/* 초대 팝업 */}
+      <InviteModal
+        isOpen={isInviteModalOpen}
+        onClose={handleCloseModal}
+        onKakaoInvite={handleKakaoInvite}
+        onCopyLink={handleCopyLink}
+      />
     </div>
   );
 }

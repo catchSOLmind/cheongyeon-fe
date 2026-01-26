@@ -21,7 +21,7 @@ export const useInvitedMembers = (houseId: string) => {
         setIsLoading(true);
         
         // 네트워크 지연 시뮬레이션 (0.5초)
-        await new Promise(resolve => setTimeout(resolve, 500));
+        //await new Promise(resolve => setTimeout(resolve, 500));
         
         // 목업 데이터 반환
         setMembers(MOCK_MEMBERS);
