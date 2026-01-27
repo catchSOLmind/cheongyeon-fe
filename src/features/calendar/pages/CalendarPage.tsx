@@ -1,13 +1,65 @@
-// CalendarPage.tsx
-import Header from "@/shared/components/Header";
+import cheongyeonLogo from '@/assets/calendar/logo-cheongyeon-black.svg';
+import MyworkPage from './MyworkPage';
+import AllworkPage from './AllworkPage';
+import useSlideIndicator from '../hooks/useSlideIndicator';
 
 function CalendarPage() {
+  const { activeTab, indicatorStyle, myTabRef, allTabRef, handleTabClick } = useSlideIndicator('my');
+
   return (
-    <div>
-      <Header title="캘린더" showBackButton={true} />
-      <div>캘린더</div>
+    <div className="bg-white min-h-screen">
+      {/* 상단 헤더 */}
+      <div className="sticky top-0 z-50 ">
+        <div className="flex items-center justify-between h-14 px-5">
+          <div className="flex items-center gap-1">
+            <img src={cheongyeonLogo} alt="청연 로고" className="w-6 h-6" />
+            <h1 className="text-price-l font-medium text-black">우리집</h1>
+          </div>
+
+          {/*임시 상단 아이콘 - 수정 필요 */}
+          <div className="flex gap-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="w-6 h-6 bg-pink-200 rounded" />
+            ))}
+          </div>
+        </div>
+
+        {/* 탭 */}
+        <div className="relative flex gap-[1.375rem] px-5 pb-0.5">
+          <button
+            ref={myTabRef}
+            onClick={() => handleTabClick('my')}
+            className={`py-0.5 text-display-xs ${
+              activeTab === 'my' ? 'text-black' : 'text-gray-400'
+            }`}
+          >
+            내 할 일
+          </button>
+          <button
+            ref={allTabRef}
+            onClick={() => handleTabClick('all')}
+            className={`py-0.5 text-display-xs ${
+              activeTab === 'all' ? 'text-black' : 'text-gray-400'
+            }`}
+          >
+            전체 할 일
+          </button>
+
+          {/* 슬라이드 인디케이터 */}
+          <div
+            className="absolute bottom-0 h-0.5 bg-black transition-all duration-300 ease-out"
+            style={{
+              left: `${indicatorStyle.left}px`,
+              width: `${indicatorStyle.width}px`,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* 탭에 따른 페이지 렌더링 */}
+      {activeTab === 'my' ? <MyworkPage /> : <AllworkPage />}
     </div>
   );
 }
 
-export default CalendarPage; 
+export default CalendarPage;
