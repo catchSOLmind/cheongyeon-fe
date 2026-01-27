@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const dayLabels = ['일', '월', '화', '수', '목', '금', '토'] as const;
 
@@ -17,6 +17,11 @@ function Calendar({
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // currentDate prop이 변경될 때 selectedDate 동기화
+  useEffect(() => {
+    setSelectedDate(currentDate);
+  }, [currentDate]);
+
   const today = new Date();
 
   // 오늘 기준 주간 날짜
@@ -34,7 +39,7 @@ function Calendar({
     return week;
   };
 
-  // 월간 날짜 35칸
+  // 월간 날짜 (필요 주 수에 맞춰 동적 계산)
   const getMonthDates = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -42,10 +47,13 @@ function Calendar({
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
 
+    const lastDay = new Date(year, month + 1, 0);
+    const totalCells = Math.ceil((firstDay.getDay() + lastDay.getDate()) / 7) * 7;
+
     const dates: Date[] = [];
     const current = new Date(startDate);
 
-    for (let i = 0; i < 35; i++) {
+    for (let i = 0; i < totalCells; i++) {
       dates.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }

@@ -36,14 +36,14 @@ function useSlideIndicator(initialTab: TabType = 'my'): UseSlideIndicatorReturn 
 
   const handleTabClick = (tab: TabType) => {
     setActiveTab(tab);
-    setTimeout(() => updateIndicatorPosition(tab), 0);
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => updateIndicatorPosition(activeTab), 0);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const rafId = requestAnimationFrame(() => {
+      updateIndicatorPosition(activeTab);
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [activeTab]);
 
   return {
     activeTab,
