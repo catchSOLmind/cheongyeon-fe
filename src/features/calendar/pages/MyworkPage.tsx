@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Calendar from "../components/Calendar";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 
 function MyworkPage() {
+  const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const formatMonthYear = (date: Date) => {
@@ -27,9 +29,12 @@ function MyworkPage() {
           <span className="px-2 text-display-s text-[#262626]">{formatMonthYear(currentDate)}</span>
           <img src={IconDropdown} alt="dropdown" className="w-5 h-5" />
         </div>
-        <div className="mx-4 w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+        <button
+          onClick={() => navigate('/mypage')}
+          className="mx-4 w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+        >
           {/* TODO: 실제 프로필 이미지로 변경 */}
-        </div>
+        </button>
       </div>
 
       {/* 캘린더 */}

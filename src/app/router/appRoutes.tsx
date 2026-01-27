@@ -5,6 +5,7 @@ import { DefaultLayout } from '../layouts/DefaultLayout';
 import LoginPage from '@/features/auth/pages/LoginPage';
 import HomePage from '@/features/home/homePages'
 import CalendarPage from '@/features/calendar/pages/CalendarPage';
+import MyPage from '@/features/calendar/pages/MyPage';
 import InvitePage from '@/features/invite/pages/InvitePage';
 
 export const appRouter = createBrowserRouter([
@@ -23,6 +24,7 @@ export const appRouter = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: 'calendar', element: <CalendarPage /> },
+      { path: 'mypage', element: <MyPage /> },
     ],
   },
   // 하단바 없는 페이지
