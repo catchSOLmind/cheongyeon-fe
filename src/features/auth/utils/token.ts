@@ -45,8 +45,12 @@ export const refreshAccessToken = async (): Promise<string | null> => {
     return null;
   }
 
+  const baseURL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
+  if (!baseURL) {
+    throw new Error('VITE_API_BASE_URL is not set');
+  }
+
   try {
-    const baseURL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || '';
     const response = await axios.post<RefreshTokenResponse>(
       `${baseURL}/oauth/kakao/refresh`,
       { refreshToken } as RefreshTokenRequest,

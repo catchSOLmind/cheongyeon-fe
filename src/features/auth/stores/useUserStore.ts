@@ -18,6 +18,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   isLoading: false,
   error: null,
   
+  // 새로고침 했을 때 , 앱 처음 들어왔을 때 , 프로필 변경 등 유저 정보가 바뀌었을 때 호출
   fetchUser: async () => {
     // 이미 로딩 중이면 중복 요청 방지
     if (get().isLoading) {
