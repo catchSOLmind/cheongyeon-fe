@@ -12,9 +12,7 @@ let failedQueue: Array<{
   reject: (error?: unknown) => void;
 }> = [];
 
-// 대기 중인 요청들을 처리하는 함수
-// - token이 있으면: 모든 대기 요청에 새 토큰 전달하고 성공 처리
-// - error가 있으면: 모든 대기 요청에 에러 전달하고 실패 처리
+// 
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -83,8 +81,7 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
           const newAccessToken = await refreshAccessToken();
           
           if (newAccessToken) {
-            // 토큰 갱신 성공!
-            
+            // 토큰 갱신 성공
             // 대기 중이던 다른 요청들도 모두 새 토큰으로 처리
             processQueue(null, newAccessToken);
             
