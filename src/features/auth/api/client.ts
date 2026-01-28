@@ -10,5 +10,8 @@ export const authenticatedClient = setupInterceptors(
   axios.create({
     baseURL,
   })
-);
+export const authenticatedClient = setupInterceptors(
+  axios.create({
+    baseURL,
+  })
 );
