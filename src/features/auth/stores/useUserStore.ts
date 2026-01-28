@@ -26,7 +26,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     
     set({ isLoading: true, error: null });
     try {
-      const response = await authenticatedClient.get<User>('/user/me');
+      const response = await authenticatedClient.get<User>('/api/profile');
       set({ user: response.data, isLoading: false });
     } catch (error) {
       const axiosError = error as AxiosError;
