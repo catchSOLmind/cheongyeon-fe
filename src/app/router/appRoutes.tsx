@@ -3,6 +3,7 @@ import { AppLayout } from '../layouts/AppLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { DefaultLayout } from '../layouts/DefaultLayout';
 import LoginPage from '@/features/auth/pages/LoginPage';
+import KakaoCallbackPage from '@/features/auth/pages/KakaoCallbackPage';
 import HomePage from '@/features/home/homePages'
 import CalendarPage from '@/features/calendar/pages/CalendarPage';
 import MyPage from '@/features/calendar/pages/MyPage';
@@ -16,6 +17,11 @@ export const appRouter = createBrowserRouter([
     children: [
       { index: true, element: <LoginPage /> },
     ],
+  },
+  // 카카오 로그인 콜백
+  {
+    path: '/auth/kakao/callback',
+    element: <KakaoCallbackPage />,
   },
 // 메인 앱 
   {

@@ -2,7 +2,16 @@ import googleLogo from '@/assets/auth/logo-google.svg';
 import kakaoLogo from '@/assets/auth/logo-kakao.svg';
 import logoMain from '@/assets/auth/logo-cheongyeon-c.svg';
 
+import { getKakaoLoginUrl } from '../utils/kakaoAuth';
+
+
 export default function LoginPage() {
+  
+  // 카카오 로그인 
+  const handleClick = () => {
+    window.location.href = getKakaoLoginUrl();
+  };
+
   return (
     <div className="min-h-dvh w-full bg-primary flex flex-col items-center">
       {/* 로고 */}
@@ -18,6 +27,7 @@ export default function LoginPage() {
           className="w-[217px] h-[51px] mx-auto rounded-full bg-[#FAE100]
                      text-black text-cta-m
                      flex items-center justify-center gap-2"
+          onClick={handleClick}
         >
           <img src={kakaoLogo} alt="" className="w-4 h-4" />
           카카오로 빠른 로그인
