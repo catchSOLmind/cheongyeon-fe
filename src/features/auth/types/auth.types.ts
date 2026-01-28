@@ -15,3 +15,15 @@ export interface KakaoLoginResponse {
     provider: string;
   };
 }
+
+// 리프레시 토큰 요청
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+// 리프레시 토큰 응답
+export interface RefreshTokenResponse {
+  tokenType: 'bearer';
+  accessToken: string;
+  expiresIn: number;
+}
