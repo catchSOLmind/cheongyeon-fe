@@ -1,30 +1,31 @@
 name: Deploy Frontend (Release)
 
+# 워크플로우 트리거: release 브랜치에 push 시 실행
 on:
   push:
-    branches:
-      - release
+    branches: [release]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 레포 코드 가져오기
+      # 1. 레포지토리 코드 체크아웃
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Node 설정
+      # 2. Node.js 환경 설정
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # 3. 의존성 설치
+      # 3. 의존성 설치 (package-lock.json 기반으로 정확한 버전 설치)
       - name: Install dependencies
         run: npm ci
 
-      # 4. 빌드 (환경변수 주입)
+      # 4. 프로덕션 빌드 (환경변수 주입)
+      # GitHub Secrets에 설정된 환경변수를 빌드 타임에 주입
       - name: Build
         env:
           VITE_KAKAO_REDIRECT_URI: ${{ secrets.VITE_KAKAO_REDIRECT_URI }}
@@ -32,19 +33,22 @@ jobs:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: npm run build
 
-      # 5. S3 업로드
-      - name: Deploy to S3
-        uses: jakejarvis/s3-sync-action@v0.5.1
+      # 5. AWS 인증 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          args: --delete
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ap-northeast-2
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-          SOURCE_DIR: dist
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
 
-      # 6. CloudFront 캐시 무효화
+      # 6. S3에 빌드된 파일 업로드
+      # dist 폴더의 내용을 S3 버킷에 동기화 (기존 파일 삭제 옵션 포함)
+      - name: Deploy to S3
+        run: |
+          aws s3 sync dist/ s3://${{ secrets.AWS_S3_BUCKET }}/ --delete
+
+      # 7. CloudFront 캐시 무효화
+      # 배포된 새 파일이 즉시 반영되도록 캐시 무효화
       - name: Invalidate CloudFront cache
         uses: chetan/invalidate-cloudfront-action@v2
         env:
