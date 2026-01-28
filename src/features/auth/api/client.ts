@@ -5,6 +5,5 @@ import { setupInterceptors } from './interceptors';
 export const authenticatedClient = setupInterceptors(
   axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
-    withCredentials: true,
   })
 );

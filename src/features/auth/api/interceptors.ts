@@ -24,12 +24,30 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
   failedQueue = []; // 처리 완료 후 대기열 비우기
 };
 
+// 로그인/리프레시 요청 경로 (interceptor 루프에서 제외)
+const AUTH_EXCLUDED_PATHS = [
+  '/oauth/kakao/login',
+  '/oauth/kakao/refresh',
+];
+
+// 요청이 인증 제외 경로인지 확인
+const isAuthExcludedPath = (url: string | undefined): boolean => {
+  if (!url) return false;
+  return AUTH_EXCLUDED_PATHS.some((path) => url.includes(path));
+};
+
 // ===== 요청 인터셉터 설정 =====
 // 모든 API 요청이 나가기 전에 실행됨
 // localStorage에서 토큰을 가져와서 Authorization 헤더에 자동으로 추가
+// 단, 로그인/리프레시 요청은 제외 (무한 루프 방지)
 const setupRequestInterceptor = (instance: AxiosInstance) => {
   instance.interceptors.request.use(
     (config) => {
+      // 로그인/리프레시 요청은 Authorization 헤더를 붙이지 않음
+      if (isAuthExcludedPath(config.url)) {
+        return config;
+      }
+      
       const token = getAccessToken(); // localStorage에서 토큰 가져오기
       if (token) {
         config.headers.Authorization = `Bearer ${token}`; // 헤더에 토큰 추가
@@ -50,6 +68,11 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
     (response) => response, // 성공 응답은 그대로 통과
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+      // 로그인/리프레시 요청은 401 처리에서 제외 (무한 루프 방지)
+      if (isAuthExcludedPath(originalRequest.url)) {
+        return Promise.reject(error);
+      }
 
       // 401 에러(인증 실패)이고, 아직 재시도하지 않은 요청인 경우
       if (error.response?.status === 401 && !originalRequest._retry) {
