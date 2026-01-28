@@ -53,6 +53,9 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
 
       // 401 에러(인증 실패)이고, 아직 재시도하지 않은 요청인 경우
       if (error.response?.status === 401 && !originalRequest._retry) {
+        // 재시도 플래그를 먼저 설정 (무한 루프 방지)
+        // 대기열 요청과 갱신 시작 요청 모두에 적용
+        originalRequest._retry = true;
         
         // 케이스 1: 이미 다른 요청이 토큰 갱신 중인 경우
         if (isRefreshing) {
@@ -62,6 +65,7 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
           })
             .then((token) => {
               // 갱신 완료! 새 토큰으로 원래 요청 재시도
+              // _retry 플래그가 이미 설정되어 있어서 재시도 시 무한 루프 방지
               if (originalRequest.headers) {
                 originalRequest.headers.Authorization = `Bearer ${token}`;
               }
@@ -73,7 +77,6 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
         }
 
         // 케이스 2: 첫 번째로 401 에러를 받은 요청 → 토큰 갱신 시작
-        originalRequest._retry = true; // 재시도 플래그 설정 (무한 루프 방지)
         isRefreshing = true; // 갱신 시작 표시
 
         try {
@@ -96,6 +99,14 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
             // 리프레시 토큰도 만료됨 → 로그인 필요
             processQueue(error); // 대기 중인 요청들 모두 실패 처리
             clearTokens(); // 저장된 토큰 모두 삭제
+            
+            // useUserStore 클리어
+            import('../stores/useUserStore').then(({ useUserStore }) => {
+              useUserStore.getState().clearUser();
+            }).catch(() => {
+              // store가 없거나 import 실패해도 무시
+            });
+            
             isRefreshing = false;
             window.location.href = '/login'; // 로그인 페이지로 이동
             return Promise.reject(error);
@@ -104,6 +115,14 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
           // 토큰 갱신 중 에러 발생
           processQueue(refreshError as AxiosError); // 대기 중인 요청들 모두 실패 처리
           clearTokens();
+          
+          // useUserStore 클리어
+          import('../stores/useUserStore').then(({ useUserStore }) => {
+            useUserStore.getState().clearUser();
+          }).catch(() => {
+            // store가 없거나 import 실패해도 무시
+          });
+          
           isRefreshing = false;
           window.location.href = '/login';
           return Promise.reject(refreshError);

@@ -1,10 +1,10 @@
+// utils/token.ts
 import axios from 'axios';
 import type { RefreshTokenRequest, RefreshTokenResponse } from '../types/auth.types';
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 
-// localStorage 사용
 const storage = localStorage;
 
 // 액세스 토큰 저장
@@ -27,7 +27,7 @@ export const getRefreshToken = (): string | null => {
   return storage.getItem(REFRESH_TOKEN_KEY);
 };
 
-// 모든 토큰 제거 (로그아웃)
+// 모든 토큰 제거
 export const clearTokens = () => {
   storage.removeItem(ACCESS_TOKEN_KEY);
   storage.removeItem(REFRESH_TOKEN_KEY);
@@ -51,18 +51,16 @@ export const refreshAccessToken = async (): Promise<string | null> => {
       `${baseURL}/oauth/kakao/refresh`,
       { refreshToken } as RefreshTokenRequest,
       {
-        withCredentials: false, // 리프레시 토큰 요청은 인증 없이
+        withCredentials: false,
       }
     );
 
     const { accessToken } = response.data;
-    
-    // 새 액세스 토큰 저장
     setAccessToken(accessToken);
 
     return accessToken;
   } catch {
-    // 리프레시 토큰도 만료되었으면 모든 토큰 제거
+    // 리프레시 실패 시 토큰만 삭제 (store는 호출하는 쪽에서 처리)
     clearTokens();
     return null;
   }

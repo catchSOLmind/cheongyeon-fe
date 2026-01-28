@@ -1,31 +1,30 @@
 // stores/useAuthStore.ts
 import { create } from 'zustand';
-
-interface User {
-  id: number;
-  nickname: string;
-  provider: string;
-  // 추후에 메일이 추가될 수 있음!!
-}
+import { getAccessToken, clearTokens } from '../utils/token';
 
 interface AuthState {
-  user: User | null;
   isAuthenticated: boolean;
-  setUser: (user: User) => void;
-  clearUser: () => void;
+  initializeAuth: () => void;
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
   isAuthenticated: false,
   
-  setUser: (user) => set({ 
-    user, 
-    isAuthenticated: true 
-  }),
+  initializeAuth: () => {
+    const hasToken = !!getAccessToken();
+    set({ isAuthenticated: hasToken });
+  },
   
-  clearUser: () => set({ 
-    user: null, 
-    isAuthenticated: false 
-  }),
+  logout: () => {
+    clearTokens();
+    set({ isAuthenticated: false });
+    
+    // useUserStore도 클리어 (순환 참조 방지를 위해 lazy import)
+    import('./useUserStore').then(({ useUserStore }) => {
+      useUserStore.getState().clearUser();
+    }).catch(() => {
+      // store가 없거나 import 실패해도 무시
+    });
+  },
 }));
