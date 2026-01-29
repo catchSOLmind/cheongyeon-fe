@@ -101,7 +101,7 @@ function Calendar({
   return (
     <div ref={containerRef} className="w-full relative px-3">
       {/* 요일 라벨 (항상 고정) */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 gap-1">
         {dayLabels.map((day, index) => {
           // 주간 캘린더에서 선택된 날짜인지 확인
           const isSelectedInWeekView = !isExpanded && todayWeekDates.some((date) => isSelected(date));
@@ -118,7 +118,7 @@ function Calendar({
             <div
               key={index}
               className={`
-                text-center text-body-s pointer-events-none
+                text-center text-body-s py-1 pointer-events-none
                 ${isSelectedDay 
                   ? 'bg-primary text-white rounded-t-lg' 
                   : 'text-gray-600'
@@ -137,7 +137,7 @@ function Calendar({
           isExpanded ? 'max-h-0 opacity-0' : 'max-h-[56px] opacity-100'
         }`}
       >
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1 -mt-1">
           {todayWeekDates.map((date, index) => {
             const dateKey = formatDateKey(date);
             const hasTasks = (tasksByDate[dateKey] ?? 0) > 0;
@@ -170,7 +170,7 @@ function Calendar({
           isExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}
       >
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1 -mt-1">
           {monthDates.map((date, index) => {
             const dateKey = formatDateKey(date);
             const hasTasks = (tasksByDate[dateKey] ?? 0) > 0;

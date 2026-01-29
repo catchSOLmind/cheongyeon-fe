@@ -1,4 +1,6 @@
 import cheongyeonLogo from '@/assets/calendar/logo-cheongyeon-black.svg';
+import IconBell from '@/assets/calendar/icon-bell.svg';
+import IconPaper from '@/assets/calendar/icon-paper.svg';
 import MyworkPage from './MyworkPage';
 import AllworkPage from './AllworkPage';
 import useSlideIndicator from '../hooks/useSlideIndicator';
@@ -16,11 +18,10 @@ function CalendarPage() {
             <h1 className="text-price-l font-medium text-black">우리집</h1>
           </div>
 
-          {/*임시 상단 아이콘 - 수정 필요 */}
-          <div className="flex gap-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="w-6 h-6 bg-pink-200 rounded" />
-            ))}
+          {/* 상단 아이콘 */}
+          <div className="flex gap-5">
+            <img src={IconBell} alt="알림" className="w-6 h-6" />
+            <img src={IconPaper} alt="문서" className="w-6 h-6" />
           </div>
         </div>
 
