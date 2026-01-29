@@ -22,10 +22,9 @@ function Calendar({
     setSelectedDate(currentDate);
   }, [currentDate]);
 
-  const today = new Date();
-
-  // 오늘 기준 주간 날짜
+  // 오늘 기준 주간 날짜 (항상 이번 주)
   const getTodayWeekDates = () => {
+    const today = new Date();
     const week: Date[] = [];
     const day = today.getDay();
     const startDate = new Date(today);
@@ -69,21 +68,24 @@ function Calendar({
       date.getDate(),
     ).padStart(2, '0')}`;
 
-  const isToday = (date: Date) => {
-    const t = new Date();
-    return (
-      date.getDate() === t.getDate() &&
-      date.getMonth() === t.getMonth() &&
-      date.getFullYear() === t.getFullYear()
-    );
-  };
-
   const isSelected = (date: Date) =>
     date.getDate() === selectedDate.getDate() &&
     date.getMonth() === selectedDate.getMonth() &&
     date.getFullYear() === selectedDate.getFullYear();
 
   const isCurrentMonth = (date: Date) => date.getMonth() === currentMonth;
+
+  // 선택된 날짜가 첫 번째 주에 있는지 확인
+  const isInFirstWeek = (date: Date) => {
+    const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    const firstWeekStart = new Date(firstDayOfMonth);
+    firstWeekStart.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
+    
+    const dateWeekStart = new Date(date);
+    dateWeekStart.setDate(date.getDate() - date.getDay());
+    
+    return firstWeekStart.getTime() === dateWeekStart.getTime();
+  };
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
@@ -92,18 +94,41 @@ function Calendar({
 
   const handleToggleExpand = () => setIsExpanded((prev) => !prev);
 
+  // 선택된 날짜가 첫 번째 주에 있는지 확인 (월간 캘린더용)
+  const selectedIsInFirstWeek = isInFirstWeek(selectedDate);
+  const selectedDayIndex = selectedDate.getDay();
+
   return (
     <div ref={containerRef} className="w-full relative px-3">
-      {/* 요일 라벨 */}
+      {/* 요일 라벨 (항상 고정) */}
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {dayLabels.map((day, index) => (
-          <div
-            key={index}
-            className="text-center text-body-s text-gray-600 pointer-events-none"
-          >
-            {day}
-          </div>
-        ))}
+        {dayLabels.map((day, index) => {
+          // 주간 캘린더에서 선택된 날짜인지 확인
+          const isSelectedInWeekView = !isExpanded && todayWeekDates.some((date) => isSelected(date));
+          const selectedWeekDayIndex = isSelectedInWeekView ? selectedDate.getDay() : -1;
+          
+          // 월간 캘린더에서 첫 번째 주 선택된 날짜인지 확인
+          const isSelectedInMonthView = isExpanded && selectedIsInFirstWeek && index === selectedDayIndex;
+          
+          const isSelectedDay = 
+            (isSelectedInWeekView && index === selectedWeekDayIndex) ||
+            isSelectedInMonthView;
+          
+          return (
+            <div
+              key={index}
+              className={`
+                text-center text-body-s pointer-events-none
+                ${isSelectedDay 
+                  ? 'bg-primary text-white rounded-t-lg' 
+                  : 'text-gray-600'
+                }
+              `}
+            >
+              {day}
+            </div>
+          );
+        })}
       </div>
 
       {/* 주간(한 줄) 날짜 */}
@@ -116,7 +141,6 @@ function Calendar({
           {todayWeekDates.map((date, index) => {
             const dateKey = formatDateKey(date);
             const hasTasks = (tasksByDate[dateKey] ?? 0) > 0;
-            const currentDay = isToday(date);
             const selected = isSelected(date);
 
             return (
@@ -124,13 +148,11 @@ function Calendar({
                 key={index}
                 onClick={() => handleDateClick(date)}
                 className={`
-                  h-10 rounded-full flex items-center justify-center text-body-m relative
+                  h-10 flex items-center justify-center text-body-m relative
                   ${
                     selected
-                      ? 'bg-primary text-white'
-                      : currentDay
-                        ? 'bg-primary/20 text-primary'
-                        : 'text-black hover:bg-gray-100'
+                      ? 'bg-primary text-white rounded-b-lg'
+                      : 'text-black hover:bg-gray-100 rounded-full'
                   }
                 `}
               >
@@ -153,24 +175,25 @@ function Calendar({
             const dateKey = formatDateKey(date);
             const hasTasks = (tasksByDate[dateKey] ?? 0) > 0;
 
-            const currentDay = isToday(date);
             const selected = isSelected(date);
             const inMonth = isCurrentMonth(date);
+            const isFirstWeek = isInFirstWeek(date);
+            const isSelectedInFirstWeek = selected && isFirstWeek;
 
             return (
               <button
                 key={index}
                 onClick={() => handleDateClick(date)}
                 className={`
-                  aspect-square flex items-center justify-center text-body-m relative rounded-lg
+                  aspect-square flex items-center justify-center text-body-m relative
                   ${
-                    selected
-                      ? 'bg-primary text-white'
-                      : currentDay
-                        ? 'bg-primary/20 text-primary'
+                    isSelectedInFirstWeek
+                      ? 'bg-primary text-white rounded-b-lg'
+                      : selected
+                        ? 'bg-primary text-white rounded-lg'
                         : inMonth
-                          ? 'text-black hover:bg-gray-100'
-                          : 'text-gray-400'
+                          ? 'text-black hover:bg-gray-100 rounded-lg'
+                          : 'text-gray-400 rounded-lg'
                   }
                 `}
               >
