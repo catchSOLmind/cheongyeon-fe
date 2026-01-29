@@ -5,8 +5,8 @@ import TaskList from "../components/TaskList";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 import { useMyTasks } from "../hooks/useMyTasks";
 import { formatDateKey } from "../utils/dateUtils";
-import { taskItemsToTasks, groupTaskItemsByDate } from "../utils/taskAdapter";
-import type { Task } from "../utils/taskAdapter";
+import { taskItemsToTasks, groupTaskItemsByDate } from "../utils/taskAdapter.ts";
+import type { Task } from "../utils/taskAdapter.ts";
 
 function MyworkPage() {
   const navigate = useNavigate();
