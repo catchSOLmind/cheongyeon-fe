@@ -157,7 +157,7 @@ function Calendar({
                 `}
               >
                 {date.getDate()}
-                {hasTasks && <div className="absolute bottom-0.5 w-1.5 h-1.5 rounded-full bg-primary" />}
+                {hasTasks && <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-primary" />}
               </button>
             );
           })}
@@ -213,6 +213,9 @@ function Calendar({
           aria-label={isExpanded ? '캘린더 축소' : '캘린더 확장'}
         />
       </div>
+
+      {/* 하단 구분선 */}
+      <div className="border-b border-gray-200 mt-2" />
     </div>
   );
 }

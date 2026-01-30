@@ -82,7 +82,7 @@ function InvitePage() {
         
         <button
           onClick={handleInviteClick}
-          className="w-full py-4 rounded-lg bg-[#424B4C] text-white font-cta-m">
+          className="w-full py-4 rounded-lg bg-[#424B4C] text-white text-cta-m">
           멤버 초대하기
         </button>
       </div>

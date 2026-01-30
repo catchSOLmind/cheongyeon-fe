@@ -20,8 +20,8 @@ function CalendarPage() {
 
           {/* 상단 아이콘 */}
           <div className="flex gap-5">
-            <img src={IconBell} alt="알림" className="w-6 h-6" />
             <img src={IconPaper} alt="문서" className="w-6 h-6" />
+            <img src={IconBell} alt="알림" className="w-6 h-6" />
           </div>
         </div>
 

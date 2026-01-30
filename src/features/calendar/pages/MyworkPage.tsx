@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Calendar from "../components/Calendar";
 import TaskList from "../components/TaskList";
+import FloatingActionButton from "../components/Floatingactionbutton";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 import { useMyTasks } from "../hooks/useMyTasks";
 import { formatDateKey } from "../utils/dateUtils";
@@ -79,6 +80,13 @@ function MyworkPage() {
         isLoading={isLoading}
         selectedDate={selectedDate}
         onTaskUpdate={refetch}
+      />
+
+      {/* 플로팅 액션 버튼 */}
+      <FloatingActionButton
+        showFeedback={true}
+        showEdit={false}
+        showAddTask={true}
       />
     </div>
   );

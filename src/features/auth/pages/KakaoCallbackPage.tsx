@@ -4,7 +4,7 @@ import { publicClient } from '../api/publicClient';
 import { setAccessToken, setRefreshToken } from '../utils/token';
 import { useAuthStore } from '../stores/useAuthStore';
 import { useUserStore } from '../stores/useUserStore';
-import type { KakaoLoginRequest, KakaoLoginResponse } from '../types/auth.types';
+import type { KakaoLoginResponse } from '../types/auth.types';
 
 function KakaoCallbackPage() {
   const hasRequested = useRef(false);
@@ -24,9 +24,10 @@ function KakaoCallbackPage() {
       return;
     }
 
-    const requestData: KakaoLoginRequest = { code };
-    
-    publicClient.post<KakaoLoginResponse>('/oauth/kakao/login', requestData)
+    // 쿼리 파라미터로 전송: POST /oauth/kakao/login?code=XXXXX
+    publicClient.post<KakaoLoginResponse>('/oauth/kakao/login', null, {
+      params: { code }
+    })
       .then((response) => {
         const { accessToken, refreshToken, user } = response.data;
         
