@@ -49,7 +49,7 @@ function FloatingActionButton({
       )}
 
       {/* 플로팅 버튼 컨테이너 */}
-      <div className="fixed bottom-20 right-5 z-[70] flex flex-col items-end gap-3">
+      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-[375px] pr-5 z-[70] flex flex-col items-end gap-3">
         {/* 확장 메뉴 */}
         <div
           className={`

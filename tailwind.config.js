@@ -34,8 +34,8 @@ export default {
         },
         gray : {
           white : "#ffffff",
-          50 : "#fafafa",
-          100 : "#f5f5f5", //BG
+          50 : "#fafafa", //BG
+          100 : "#f5f5f5", 
           200 : "#eeeeee",
           300 : "#e0e0e0",
           400 : "#bdbdbd",
@@ -54,28 +54,29 @@ export default {
 
       fontSize: {
         // Display
-        'display-l': ['32px', { lineHeight: '40px', fontWeight: '400' }],      // L · 32/40
-        'display-m': ['24px', { lineHeight: '32px', fontWeight: '400' }],      // M · 24/32
-        'display-s': ['20px', { lineHeight: '28px', fontWeight: '600' }],      // S · 20/28
-        'display-xs': ['18px', { lineHeight: '24px', fontWeight: '600' }],     // XS · 18/24
+        'display-l': ['32px', { lineHeight: '40px', fontWeight: '700' }],      // L · 32/40
+        'display-m': ['24px', { lineHeight: '32px', fontWeight: '700' }],      // M · 24/32
+        'display-s': ['20px', { lineHeight: '28px', fontWeight: '700' }],      // S · 20/28
+        'display-xs': ['18px', { lineHeight: '24px', fontWeight: '500' }],     // XS · 18/24
         
         // Body
-        'body-l': ['16px', { lineHeight: '24px', fontWeight: '400' }],         // L · 16/24
-        'body-m': ['14px', { lineHeight: '20px', fontWeight: '400' }],         // M · 14/20
-        'body-m-bold': ['14px', { lineHeight: '20px', fontWeight: '700' }],    // M(bold) · 14/20
-        'body-s': ['12px', { lineHeight: '16px', fontWeight: '600' }],         // S · 12/16
-        'body-l-bold': ['16px', { lineHeight: '24px', fontWeight: '700' }],    // L(bold) · 16/24
+        'body-l': ['16px', { lineHeight: '24px', fontWeight: '100' }],         // L · 16/24
+        'body-m': ['14px', { lineHeight: '20px', fontWeight: '100' }],         // M · 14/20
+        'body-m-regular': ['14px', { lineHeight: '20px', fontWeight: '300' }],    // M(regular) · 14/20
+        'body-m-bold': ['14px', { lineHeight: '20px', fontWeight: '500' }],    // M(bold) · 14/20
+        'body-s': ['12px', { lineHeight: '16px', fontWeight: '100' }],         // S · 12/16
+        'body-l-bold': ['16px', { lineHeight: '24px', fontWeight: '500' }],    // L(bold) · 16/24
         
         // Label
-        'label-l': ['14px', { lineHeight: '20px', fontWeight: '400' }],        // L · 14/20
-        'label-m': ['12px', { lineHeight: '16px', fontWeight: '400' }],        // M · 12/16
-        'label-caption': ['10px', { lineHeight: '14px', fontWeight: '400' }],  // Caption · 10/14
-        'label-l-14': ['14px', { lineHeight: '20px', fontWeight: '400' }],     // L · 14/20
-        'label-l-regular': ['12px', { lineHeight: '16px', fontWeight: '400' }], // L (regular) · 12/16
+        'label-l': ['14px', { lineHeight: '20px', fontWeight: '500' }],        // L · 14/20
+        'label-m': ['12px', { lineHeight: '16px', fontWeight: '500' }],        // M · 12/16
+        'label-caption': ['10px', { lineHeight: '14px', fontWeight: '500' }],  // Caption · 10/14
+        'label-l-bold': ['14px', { lineHeight: '20px', fontWeight: '500' }],     // L · 14/20
+        'label-l-regular': ['12px', { lineHeight: '16px', fontWeight: '100' }], // L (regular) · 12/16
         
         // Price
-        'price-l': ['20px', { lineHeight: '28px', fontWeight: '600' }],        // L · 20/28
-        'price-m': ['16px', { lineHeight: '24px', fontWeight: '600' }],        // M · 16/24
+        'price-l': ['20px', { lineHeight: '28px', fontWeight: '700' }],        // L · 20/28
+        'price-m': ['16px', { lineHeight: '24px', fontWeight: '700' }],        // M · 16/24
         
         // CTA
         'cta-m': ['16px', { lineHeight: '24px', fontWeight: '500' }],          // M · 16/24

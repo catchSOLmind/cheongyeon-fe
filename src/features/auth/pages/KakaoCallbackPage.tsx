@@ -18,6 +18,10 @@ function KakaoCallbackPage() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
 
+    // 인가코드 로그 출력
+    // !!!!! 백엔드  개발 후 삭제 해야함 !!!!!!!!!!!
+    console.log('카카오 인가코드:', code);
+
     if (!code) {
       console.error('인가 코드 없음');
       window.location.replace('/login');

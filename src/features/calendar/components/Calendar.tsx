@@ -120,9 +120,9 @@ function Calendar({
             <div
               key={index}
               className={`
-                text-center text-body-s py-1 pointer-events-none
+                text-center text-label-l-regular py-1 pointer-events-none
                 ${isSelectedDay 
-                  ? 'bg-primary text-white rounded-t-lg' 
+                  ? 'bg-primary text-white rounded-t-lg text-label-l-regular' 
                   : 'text-gray-600'
                 }
               `}
@@ -150,11 +150,11 @@ function Calendar({
                 key={index}
                 onClick={() => handleDateClick(date)}
                 className={`
-                  h-10 flex items-center justify-center text-body-m relative
+                  h-10 flex items-center justify-center text-body-l-bold relative
                   ${
                     selected
                       ? 'bg-primary text-white rounded-b-lg'
-                      : 'text-black hover:bg-gray-100 rounded-full'
+                      : 'text-gray-900 hover:bg-gray-100 rounded-full'
                   }
                 `}
               >
@@ -187,15 +187,16 @@ function Calendar({
                 key={index}
                 onClick={() => handleDateClick(date)}
                 className={`
-                  aspect-square flex items-center justify-center text-body-m relative
+                  aspect-square flex items-center justify-center relative
+                  text-body-l-bold
                   ${
                     isSelectedInFirstWeek
                       ? 'bg-primary text-white rounded-b-lg'
                       : selected
                         ? 'bg-primary text-white rounded-lg'
                         : inMonth
-                          ? 'text-black hover:bg-gray-100 rounded-lg'
-                          : 'text-gray-400 rounded-lg'
+                          ? 'text-gray-900 hover:bg-gray-100 rounded-lg'
+                          : 'text-white rounded-lg'
                   }
                 `}
               >
