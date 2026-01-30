@@ -34,7 +34,7 @@ function MyPage() {
 
 
   return (
-    <div className="bg-white min-h-screen pb-8">
+    <div className="bg-white min-h-screen pb-4">
     <Header title="나의 활동" showBackButton />
       {/* 프로필 섹션 */}
       <div className="flex flex-col items-center pt-8 pb-6">
