@@ -58,7 +58,7 @@ function CalendarPage() {
         <div className="px-5 py-4 bg-white">
           {/* 공지사항 카드 */}
           <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg shadow-sm">
-            <span className="px-2 py-1 bg-secondary-500 text-white rounded text-body-s font-caption whitespace-nowrap">
+            <span className="px-2 py-1 bg-secondary-500 text-white rounded text-[10px] font-medium font-caption whitespace-nowrap">
               공지
             </span>
             <p className="text-label-l text-gray-800 flex-1">

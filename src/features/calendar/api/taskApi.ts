@@ -3,7 +3,7 @@ import type { MyTaskRequest, MyTaskResponse, UpdateTaskStatusRequest } from '../
 
 // 내 할일 조회
 export const getMyTasks = async (params: MyTaskRequest): Promise<MyTaskResponse> => {
-  const response = await authenticatedClient.get<MyTaskResponse>('/api/my-tasks', {
+  const response = await authenticatedClient.get<MyTaskResponse>('/my-tasks', {
     params: {
       groupId: params.groupId,
       date: params.date,
@@ -15,7 +15,7 @@ export const getMyTasks = async (params: MyTaskRequest): Promise<MyTaskResponse>
 // 할일 상태 업데이트
 export const updateTaskStatus = async (params: UpdateTaskStatusRequest): Promise<void> => {
   await authenticatedClient.put(
-    `/api/my-tasks/${params.occurrenceId}/status`,
+    `/my-tasks/${params.occurrenceId}/status`,
     {
       status: params.status,
       doneByMemberId: params.doneByMemberId,
