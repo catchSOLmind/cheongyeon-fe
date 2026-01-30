@@ -1,43 +1,55 @@
-// KakaoCallbackPage.tsx
+// pages/KakaoCallbackPage.tsx
 import { useEffect, useRef } from 'react';
-import { api } from '@/lib/api';
-import type { KakaoLoginRequest, KakaoLoginResponse } from '../types/auth.types';
+import { publicClient } from '../api/publicClient';
+import { setAccessToken, setRefreshToken } from '../utils/token';
+import { useAuthStore } from '../stores/useAuthStore';
+import { useUserStore } from '../stores/useUserStore';
+import type { KakaoLoginResponse } from '../types/auth.types';
 
 function KakaoCallbackPage() {
   const hasRequested = useRef(false);
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const setUser = useUserStore((state) => state.setUser);
 
   useEffect(() => {
-    // 중복 요청 방지
-    if (hasRequested.current) {
-      return;
-    }
+    if (hasRequested.current) return;
     hasRequested.current = true;
 
-    // URL에서 인가코드 꺼내기
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
 
     if (!code) {
       console.error('인가 코드 없음');
+      window.location.replace('/login');
       return;
     }
 
-    // 백엔드로 인가코드 전달
-    const requestData: KakaoLoginRequest = { code };
-    
-    api.post<KakaoLoginResponse>('/oauth/kakao/login', requestData)
+    // 쿼리 파라미터로 전송: POST /oauth/kakao/login?code=XXXXX
+    publicClient.post<KakaoLoginResponse>('/oauth/kakao/login', null, {
+      params: { code }
+    })
       .then((response) => {
-        console.log('로그인 성공:', response.data);
+        const { accessToken, refreshToken, user } = response.data;
         
-        // 로그인 성공 → 홈으로 이동
+        // 1. 토큰 저장 (localStorage)
+        setAccessToken(accessToken);
+        setRefreshToken(refreshToken);
+        
+        // 2. 인증 상태 업데이트
+        initializeAuth();
+        
+        // 3. 유저 정보 저장 (받은 정보 활용)
+        setUser(user);
+        
+        // 4. 홈으로 이동 
         window.location.replace('/');
       })
       .catch((error) => {
         console.error('카카오 로그인 실패:', error);
+        window.location.replace('/login');
       });
-  }, []);
+  }, [initializeAuth, setUser]);
 
-  // 카카오 로그인 처리중
   return <div>카카오 로그인 처리중...</div>;
 }
 

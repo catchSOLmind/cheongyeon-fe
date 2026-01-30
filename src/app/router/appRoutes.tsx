@@ -8,6 +8,8 @@ import HomePage from '@/features/home/homePages'
 import CalendarPage from '@/features/calendar/pages/CalendarPage';
 import MyPage from '@/features/calendar/pages/MyPage';
 import InvitePage from '@/features/invite/pages/InvitePage';
+import AddTodoPage from '@/features/todo/pages/addTodoPage';
+import FeedbackPage from '@/features/todo/pages/feedbackPage';
 
 export const appRouter = createBrowserRouter([
 // 로그인
@@ -41,6 +43,30 @@ export const appRouter = createBrowserRouter([
       { path: ':houseId', element: <InvitePage /> },
     ],
   },
+  // 할 일 관련 페이지
+  {
+    path: '/calendar/task',
+    element: <DefaultLayout />,
+    children: [
+      { index: true, element: <AddTodoPage /> },
+    ],
+  },
+  {
+    path: '/calendar/feedback',
+    element: <DefaultLayout />,
+    children: [
+      { index: true, element: <FeedbackPage /> },
+    ],
+  },
+  //디자인 완로 후 수정 !!!!!
+  {
+    path: '/calendar/edit',
+    element: <DefaultLayout />,
+    children: [
+      { index: true, element: <FeedbackPage /> },
+    ],
+  },
+
   // 404
   {
     path: '*',
