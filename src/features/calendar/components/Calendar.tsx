@@ -80,9 +80,11 @@ function Calendar({
     const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     const firstWeekStart = new Date(firstDayOfMonth);
     firstWeekStart.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
+    firstWeekStart.setHours(0, 0, 0, 0);
     
     const dateWeekStart = new Date(date);
     dateWeekStart.setDate(date.getDate() - date.getDay());
+    dateWeekStart.setHours(0, 0, 0, 0);
     
     return firstWeekStart.getTime() === dateWeekStart.getTime();
   };

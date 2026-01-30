@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getMyTasks } from '../api/taskApi';
 import type { MyTaskRequest, TaskItem } from '../types/task.types';
 
@@ -22,7 +22,7 @@ export const useMyTasks = (options: UseMyTasksOptions): UseMyTasksReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -34,13 +34,13 @@ export const useMyTasks = (options: UseMyTasksOptions): UseMyTasksReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.groupId, params.date]);
 
   useEffect(() => {
     if (enabled) {
       fetchTasks();
     }
-  }, [params.groupId, params.date, enabled]);
+  }, [enabled, fetchTasks]);
 
   return {
     tasks,

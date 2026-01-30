@@ -45,19 +45,28 @@ export const appRouter = createBrowserRouter([
   },
   // 할 일 관련 페이지
   {
-    path: '/calendar/task/add',
+    path: '/calendar/task',
     element: <DefaultLayout />,
     children: [
       { index: true, element: <AddTodoPage /> },
     ],
   },
   {
-    path: '/calendar/feedback/add',
+    path: '/calendar/feedback',
     element: <DefaultLayout />,
     children: [
       { index: true, element: <FeedbackPage /> },
     ],
   },
+  //디자인 완로 후 수정 !!!!!
+  {
+    path: '/calendar/edit',
+    element: <DefaultLayout />,
+    children: [
+      { index: true, element: <FeedbackPage /> },
+    ],
+  },
+
   // 404
   {
     path: '*',

@@ -25,17 +25,17 @@ function FloatingActionButton({
 
   const handleAddTask = () => {
     setIsExpanded(false);
-    navigate('/calendar/task/add');
+    navigate('/calendar/task');
   };
 
-  const handleAddCategory = () => {
+  const handleEdit = () => {
     setIsExpanded(false);
-    navigate('/calendar/category/add');
+    navigate('/calendar/edit');
   };
 
   const handleAddFeedback = () => {
     setIsExpanded(false);
-    navigate('/calendar/feedback/add');
+    navigate('/calendar/feedback');
   };
 
   return (
@@ -76,7 +76,7 @@ function FloatingActionButton({
         {/* 수정하기 */}
         {showEdit && (
           <button
-            onClick={handleAddCategory}
+            onClick={handleEdit}
             className="flex items-center bg-white gap-1 rounded-full shadow-lg hover:shadow-xl transition-all group w-[127px] h-11 px-3"
           >
             <img src={IconAdd} alt="수정" className="w-5 h-5" />
