@@ -1,12 +1,22 @@
-import Header from "@/shared/components/Header";
+import { useEffect } from 'react';
+import Header from '@/shared/components/Header';
+import { useUserStore } from '@/features/auth/stores/useUserStore';
 
 function MyPage() {
+  const { user, houseworkTypeLabel, fetchUser } = useUserStore();
+
+  useEffect(() => {
+    if (!user) {
+      fetchUser();
+    }
+  }, [user, fetchUser]);
+
   // TODO: API 연결 후 실제 데이터로 변경
   const mockData = {
-    profileImage: '', // 프로필 이미지 URL
-    userName: '김청연',
-    email: 'cleaninglab@sol.com',
-    routineType: '루틴형', // 가사 성향
+    profileImage: user?.profileImg || '', // 프로필 이미지 URL
+    userName: user?.nickname || '',
+    email: user?.email || '',
+    routineType: houseworkTypeLabel || '루틴형', // 가사 성향
     consecutiveDays: 3, // 연속 달성 일수
     cleaningPoints: 12500, // 청소 포인트
     completedTasks: 47, // 완료한 할 일 개수

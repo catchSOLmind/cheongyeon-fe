@@ -12,7 +12,7 @@ let failedQueue: Array<{
   reject: (error?: unknown) => void;
 }> = [];
 
-// 
+// 토큰 갱신 완료 후 대기열 처리
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
