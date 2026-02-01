@@ -2,10 +2,11 @@
 import { create } from 'zustand';
 import type { AxiosError } from 'axios';
 import { authenticatedClient } from '../api/client';
-import type { User } from '../types/auth.types';
+import type { User, ProfileResponse } from '../types/auth.types';
 
 interface UserState {
   user: User | null;
+  houseworkTypeLabel: string | null;
   isLoading: boolean;
   error: string | null;
   fetchUser: () => Promise<void>;
@@ -15,6 +16,7 @@ interface UserState {
 
 export const useUserStore = create<UserState>((set, get) => ({
   user: null,
+  houseworkTypeLabel: null,
   isLoading: false,
   error: null,
   
@@ -27,8 +29,19 @@ export const useUserStore = create<UserState>((set, get) => ({
     
     set({ isLoading: true, error: null });
     try {
-      const response = await authenticatedClient.get<User>('/api/profile');
-      set({ user: response.data, isLoading: false });
+      const response = await authenticatedClient.get<ProfileResponse>('/profile');
+      // API 응답을 User 타입으로 변환
+      const user: User = {
+        userId: 0, // TODO: API 응답에 userId가 있으면 사용
+        email: response.data.profile.email,
+        nickname: response.data.profile.nickname,
+        profileImg: response.data.profile.profileImageUrl,
+      };
+      set({
+        user,
+        houseworkTypeLabel: response.data.profile.houseworkTypeLabel,
+        isLoading: false,
+      });
     } catch (error) {
       const axiosError = error as AxiosError;
       const isUnauthorized = axiosError.response?.status === 401;
@@ -52,5 +65,5 @@ export const useUserStore = create<UserState>((set, get) => ({
   
   setUser: (user) => set({ user }),
   
-  clearUser: () => set({ user: null, error: null }),
+  clearUser: () => set({ user: null, houseworkTypeLabel: null, error: null }),
 }));
