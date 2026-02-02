@@ -6,14 +6,15 @@ import { ProtectedRoute } from '../router/ProtectedRoute';
 import LoginPage from '@/features/auth/pages/LoginPage';
 import KakaoCallbackPage from '@/features/auth/pages/KakaoCallbackPage';
 import HomePage01 from '@/features/home/homePage01';
-import MyPage from '@/features/calendar/pages/MyPage';
-import CalendarPage from '@/features/calendar/pages/CalendarPage';
 import HomePage02 from '@/features/home/homePage02';
 import HomePage03 from '@/features/home/homePage03';
 import HomePage04 from '@/features/home/homePage04';
+import MyPage from '@/features/calendar/pages/MyPage';
+import CalendarPage from '@/features/calendar/pages/CalendarPage';
 import InvitePage from '@/features/invite/pages/InvitePage';
 import AddTodoPage from '@/features/todo/pages/addTodoPage';
 import FeedbackPage from '@/features/todo/pages/feedbackPage';
+import FeedbackFinishPage from '@/features/todo/pages/feedbackFinPage';
 
 export const appRouter = createBrowserRouter([
   // 로그인 
@@ -57,6 +58,7 @@ export const appRouter = createBrowserRouter([
       { path: '/invite/:houseId', element: <InvitePage /> },
       { path: '/calendar/task', element: <AddTodoPage /> },
       { path: '/calendar/feedback', element: <FeedbackPage /> },
+      { path: '/calendar/feedback-finish', element: <FeedbackFinishPage /> },
       { path: '/calendar/edit', element: <FeedbackPage /> }, // 디자인 완료 후 수정
     ],
   },

@@ -10,6 +10,9 @@ export default function App() {
   const fetchUser = useUserStore((state) => state.fetchUser);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
+  const isAuthChecked = useAuthStore((s) => s.isAuthChecked);
+
+
   // 1. 앱 초기화 시 토큰 확인하여 인증 상태 복원
   useEffect(() => {
     initializeAuth();
@@ -17,7 +20,7 @@ export default function App() {
 
   // 2. 로그인 상태면 유저 정보 조회
   useEffect(() => {
-    if (isAuthenticated && !user) {
+    if (isAuthChecked && isAuthenticated && !user) {
       fetchUser();
     }
   }, [isAuthenticated, user, fetchUser]);
