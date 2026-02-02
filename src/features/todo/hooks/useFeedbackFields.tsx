@@ -14,7 +14,7 @@ type Options = {
 };
 
 const createItem = (): FeedbackItem => ({
-  id: crypto.randomUUID(),
+  id: crypto.randomUUID(), // 피드백별 고유 id 생성
   categoryId: null,
   text: '',
   isDropdownOpen: false,
@@ -88,7 +88,7 @@ export function useFeedbackFields(options: Options = {}) {
     );
   }, [maxLength]);
 
-  /** 전체 초기화(선택) */
+  /** 전체 초기화 */
   const resetFeedbacks = useCallback(() => {
     setFeedbacks(Array.from({ length: Math.max(1, initialCount) }, () => createItem()));
   }, [initialCount]);
