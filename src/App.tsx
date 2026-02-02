@@ -9,9 +9,7 @@ export default function App() {
   const user = useUserStore((state) => state.user);
   const fetchUser = useUserStore((state) => state.fetchUser);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
-  const isAuthChecked = useAuthStore((s) => s.isAuthChecked);
-
+  const isAuthChecked = useAuthStore((state) => state.isAuthChecked);
 
   // 1. 앱 초기화 시 토큰 확인하여 인증 상태 복원
   useEffect(() => {
@@ -23,7 +21,7 @@ export default function App() {
     if (isAuthChecked && isAuthenticated && !user) {
       fetchUser();
     }
-  }, [isAuthenticated, user, fetchUser]);
+  }, [isAuthChecked, isAuthenticated, user, fetchUser]);
 
   return <RouterProvider router={appRouter} />;
 }
