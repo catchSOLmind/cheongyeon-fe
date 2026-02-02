@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import type { Task } from '../utils/taskAdapter';
+import type { TaskItem as TaskItemType } from '../types/task.types';
 import { updateTaskStatus } from '../api/taskApi';
 import { useUserStore } from '@/features/auth/stores/useUserStore';
 
 interface TaskItemProps {
-  task: Task;
+  task: TaskItemType;  // Task → TaskItemType
   onUpdate?: () => void;
 }
 
@@ -35,10 +35,10 @@ const formatDateTime = (date: Date): string => {
 // 개별 할일 아이템 컴포넌트
 function TaskItem({ task, onUpdate }: TaskItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const user = useUserStore((state) => state.profile);
+  const profile = useUserStore((state) => state.profile);
 
   const handleToggleComplete = async () => {
-    if (!user?.userId) {
+    if (!profile?.userId) {
       console.error('사용자 정보가 없습니다');
       return;
     }
@@ -46,12 +46,13 @@ function TaskItem({ task, onUpdate }: TaskItemProps) {
     setIsUpdating(true);
     try {
       const now = new Date();
-      const newStatus = task.completed ? 'UNCOMPLETED' : 'COMPLETED';
+      // 'COMPLETED' ↔ 'UNCOMPLETED' 토글
+      const newStatus = task.status === 'COMPLETED' ? 'UNCOMPLETED' : 'COMPLETED';
       
       await updateTaskStatus({
         occurrenceId: task.occurrenceId,
         status: newStatus,
-        doneByMemberId: user.userId,
+        doneByMemberId: profile.userId,
         doneAt: formatDateTime(now),
         updatedAt: formatDateTime(now),
       });
@@ -64,6 +65,9 @@ function TaskItem({ task, onUpdate }: TaskItemProps) {
     }
   };
 
+  const isCompleted = task.status === 'COMPLETED';
+  const isMyTask = profile?.userId === task.primaryAssignedMemberId;
+
   return (
     <div className="flex items-center gap-3 p-3 bg-white rounded-2xl">
       {/* 왼쪽: 체크박스 */}
@@ -74,15 +78,15 @@ function TaskItem({ task, onUpdate }: TaskItemProps) {
           w-5 h-5 rounded border-2 flex items-center justify-center shrink-0
           transition-colors
           ${
-            task.completed
+            isCompleted
               ? 'bg-primary border-primary'
               : 'bg-gray-100 border-gray-300'
           }
           ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
-        aria-label={task.completed ? '완료 취소' : '완료'}
+        aria-label={isCompleted ? '완료 취소' : '완료'}
       >
-        {task.completed && (
+        {isCompleted && (
           <svg
             className="w-3 h-3 text-white"
             fill="none"
@@ -104,10 +108,10 @@ function TaskItem({ task, onUpdate }: TaskItemProps) {
         <h3
           className={`
             text-body-m-bold text-black
-            ${task.completed ? 'line-through text-gray-400' : ''}
+            ${isCompleted ? 'line-through text-gray-400' : ''}
           `}
         >
-          {task.title}
+          {task.taskName}
         </h3>
         {task.time && (
           <p className="text-body-s text-black mt-0.5">
@@ -116,32 +120,35 @@ function TaskItem({ task, onUpdate }: TaskItemProps) {
         )}
       </div>
 
-      {/* 오른쪽: 상태 버튼과 프로필 */}
+      {/* 오른쪽: 상태 버튼 */}
       <div className="flex items-center gap-2 shrink-0">
-        {/* 상태 버튼 */}
-        {task.status && (
+        {/* 이관 상태 표시 */}
+        {task.isTakeover && (
           <button
-            className="px-3 py-1 bg-primary-50 text-primary-400  rounded-lg text-label-m "
+            className="px-3 py-1 bg-primary-50 text-primary-400 rounded-lg text-label-m"
             disabled
           >
-            {task.status}
+            이관됨
           </button>
         )}
         
-        {/* 프로필 이미지 */}
-        {task.assignedTo && (
+        {isMyTask && profile && (
           <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
-            {task.assignedTo.imageUrl ? (
+            {profile.profileImageUrl ? (
               <img
-                src={task.assignedTo.imageUrl}
-                alt={task.assignedTo.nickname}
+                src={profile.profileImageUrl}
+                alt={profile.nickname}
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gray-200" />
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                <span className="text-xs text-gray-500">
+                  {profile.nickname?.charAt(0) || '?'}
+                </span>
+              </div>
             )}
-          </div>
-        )}
+            </div>
+            )}
       </div>
     </div>
   );
