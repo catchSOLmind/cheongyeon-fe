@@ -38,7 +38,7 @@ const defaultProfileData: ProfileResponse['result'] = {
 
 function MyPage() {
   const [profileData, setProfileData] = useState<ProfileResponse['result']>(defaultProfileData);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {

@@ -12,8 +12,10 @@ interface BottomCTAButtonProps {
   }: BottomCTAButtonProps) {
     return (
       <button
+        type="button"
         disabled={disabled}
-        onClick={onClick}
+        aria-disabled={disabled}
+        onClick={disabled ? undefined : onClick}
         className={`
           w-full h-[56px] rounded-lg
           flex items-center justify-center
@@ -22,7 +24,7 @@ interface BottomCTAButtonProps {
           ${
             disabled
               ? 'bg-gray-100 text-gray-500'
-              : 'bg-primary text-white hover:bg-primary'
+              : 'bg-primary text-white hover:bg-primary-dark'
           }
         `}
       >

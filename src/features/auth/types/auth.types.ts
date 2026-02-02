@@ -6,17 +6,6 @@ export interface User {
   profileImg: string;
 }
 
-// 프로필 조회 응답
-export interface ProfileResponse {
-  profile: {
-    nickname: string;
-    email: string;
-    profileImageUrl: string;
-    houseworkType: string;
-    houseworkTypeLabel: string;
-  };
-}
-
 // 카카오 로그인 요청
 export interface KakaoLoginRequest {
   code: string;

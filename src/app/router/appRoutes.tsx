@@ -5,7 +5,8 @@ import { DefaultLayout } from '../layouts/DefaultLayout';
 import { ProtectedRoute } from '../router/ProtectedRoute';
 import LoginPage from '@/features/auth/pages/LoginPage';
 import KakaoCallbackPage from '@/features/auth/pages/KakaoCallbackPage';
-import HomePage01 from '@/features/home/homePage01'
+import HomePage01 from '@/features/home/homePage01';
+import MyPage from '@/features/calendar/pages/MyPage';
 import CalendarPage from '@/features/calendar/pages/CalendarPage';
 import HomePage02 from '@/features/home/homePage02';
 import HomePage03 from '@/features/home/homePage03';
@@ -41,6 +42,7 @@ export const appRouter = createBrowserRouter([
       { path: 'home02', element: <HomePage02 /> },
       { path: 'home03', element: <HomePage03 /> },
       { path: 'home04', element: <HomePage04 /> },
+      { path: 'mypage', element: <MyPage /> },
       { path: 'calendar', element: <CalendarPage /> },
     ],
   },
