@@ -35,7 +35,7 @@ function KakaoCallbackPage() {
       params: { code,
         // 카카오 로그인 개발환경에서의 테스트를 위한 리다이렉트 URI
         // 배포전에 삭제 필요
-        redirectUri: import.meta.env.VITE_KAKAO_REDIRECT_URI
+        //redirectUri: import.meta.env.VITE_KAKAO_REDIRECT_URI
        }
     })
       .then((response) => {
