@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Header from '@/shared/components/Header';
 import { TodoItem } from '../components/TodoItem';
+import AddTodoBottomSheet from '../components/AddTodoBottomSheet';
 
 interface Category {
   id: string;
@@ -54,9 +55,20 @@ const mockTodos: TodoItemData[] = [
 
 function AddTodoPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
-  // TODO: 선택된 카테고리에 따라 API 호출하여 할 일 목록 가져오기
-  const todos = selectedCategory ? mockTodos : [];
+  // 나의 할 일은 항상 표시 (상시 띄워놓기)
+  const todos = mockTodos;
+
+  const handleCategoryClick = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setIsBottomSheetOpen(true);
+  };
+
+  const handleCloseBottomSheet = () => {
+    setIsBottomSheetOpen(false);
+    setSelectedCategory(null);
+  };
 
   return (
     <div className="min-h-screen">
@@ -68,7 +80,7 @@ function AddTodoPage() {
           {categories.map((category) => (
             <button
               key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
+              onClick={() => handleCategoryClick(category.id)}
               className={`
                 flex flex-col items-center justify-center gap-2 p-3 rounded-lg
                 transition-all
@@ -85,39 +97,47 @@ function AddTodoPage() {
           ))}
         </div>
 
-        {/* 나의 할 일 섹션 */}
-        {selectedCategory && (
-          <div className="mb-6">
-            <h2 className="text-label-m text-gray-500 mb-4">나의 할 일</h2>
-            
-            {/* 할 일 목록 */}
-            {todos.length > 0 ? (
-              <div className="flex flex-col gap-3">
-                {todos.map((todo) => (
-                  <TodoItem
-                    key={todo.id}
-                    id={todo.id}
-                    title={todo.title}
-                    date={todo.date}
-                    time={todo.time}
-                    points={todo.points}
-                    assignee={todo.assignee}
-                    tag={todo.tag}
-                    isFavorite={todo.isFavorite}
-                    isCompleted={todo.isCompleted}
-                  />
-                ))}
-              </div>
-            ) : (
-              /* 빈 상태 메시지 */
-              <div className="flex flex-col items-center justify-center py-12">
-                <p className="text-display-xs text-black mb-2">오늘 할 일이 없어요</p>
-                <p className="text-body-m-regular text-gray-600">할 일을 추가하고 일정을 계획해보세요</p>
-              </div>
-            )}
-          </div>
-        )}
+        {/* 나의 할 일 섹션 - 상시 표시 */}
+        <div className="mb-6">
+          <h2 className="text-label-m text-gray-500 mb-4">나의 할 일</h2>
+          
+          {/* 할 일 목록 */}
+          {todos.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {todos.map((todo) => (
+                <TodoItem
+                  key={todo.id}
+                  id={todo.id}
+                  title={todo.title}
+                  date={todo.date}
+                  time={todo.time}
+                  points={todo.points}
+                  assignee={todo.assignee}
+                  tag={todo.tag}
+                  isFavorite={todo.isFavorite}
+                  isCompleted={todo.isCompleted}
+                />
+              ))}
+            </div>
+          ) : (
+            /* 빈 상태 메시지 */
+            <div className="flex flex-col items-center justify-center py-12">
+              <p className="text-display-xs text-black mb-2">오늘 할 일이 없어요</p>
+              <p className="text-body-m-regular text-gray-600">할 일을 추가하고 일정을 계획해보세요</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* 바텀시트 */}
+      {isBottomSheetOpen && selectedCategory && (
+        <AddTodoBottomSheet
+          categoryId={selectedCategory}
+          categoryName={categories.find((c) => c.id === selectedCategory)?.name || ''}
+          isOpen={isBottomSheetOpen}
+          onClose={handleCloseBottomSheet}
+        />
+      )}
     </div>
   );
 }

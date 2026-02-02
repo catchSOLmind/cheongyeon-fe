@@ -29,7 +29,7 @@ export default {
           warning: "#FFC107",
           error: "#F44336",
           info: "#2196F3",
-          notify: "#9CA9AB",
+          notify: "#9CA9AB", // Badge
           badge: "#004B82",
         },
         gray : {
