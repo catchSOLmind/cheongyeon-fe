@@ -207,10 +207,14 @@ function FeedbackPage() {
               placeholder="예: 설거지할 때 그릇 뒤쪽도 닦아주면 좋을 것 같아요"
               className="w-full h-[162px] px-4 py-3 border border-gray-300 rounded-lg text-body-m bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            
+
             <p className="text-body-s text-gray-400 mt-2 text-left">
-              글자수 제한: {feedbackText.length}/{maxLength}
-            </p>
+                글자수 제한:{' '}
+                <span className="text-semantic-badge">
+                  {feedbackText.length}
+                </span>
+                /{maxLength}
+              </p>
             <button className="w-full mt-4 px-4 h-[42px] bg-gray-50 text-body-m-bold border border-gray-200 text-gray-800 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
               + 피드백 추가하기
             </button>

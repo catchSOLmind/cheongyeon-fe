@@ -5,9 +5,11 @@ import { DefaultLayout } from '../layouts/DefaultLayout';
 import { ProtectedRoute } from '../router/ProtectedRoute';
 import LoginPage from '@/features/auth/pages/LoginPage';
 import KakaoCallbackPage from '@/features/auth/pages/KakaoCallbackPage';
-import HomePage from '@/features/home/homePages'
+import HomePage01 from '@/features/home/homePage01'
 import CalendarPage from '@/features/calendar/pages/CalendarPage';
-import MyPage from '@/features/calendar/pages/MyPage';
+import HomePage02 from '@/features/home/homePage02';
+import HomePage03 from '@/features/home/homePage03';
+import HomePage04 from '@/features/home/homePage04';
 import InvitePage from '@/features/invite/pages/InvitePage';
 import AddTodoPage from '@/features/todo/pages/addTodoPage';
 import FeedbackPage from '@/features/todo/pages/feedbackPage';
@@ -35,9 +37,11 @@ export const appRouter = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: <HomePage01 /> },
+      { path: 'home02', element: <HomePage02 /> },
+      { path: 'home03', element: <HomePage03 /> },
+      { path: 'home04', element: <HomePage04 /> },
       { path: 'calendar', element: <CalendarPage /> },
-      { path: 'mypage', element: <MyPage /> },
     ],
   },
   //하단바 없는 페이지
