@@ -17,6 +17,10 @@ import Stamp04Fill from '@/assets/todo/feedback/icon-stemp-04-fill.svg';
 import Stamp05Fill from '@/assets/todo/feedback/icon-stemp-05-fill.svg';
 import Stamp06Fill from '@/assets/todo/feedback/icon-stemp-06-fill.svg';
 
+import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
+import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
+
+
 interface ComplimentSticker {
   id: string;
   title: string;
@@ -86,6 +90,12 @@ function FeedbackPage() {
     }
   };
 
+  const isValid = false; // TODO: 실제 검증 로직 연결
+
+  const handleSubmit = () => {
+    console.log('피드백 제출');
+  };
+
   return (
     <div className="min-h-screen bg-white pb-20">
       <Header title="피드백 남기기" showBackButton />
@@ -134,11 +144,11 @@ function FeedbackPage() {
                 `}
               >
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-20 h-16 flex items-center justify-center">
+                  <div className="w-full aspect-[77/52] flex items-center justify-center max-w-[77px] mx-auto">
                     <img
                       src={selectedStickers.includes(sticker.id) ? sticker.iconFill : sticker.icon}
                       alt={sticker.title}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   <p
@@ -191,26 +201,31 @@ function FeedbackPage() {
 
           {/* 텍스트 영역 */}
           <div>
-            <textarea
+          <textarea
               value={feedbackText}
               onChange={handleFeedbackChange}
               placeholder="예: 설거지할 때 그릇 뒤쪽도 닦아주면 좋을 것 같아요"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-body-m bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-              rows={4}
+              className="w-full h-[162px] px-4 py-3 border border-gray-300 rounded-lg text-body-m bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary"
             />
+            
             <p className="text-body-s text-gray-400 mt-2 text-left">
               글자수 제한: {feedbackText.length}/{maxLength}
             </p>
+            <button className="w-full mt-4 px-4 h-[42px] bg-gray-50 text-body-m-bold border border-gray-200 text-gray-800 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
+              + 피드백 추가하기
+            </button>
           </div>
         </div>
       </div>
 
       {/* 하단 버튼 */}
-      <div className="sticky bottom-0 left-0 right-0 px-5 py-4 bg-white border-t border-gray-200">
-        <button className="w-full px-4 py-3 bg-gray-100 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
-          <span className="text-body-m-bold text-gray-400">피드백 작성완료</span>
-        </button>
-      </div>
+      <BottomCTAWrapper>
+        <BottomCTAButton
+          label="피드백 작성완료"
+          disabled={!isValid}
+          onClick={handleSubmit}
+        />
+      </BottomCTAWrapper>
     </div>
   );
 }
