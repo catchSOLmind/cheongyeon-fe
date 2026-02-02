@@ -38,7 +38,7 @@ function TaskItem({ task, onUpdate }: TaskItemProps) {
   const user = useUserStore((state) => state.user);
 
   const handleToggleComplete = async () => {
-    if (!user?.id) {
+    if (!user?.userId) {
       console.error('사용자 정보가 없습니다');
       return;
     }
@@ -51,7 +51,7 @@ function TaskItem({ task, onUpdate }: TaskItemProps) {
       await updateTaskStatus({
         occurrenceId: task.occurrenceId,
         status: newStatus,
-        doneByMemberId: user.id,
+        doneByMemberId: user.userId,
         doneAt: formatDateTime(now),
         updatedAt: formatDateTime(now),
       });
