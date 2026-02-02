@@ -125,7 +125,7 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
             
             // useUserStore 클리어
             import('../stores/useUserStore').then(({ useUserStore }) => {
-              useUserStore.getState().clearUser();
+              useUserStore.getState().clearProfile();
             }).catch(() => {
               // store가 없거나 import 실패해도 무시
             });
@@ -141,7 +141,7 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
           
           // useUserStore 클리어
           import('../stores/useUserStore').then(({ useUserStore }) => {
-            useUserStore.getState().clearUser();
+            useUserStore.getState().clearProfile();
           }).catch(() => {
             // store가 없거나 import 실패해도 무시
           });

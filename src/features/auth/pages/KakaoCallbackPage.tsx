@@ -23,18 +23,18 @@ function KakaoCallbackPage() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
 
-    if (!code) {
-      console.error('인가 코드 없음');
-      navigate('/login', { replace: true });
-      return;
-    }
+    // if (!code) {
+    //   console.error('인가 코드 없음');
+    //   navigate('/login', { replace: true });
+    //   return;
+    // }
 
     publicClient
       .post<KakaoLoginResponse>('/oauth/kakao/login', null, {
         params: {
           code,
           // 배포 전 필요 시만 사용
-          redirectUri: import.meta.env.VITE_KAKAO_REDIRECT_URI,
+          //redirectUri: import.meta.env.VITE_KAKAO_REDIRECT_URI,
         },
       })
       .then((response) => {

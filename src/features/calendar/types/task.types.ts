@@ -1,3 +1,4 @@
+
 // 내 할일 조회 요청
 export interface MyTaskRequest {
   groupId: number;
@@ -10,29 +11,23 @@ export interface MyTaskResponse {
   items: TaskItem[];
 }
 
-// 할일 아이템
+// 할일 아이템 (API 응답)
 export interface TaskItem {
-  occurrenceId: number; // long
-  taskId: number; // long
+  occurrenceId: number;
+  taskId: number;
   taskTypeId: number;
   taskName: string;
   time: string | null; // "HH:mm" 형식 또는 null
   status: 'UNCOMPLETED' | 'COMPLETED';
   isTakeover: boolean;
-  primaryAssignedMemberId: number; // long
+  primaryAssignedMemberId: number;
 }
 
-// 할일 상태 업데이트
+// 할일 상태 업데이트 요청
 export interface UpdateTaskStatusRequest {
-  occurrenceId: number; // long
+  occurrenceId: number;
   status: 'UNCOMPLETED' | 'COMPLETED';
-  doneByMemberId: number; // long
+  doneByMemberId: number;
   doneAt: string; // YYYY-MM-DD HH:mm:ss
   updatedAt: string; // YYYY-MM-DD HH:mm:ss
 }
-
-
-
-
-
-
