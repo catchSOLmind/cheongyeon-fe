@@ -35,7 +35,7 @@ const formatDateTime = (date: Date): string => {
 // 개별 할일 아이템 컴포넌트
 function TaskItem({ task, onUpdate }: TaskItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const user = useUserStore((state) => state.user);
+  const user = useUserStore((state) => state.profile);
 
   const handleToggleComplete = async () => {
     if (!user?.userId) {
