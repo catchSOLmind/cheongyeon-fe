@@ -30,7 +30,7 @@ const NAV_ITEMS: NavItem[] = [
     activeIcon: IconHomeFill,
   },
   {
-    path: '/reservations',
+    path: '/home02',
     label: '내 예약',
     icon: IconPerson,
     activeIcon: IconPersonFill,
@@ -42,13 +42,13 @@ const NAV_ITEMS: NavItem[] = [
     activeIcon: IconCalendarFill,
   },
   {
-    path: '/shop',
+    path: '/home03',
     label: '플러스샵',
     icon: IconShop,
     activeIcon: IconShopFill,
   },
   {
-    path: '/more',
+    path: '/home04',
     label: '더보기',
     icon: IconEtc,
     activeIcon: IconEtcFill,
