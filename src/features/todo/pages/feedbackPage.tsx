@@ -10,14 +10,6 @@ import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
 
 
-
-type FeedbackItem = {
-  id: string;
-  categoryId: string | null;
-  text: string;
-  isDropdownOpen: boolean;
-};
-
 // TODO: API 연동 후 제거
 const mockMembers = [
   { id: '1', name: '멤버 1', tag: '효율이' },
@@ -100,9 +92,9 @@ function FeedbackPage() {
             onToggle={() => setIsMemberDropdownOpen(!isMemberDropdownOpen)}
             selectedValue={selectedMember}
             placeholder="멤버를 선택해주세요"
-            displayValue={selectedMemberData?.name}
+            displayValue={selectedMemberData?.name ?? undefined}
             showProfile={true}
-            showTag={selectedMemberData?.tag}
+            showTag={selectedMemberData?.tag ?? undefined}
           >
             {mockMembers.map((member) => (
               <MemberChoiceItem

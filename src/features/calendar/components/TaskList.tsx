@@ -1,24 +1,15 @@
-import type { Task } from '../utils/taskAdapter';
-import TaskItem from './TaskItem';
+import type { TaskItem as TaskItemType } from '../types/task.types'; 
+import TaskItemComponent from './TaskItem';  // ✅ 이대로 유지
 import IconStar from '@/assets/calendar/icon-star.svg';
 
 interface TaskListProps {
-  tasks: Task[];
+  tasks: TaskItemType[];
   isLoading?: boolean;
   selectedDate: Date;
   onTaskUpdate?: () => void;
 }
 
-// 선택된 날짜의 할일 리스트 컴포넌트
 function TaskList({ tasks, isLoading, selectedDate, onTaskUpdate }: TaskListProps) {
-  // 선택된 날짜의 할일만 필터링
-  const formatDateKey = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   // 날짜 포맷팅 (예: "1월 1일 오늘")
   const formatDisplayDate = (date: Date): string => {
     const today = new Date();
@@ -31,9 +22,6 @@ function TaskList({ tasks, isLoading, selectedDate, onTaskUpdate }: TaskListProp
     const day = date.getDate();
     return `${month}월 ${day}일${isToday ? ' 오늘' : ''}`;
   };
-
-  const selectedDateKey = formatDateKey(selectedDate);
-  const filteredTasks = tasks.filter((task) => task.date === selectedDateKey);
 
   if (isLoading) {
     return (
@@ -57,16 +45,14 @@ function TaskList({ tasks, isLoading, selectedDate, onTaskUpdate }: TaskListProp
       </div>
 
       {/* 할일 리스트 */}
-      {filteredTasks.length === 0 ? (
+      {tasks.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          {selectedDateKey === formatDateKey(new Date())
-            ? '오늘 할 일이 없습니다'
-            : '이 날짜에는 할 일이 없습니다'}
+          오늘 할 일이 없습니다
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredTasks.map((task) => (
-            <TaskItem key={task.id} task={task} onUpdate={onTaskUpdate} />
+          {tasks.map((task) => (
+            <TaskItemComponent key={task.occurrenceId} task={task} onUpdate={onTaskUpdate} />
           ))}
         </div>
       )}

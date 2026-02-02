@@ -6,8 +6,6 @@ import FloatingActionButton from "../components/Floatingactionbutton";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 import { useMyTasks } from "../hooks/useMyTasks";
 import { formatDateKey } from "../utils/dateUtils";
-import { taskItemsToTasks, groupTaskItemsByDate } from "../utils/taskAdapter.ts";
-import type { Task } from "../utils/taskAdapter.ts";
 
 function AllworkPage() {
   const navigate = useNavigate();
@@ -25,21 +23,22 @@ function AllworkPage() {
 
   // 내 할일 조회 API 호출
   // TODO: groupId는 실제 그룹/집 ID로 변경 필요 (현재는 임시로 1 사용)
-  const { tasks: taskItems, weekDates, isLoading, refetch } = useMyTasks({
+  const { tasks, weekDates, isLoading, refetch } = useMyTasks({
     groupId: 1, // TODO: 실제 groupId로 변경
     date: selectedDateStr,
     enabled: true,
   });
 
-  // TaskItem을 Task로 변환 (선택된 날짜 기준)
-  const tasks: Task[] = useMemo(() => {
-    return taskItemsToTasks(taskItems, selectedDateStr);
-  }, [taskItems, selectedDateStr]);
-
-  // 캘린더 표시용 날짜별 할일 개수 (weekDates 기반)
+  // 캘린더 표시용 날짜별 할일 개수
   const tasksByDate = useMemo(() => {
-    return groupTaskItemsByDate(taskItems, weekDates);
-  }, [taskItems, weekDates]);
+    // API가 이미 해당 주의 할일을 반환하므로
+    // weekDates에 대해 간단히 표시용 데이터 생성
+    const result: Record<string, number> = {};
+    weekDates.forEach(date => {
+      result[date] = 1; // 할일이 있다고 표시 (실제 개수는 서버에서 관리)
+    });
+    return result;
+  }, [weekDates]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
