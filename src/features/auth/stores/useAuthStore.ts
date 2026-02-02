@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     import('./useUserStore')
       .then(({ useUserStore }) => {
-        useUserStore.getState().clearUser();
+        useUserStore.getState().clearProfile();
       })
       .catch(() => {});
   },
