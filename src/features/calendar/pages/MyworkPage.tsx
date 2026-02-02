@@ -84,8 +84,8 @@ function MyworkPage() {
 
       {/* 플로팅 액션 버튼 */}
       <FloatingActionButton
-        showFeedback={true}
-        showEdit={false}
+        showFeedback={false}
+        showEdit={true}
         showAddTask={true}
       />
     </div>

@@ -29,7 +29,7 @@ export default {
           warning: "#FFC107",
           error: "#F44336",
           info: "#2196F3",
-          notify: "#9CA9AB",
+          notify: "#9CA9AB", // Badge
           badge: "#004B82",
         },
         gray : {
@@ -60,11 +60,11 @@ export default {
         'display-xs': ['18px', { lineHeight: '24px', fontWeight: '500' }],     // XS · 18/24
         
         // Body
-        'body-l': ['16px', { lineHeight: '24px', fontWeight: '100' }],         // L · 16/24
-        'body-m': ['14px', { lineHeight: '20px', fontWeight: '100' }],         // M · 14/20
+        'body-l': ['16px', { lineHeight: '24px', fontWeight: '300' }],         // L · 16/24
+        'body-m': ['14px', { lineHeight: '20px', fontWeight: '300' }],         // M · 14/20
         'body-m-regular': ['14px', { lineHeight: '20px', fontWeight: '300' }],    // M(regular) · 14/20
         'body-m-bold': ['14px', { lineHeight: '20px', fontWeight: '500' }],    // M(bold) · 14/20
-        'body-s': ['12px', { lineHeight: '16px', fontWeight: '100' }],         // S · 12/16
+        'body-s': ['12px', { lineHeight: '16px', fontWeight: '300' }],         // S · 12/16
         'body-l-bold': ['16px', { lineHeight: '24px', fontWeight: '500' }],    // L(bold) · 16/24
         
         // Label
