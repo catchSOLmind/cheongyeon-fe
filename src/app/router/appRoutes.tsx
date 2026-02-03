@@ -16,7 +16,7 @@ import AddTodoPage from '@/features/todo/pages/addTodoPage';
 import FeedbackPage from '@/features/todo/pages/feedbackPage';
 import FeedbackFinishPage from '@/features/todo/pages/feedbackFinPage';
 import StartTestPage from '@/features/test/pages/StartTestPage';
-import TestPage from '@/features/test/pages/TestPage';
+import TestPage from '@/features/test/pages/TestQuestionPage';
 
 export const appRouter = createBrowserRouter([
   // 로그인 

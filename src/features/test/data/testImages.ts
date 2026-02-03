@@ -1,12 +1,12 @@
-import ImgTest01 from '@/assets/images/test/img_test_01.png';
-import ImgTest02 from '@/assets/images/test/img_test_02.png';
-import ImgTest03 from '@/assets/images/test/img_test_03.png';
-import ImgTest04 from '@/assets/images/test/img_test_04.png';
-import ImgTest05 from '@/assets/images/test/img_test_05.png';
-import ImgTest06 from '@/assets/images/test/img_test_06.png';
-import ImgTest07 from '@/assets/images/test/img_test_07.png';
-import ImgTest08 from '@/assets/images/test/img_test_08.png';
-import ImgTest09 from '@/assets/images/test/img_test_09.png';
+import ImgTest01 from '@/assets/test/img-test-01.png'
+import ImgTest02 from '@/assets/test/img-test-02.png'; 
+import ImgTest03 from '@/assets/test/img-test-03.png';
+import ImgTest04 from '@/assets/test/img-test-04.png';
+import ImgTest05 from '@/assets/test/img-test-05.png';
+import ImgTest06 from '@/assets/test/img-test-06.png';
+import ImgTest07 from '@/assets/test/img-test-07.png';
+import ImgTest08 from '@/assets/test/img-test-08.png';
+import ImgTest09 from '@/assets/test/img-test-09.png';
 
 // order 기준으로 이미지 매핑
 export const TEST_QUESTION_IMAGES: Record<number, string> = {

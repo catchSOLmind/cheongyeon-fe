@@ -12,11 +12,11 @@ interface UseTestQuestionsResult {
 
 export function useTestQuestions(): UseTestQuestionsResult {
     const [questions, setQuestions] = useState<TestQuestion[] | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [isloading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     const fetchQuestions = async () => {
-        setLoading(true);
+        setIsLoading(true);
         setError(null);
         try {
             const response = await getTestQuestions();
@@ -25,7 +25,7 @@ export function useTestQuestions(): UseTestQuestionsResult {
         } catch (err) {
             setError('Failed to fetch test questions.');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -35,7 +35,7 @@ export function useTestQuestions(): UseTestQuestionsResult {
 
     return {
         questions,
-        loading,
+        loading: isloading,
         error,
         refetch: fetchQuestions,
     };
