@@ -9,8 +9,8 @@ export function AuthLayout() {
     setThemeColor('#00bcd4');
 
     // 오버스크롤(바운스) 배경까지 하늘색
-    document.documentElement.classList.add('auth-theme');
-    document.body.classList.add('auth-theme');
+    // document.documentElement.classList.add('auth-theme');
+    // document.body.classList.add('auth-theme');
 
     return () => {
       setThemeColor('#ffffff');

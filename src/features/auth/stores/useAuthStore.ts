@@ -15,7 +15,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   initializeAuth: () => {
     const hasToken = !!getAccessToken();
+    //console.log('🔐 [initializeAuth] 토큰 확인:', hasToken); 
     set({ isAuthenticated: hasToken, isAuthChecked: true }); 
+    //console.log('✅ [initializeAuth] 완료:', { isAuthenticated: hasToken, isAuthChecked: true }); // 🔍
+
   },
 
   logout: () => {

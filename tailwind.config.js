@@ -15,6 +15,7 @@ export default {
             300: "#54d2e2",
             400: "#33c9dd",
             500: "#00bcd4",   
+            800: "#006775",
             DEFAULT: "#00bcd4",  // primary default color
         },
         // cheongyeon orange
@@ -60,11 +61,11 @@ export default {
         'display-xs': ['18px', { lineHeight: '24px', fontWeight: '500' }],     // XS · 18/24
         
         // Body
-        'body-l': ['16px', { lineHeight: '24px', fontWeight: '300' }],         // L · 16/24
-        'body-m': ['14px', { lineHeight: '20px', fontWeight: '300' }],         // M · 14/20
-        'body-m-regular': ['14px', { lineHeight: '20px', fontWeight: '300' }],    // M(regular) · 14/20
+        'body-l': ['16px', { lineHeight: '24px', fontWeight: '400' }],         // L · 16/24
+        'body-m': ['14px', { lineHeight: '20px', fontWeight: '400' }],         // M · 14/20
+        'body-m-regular': ['14px', { lineHeight: '20px', fontWeight: '400' }],    // M(regular) · 14/20
         'body-m-bold': ['14px', { lineHeight: '20px', fontWeight: '500' }],    // M(bold) · 14/20
-        'body-s': ['12px', { lineHeight: '16px', fontWeight: '300' }],         // S · 12/16
+        'body-s': ['12px', { lineHeight: '16px', fontWeight: '400' }],         // S · 12/16
         'body-l-bold': ['16px', { lineHeight: '24px', fontWeight: '500' }],    // L(bold) · 16/24
         
         // Label
@@ -72,7 +73,7 @@ export default {
         'label-m': ['12px', { lineHeight: '16px', fontWeight: '500' }],        // M · 12/16
         'label-caption': ['10px', { lineHeight: '14px', fontWeight: '500' }],  // Caption · 10/14
         'label-l-bold': ['14px', { lineHeight: '20px', fontWeight: '500' }],     // L · 14/20
-        'label-l-regular': ['12px', { lineHeight: '16px', fontWeight: '100' }], // L (regular) · 12/16
+        'label-l-regular': ['12px', { lineHeight: '16px', fontWeight: '300' }], // L (regular) · 12/16
         
         // Price
         'price-l': ['20px', { lineHeight: '28px', fontWeight: '700' }],        // L · 20/28

@@ -6,6 +6,7 @@ import FloatingActionButton from "../components/Floatingactionbutton";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 import { useMyTasks } from "../hooks/useMyTasks";
 import { formatDateKey } from "../utils/dateUtils";
+import { Dashboard } from "../components/Dashboard";
 
 function AllworkPage() {
   const navigate = useNavigate();
@@ -74,12 +75,18 @@ function AllworkPage() {
       </div>
 
       {/* 선택된 날짜의 할일 리스트 */}
+      <div className="min-h-[270px] bg-[#fafafa]">
       <TaskList
         tasks={tasks}
         isLoading={isLoading}
         selectedDate={selectedDate}
         onTaskUpdate={refetch}
       />
+      </div>
+
+      <div className="px-3 bg-white mt-4">
+        <Dashboard />
+      </div>
 
       {/* 플로팅 액션 버튼 */}
       <FloatingActionButton
