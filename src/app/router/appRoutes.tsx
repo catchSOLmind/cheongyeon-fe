@@ -15,6 +15,8 @@ import InvitePage from '@/features/invite/pages/InvitePage';
 import AddTodoPage from '@/features/todo/pages/addTodoPage';
 import FeedbackPage from '@/features/todo/pages/feedbackPage';
 import FeedbackFinishPage from '@/features/todo/pages/feedbackFinPage';
+import StartTestPage from '@/features/test/pages/StartTestPage';
+import TestPage from '@/features/test/pages/TestPage';
 
 export const appRouter = createBrowserRouter([
   // 로그인 
@@ -60,6 +62,8 @@ export const appRouter = createBrowserRouter([
       { path: '/calendar/feedback', element: <FeedbackPage /> },
       { path: '/calendar/feedback-finish', element: <FeedbackFinishPage /> },
       { path: '/calendar/edit', element: <FeedbackPage /> }, // 디자인 완료 후 수정
+      { path: '/test-start', element: <StartTestPage /> },
+      { path: '/test', element: <TestPage /> },
     ],
   },
   // 404

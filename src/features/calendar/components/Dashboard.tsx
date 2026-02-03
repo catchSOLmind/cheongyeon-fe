@@ -2,6 +2,8 @@ import React from "react";
 import ImgHome from '@/assets/calendar/img-house.svg';
 import ImgBanner from '@/assets/calendar/img-minigame.svg';
 import IconRight from '@/assets/common/icon-right.svg';
+import { useNavigate } from "react-router-dom";
+
 
 type Member = { id: string; name: string; avatarUrl?: string };
 
@@ -14,6 +16,7 @@ const members: Member[] = [
 ];
 
 export function Dashboard() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen">
       <div className="mx-auto w-full px-5">
@@ -106,11 +109,12 @@ export function Dashboard() {
             </div>
 
             <button
-              type="button"
-              className="h-[34px] px-2 rounded-lg bg-gray-800 text-white text-body-m-bold mt-6"
-            >
-              가사 성향 테스트
-            </button>
+            type="button"
+            onClick={() => navigate("/test-start")}
+            className="h-[34px] px-2 rounded-lg bg-gray-800 text-white text-body-m-bold mt-6"
+          >
+            가사 성향 테스트
+          </button>
           </div>
         </div>
 
