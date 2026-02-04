@@ -1,13 +1,6 @@
 
 import DotImg from '@/assets/test/icon-dot.svg';
-
-
-export type ResultType =
-  | 'PERFECTIONIST'
-  | 'RELAXED'
-  | 'EFFICIENT'
-  | 'PROCRASTINATOR';
-
+import type { ResultType } from '../types/test.types';
 
 export type RecommendItem = {
   id: string;

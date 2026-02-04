@@ -10,11 +10,7 @@ import ResultBg04 from '@/assets/test/img-test-bg-04.svg';
 
 import ImgBubble from '@/assets/test/img-bubble.svg';
 
-export type ResultType =
-  | 'PERFECTIONIST'
-  | 'RELAXED'
-  | 'EFFICIENT'
-  | 'PROCRASTINATOR';
+import type { ResultType } from '../types/test.types';
 
 export type TopResultCardProps = {
   title: string;

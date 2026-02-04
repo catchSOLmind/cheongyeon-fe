@@ -43,8 +43,12 @@ export interface TestResultResponse {
   result: TestResult;
 }
 
+// 중복 사용이 많아서 결과 타입 분리 
+export type ResultType = 'PERFECTIONIST' | 'RELAXED' | 'EFFICIENT' | 'PROCRASTINATOR';
+
+// 테스트 결과 타입
 export interface TestResult {
-  resultType: 'PERFECTIONIST' | 'RELAXED' | 'EFFICIENT' | 'PROCRASTINATOR'; 
+  resultType: ResultType;
   title: string;
   subTitle: string;
   mainQuote: string;
