@@ -3,8 +3,15 @@ import { BottomCTAButton } from "@/shared/components/BottomCTAButton";
 import { BottomCTAWrapper } from "@/shared/components/BottomCTAWrapper";
 import { useNavigate } from "react-router-dom";
 
-export default function StartTestPage() {
+
+export default function TestStartPage() {
   const navigate = useNavigate();
+
+  const handleSkip = () => {
+    navigate('/calendar');
+    console.log('Test skipped, navigating to /calendar');
+  };
+
   return (
     <div className="min-h-dvh w-full bg-primary-50 flex flex-col">
       {/* 상단 컨텐츠 */}
@@ -33,7 +40,7 @@ export default function StartTestPage() {
           type="button"
           className="text-label-l-regular text-gray-600 underline underline-offset-4"
           onClick={() => {
-            // TODO: 건너뛰기 라우팅
+            handleSkip();
           }}
         >
           건너뛰기
