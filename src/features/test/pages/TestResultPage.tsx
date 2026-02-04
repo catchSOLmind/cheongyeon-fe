@@ -20,7 +20,7 @@ export default function TestResultPage() {
   }
 
   return (
-    <div className="pb-20"  >
+    <div className="pb-24"  >
       <Header title="가사 성향 테스트" showBackButton />
       {/* page container */}
       <div className="mx-auto w-full max-w-[420px] px-5 pb-28 pt-4 bg-gray-50]">
@@ -59,18 +59,20 @@ export default function TestResultPage() {
           </div>
 
        {/* 4) Warning */}
-      <div className="mt-4 bg-white p-4" style={{ borderRadius: '0 0 20px 20px' }}>
+       <div className="px-5">
+      <div className="mt-4 bg-white px-5 py-12" style={{ borderRadius: '0 0 20px 20px' }}>
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center gap-2">
             <div className="text-yellow-600">⚠️</div>
             <h4 className="text-display-xs text-black">주의 포인트</h4>
           </div>
-          <p className="px-5 mt-5 text-body-m text-gray-800 text-center">
+          <p className="mt-3 text-body-m text-gray-800 text-center">
             {cautionPoint?.split('.').map((line, i) => (
               line.trim() && <span key={i}>{line.trim()}<br /></span>
             ))}
           </p>
         </div>
+      </div>
       </div>
 
         {/* 5) bottom fixed actions */}
