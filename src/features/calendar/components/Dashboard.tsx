@@ -18,7 +18,7 @@ const members: Member[] = [
 export function Dashboard() {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen">
+    <div className="bg-white py-6">
       <div className="mx-auto w-full px-5">
         {/*산돌폰트 적용 하기*/}
         <h2 className="text-[16px] font-bold text-gray-900 mb-3">우리집 협약서</h2>

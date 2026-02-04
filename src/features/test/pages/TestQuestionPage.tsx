@@ -135,27 +135,25 @@ export default function TestQuestionPage() {
               >
                 {choice.content}
       </button>
-    );
-  })}
-</div>
-
-      </div>
+        );
+      })}
+    </div>
+  </div>
 
       {/* 건너뛰기 */}
-      <div className="flex justify-center py-6">
+      <div className="flex justify-center py-1">
         <button
           type="button"
-          className="text-body-s text-gray-400 underline underline-offset-4"
+          className="text-label-l-regular text-gray-600 underline underline-offset-4"
           onClick={handleSkip}
         >
           건너뛰기
         </button>
       </div>
-      <BottomCTAWrapper>
+      <BottomCTAWrapper sticky>
         <BottomCTAButton
           onClick={flow.handleNext}
           label="다음"
-         
         />
       </BottomCTAWrapper>
     </div>
