@@ -49,8 +49,8 @@ const RESULT_IMAGES: Record<
 export function TopResultCard(props: TopResultCardProps) {
 
     const { title, subTitle, mainQuote, resultType } = props;
-
-    const { characterImg, background } = RESULT_IMAGES[resultType];
+    // 기본값: PERFECTIONIST
+    const { characterImg, background } = RESULT_IMAGES[resultType] ?? RESULT_IMAGES.PERFECTIONIST;
 
         return (
             <section className="flex justify-center">
