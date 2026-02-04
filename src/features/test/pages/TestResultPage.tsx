@@ -29,7 +29,6 @@ export default function TestResultPage() {
           subTitle={result.subTitle}
           mainQuote={result.mainQuote}
           resultType={result.resultType}
-          tags={result.tags}
         />
           {/* tags */}
           <div className="mt-3 grid grid-cols-3 gap-3">

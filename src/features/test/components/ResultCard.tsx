@@ -17,7 +17,6 @@ export type TopResultCardProps = {
   subTitle?: string;
   mainQuote?: string;
   resultType: ResultType;
-  tags?: string[];
 };
 
 const RESULT_IMAGES: Record<
