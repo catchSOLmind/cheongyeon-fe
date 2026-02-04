@@ -30,12 +30,17 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
+      //console.log('[fetchProfile] 시작, 현재 profile:', get().profile); // 로그 1 
+
       const res = await authenticatedClient.get<ProfileResponse>('/profile');
       const profile = res.data.result.profile;
+
+      //console.log('[fetchProfile] API 응답:', profile); // 로그 2
 
       // 전역 저장: userId / nickname / profileImageUrl / houseworkTypeLabel (+email)
       set((state) => {if (!state.profile) {
         // 로그인 전인데 /profile 먼저 치는 케이스 방지
+        //console.error('[fetchProfile] profile이 없어서 실패');  // 로그 3
         return { isLoading: false, error: 'No userId in store yet' };
         }
         return {

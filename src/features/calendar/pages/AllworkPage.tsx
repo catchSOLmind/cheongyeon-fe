@@ -6,6 +6,9 @@ import FloatingActionButton from "../components/Floatingactionbutton";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 import { useMyTasks } from "../hooks/useMyTasks";
 import { formatDateKey } from "../utils/dateUtils";
+import { Dashboard } from "../components/Dashboard";
+import ImgDefault from '@/assets/common/img-default-profile.svg';
+import { useUserStore } from "@/features/auth/stores/useUserStore";
 
 function AllworkPage() {
   const navigate = useNavigate();
@@ -17,6 +20,8 @@ function AllworkPage() {
     const month = date.getMonth() + 1;
     return `${year}년 ${month}월`;
   };
+
+  const { profile } = useUserStore();
 
   // 선택된 날짜를 YYYY-MM-DD 형식으로 변환
   const selectedDateStr = formatDateKey(selectedDate);
@@ -60,7 +65,11 @@ function AllworkPage() {
           onClick={() => navigate('/mypage')}
           className="mx-4 w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
         >
-          {/* TODO: 실제 프로필 이미지로 변경 */}
+          <img
+            src={profile?.profileImageUrl || ImgDefault}
+            alt={profile?.nickname || '프로필'}
+            className="w-full h-full object-cover"
+          />
         </button>
       </div>
 
@@ -74,12 +83,18 @@ function AllworkPage() {
       </div>
 
       {/* 선택된 날짜의 할일 리스트 */}
+      <div className="min-h-[270px] bg-[#fafafa]">
       <TaskList
         tasks={tasks}
         isLoading={isLoading}
         selectedDate={selectedDate}
         onTaskUpdate={refetch}
       />
+      </div>
+
+      <div className="px-3 bg-white mt-4">
+        <Dashboard />
+      </div>
 
       {/* 플로팅 액션 버튼 */}
       <FloatingActionButton

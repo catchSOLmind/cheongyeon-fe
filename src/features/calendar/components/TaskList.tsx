@@ -32,7 +32,7 @@ function TaskList({ tasks, isLoading, selectedDate, onTaskUpdate }: TaskListProp
   }
 
   return (
-    <div className="px-5 py-4 bg-[#fafafa] min-h-screen">
+    <div className="px-5 py-4 bg-[#fafafa]">
       {/* 날짜 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-cta-m text-gray-900 px-2">
@@ -46,9 +46,15 @@ function TaskList({ tasks, isLoading, selectedDate, onTaskUpdate }: TaskListProp
 
       {/* 할일 리스트 */}
       {tasks.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          오늘 할 일이 없습니다
+        <div className="flex flex-col items-center justify-center h-full">
+        <span className="text-center mt-20 text-black text-display-xs">
+          오늘 할 일이 없어요
+        </span>
+        <span className="text-center text-gray-500 mb-20">
+          할 일을 추가하고 일정을 계획해보세요
+        </span>
         </div>
+        
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => (
