@@ -10,9 +10,8 @@ import { useTestFlow } from '../hooks/useTestFlow';
 
 export default function TestQuestionPage() {
   const navigate = useNavigate();
-  const isLoading = false;
   // 질문 데이터 불러오기 
-  const { questions, error } = useTestQuestions();
+  const { questions, loading,error } = useTestQuestions();
   const { submitTest, isSubmitting } = useSubmitTest();
 
   const flow = useTestFlow({
@@ -32,7 +31,7 @@ export default function TestQuestionPage() {
   };
 
   // 로딩
-  if (isLoading || isSubmitting) {
+  if (loading || isSubmitting) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
         <p>{isSubmitting ? '결과 분석 중...' : '로딩 중...'}</p>
@@ -41,7 +40,7 @@ export default function TestQuestionPage() {
   }
 
   // 질문이 아예 없음
-  if (!error && flow.totalQuestions === 0) {
+  if (!loading && !error && flow.totalQuestions === 0) {
     return (
       <div className="min-h-dvh flex flex-col items-center justify-center gap-4">
         <p className="text-body-l text-gray-600">표시할 질문이 없습니다.</p>
