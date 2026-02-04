@@ -54,7 +54,9 @@ PERFECTIONIST: {
 
 export default function RecommendCard(props: RecommendCardProps) {
   const { resultType } = props;
-  const { items, description } = RECOMMEND_WORKS[resultType];
+  // 기본값: PERFECTIONIST
+  const fallback = RECOMMEND_WORKS.PERFECTIONIST;
+  const { items, description } = RECOMMEND_WORKS[resultType] ?? fallback;
 
   return (
     <section className="bg-white px-5 py-10 text-center">
