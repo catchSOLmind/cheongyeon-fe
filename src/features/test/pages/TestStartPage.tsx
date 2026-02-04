@@ -48,7 +48,7 @@ export default function TestStartPage() {
       </div>
 
       {/* 하단 CTA */}
-      <BottomCTAWrapper className="!bg-primary-50">
+      <BottomCTAWrapper className="!bg-primary-50" sticky>
         <div className="space-y-3">
           <BottomCTAButton
             label="테스트 시작하기"

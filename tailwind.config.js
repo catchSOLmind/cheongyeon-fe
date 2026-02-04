@@ -15,7 +15,10 @@ export default {
             300: "#54d2e2",
             400: "#33c9dd",
             500: "#00bcd4",   
+            600: "#00ACC1",
+            700: "#008597",
             800: "#006775",
+            900: "#004F59",
             DEFAULT: "#00bcd4",  // primary default color
         },
         // cheongyeon orange

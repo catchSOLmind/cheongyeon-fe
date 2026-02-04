@@ -18,6 +18,7 @@ export default function TestQuestionPage() {
   const flow = useTestFlow({
     questions,
     submitTest,
+    // 제출 후 결과 페이지로 결과값 전달 
     onFinish: (result) =>
       navigate('/test-result', { state: { result } }),
   });
