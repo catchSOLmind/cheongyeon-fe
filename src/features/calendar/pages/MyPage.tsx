@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Header from '@/shared/components/Header';
 import { getProfile } from '../api/profileApi';
 import type { ProfileResponse } from '../types/profile.types';
+import DefaultProfile from '@/assets/common/img-default-profile.svg'
 
 // 카테고리별 색상 매핑
 const categoryColors = [
@@ -112,7 +113,7 @@ function MyPage() {
         <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden mb-4">
           {profileData.profile.profileImageUrl ? (
             <img
-              src={profileData.profile.profileImageUrl}
+              src={profileData.profile.profileImageUrl || DefaultProfile}
               alt={profileData.profile.nickname}
               className="w-full h-full object-cover"
             />

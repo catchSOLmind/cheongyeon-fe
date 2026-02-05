@@ -6,10 +6,12 @@ import FloatingActionButton from "../components/Floatingactionbutton";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 import { useMyTasks } from "../hooks/useMyTasks";
 import { formatDateKey } from "../utils/dateUtils";
+import { useUserStore } from "@/features/auth/stores/useUserStore";
+import ImgDefault from '@/assets/common/img-default-profile.svg';
 
 function MyworkPage() {
   const navigate = useNavigate();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date()); 
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const formatMonthYear = (date: Date) => {
@@ -17,6 +19,9 @@ function MyworkPage() {
     const month = date.getMonth() + 1;
     return `${year}년 ${month}월`;
   };
+
+  const { profile } = useUserStore();
+
 
   // 선택된 날짜를 YYYY-MM-DD 형식으로 변환
   const selectedDateStr = formatDateKey(selectedDate);
@@ -48,6 +53,7 @@ function MyworkPage() {
     }
   };
 
+
   return (
     <div>
       {/* 날짜 선택기 */}
@@ -60,9 +66,13 @@ function MyworkPage() {
           onClick={() => navigate('/mypage')}
           className="mx-4 w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
         >
-          {/* TODO: 실제 프로필 이미지로 변경 */}
+          <img
+            src={profile?.profileImageUrl || ImgDefault}
+            alt={profile?.nickname || '프로필'}
+            className="w-full h-full object-cover"
+          />
         </button>
-      </div>
+              </div>
 
       {/* 캘린더 */}
       <div className="px-3 bg-white mt-4">
