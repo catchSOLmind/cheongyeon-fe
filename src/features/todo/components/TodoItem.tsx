@@ -12,6 +12,8 @@ import { useUserStore } from '@/features/auth/stores/useUserStore';
 import { useTaskDraftStore } from '../stores/useTaskDraftStore';
 import { deleteFavorite , postFavorite } from '../api/favoriteApi';
 
+import ImgDefault from '@/assets/common/img-default-profile.svg'
+
 
 //사용자의 할일 아이템 조회
 interface TodoItemProps {
@@ -114,7 +116,7 @@ export function TodoItem({
           <div className="flex items-center gap-2 min-w-0">
             {/* 내 프로필 사진 */}
             <img
-              src={avatarUrl || ''}
+              src={avatarUrl || ImgDefault}
               alt="내 프로필"
               className="w-6 h-6 rounded-full object-cover flex-shrink-0"
             />

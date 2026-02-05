@@ -1,3 +1,5 @@
+// src/features/todo/components/add/AddTodoBottomSheet.tsx
+
 import { useEffect, useMemo, useState } from 'react';
 import Header from '@/shared/components/Header';
 import { getCategoryList } from '../../api/todoApi';
@@ -9,15 +11,13 @@ import ImgSearch from '@/assets/todo/icon-search.svg';
 import { useNavigate } from 'react-router-dom';
 import { useTaskDraftStore } from '../../stores/useTaskDraftStore';
 import type { TaskDraft } from '../../stores/useTaskDraftStore';
-import { deleteFavorite , postFavorite } from '../../api/favoriteApi';
-
+import { useFavoriteStore } from '../../stores/useFavoritrStore';
 
 interface AddTodoBottomSheetProps {
   categoryType: CategoryType;
   name?: string;
   favorite?: boolean;
   isOpen: boolean;
-  onToggleFavorite?: (taskTypeId: number) => void;
   onClose: () => void;
 }
 
@@ -30,14 +30,18 @@ function AddTodoBottomSheet({
 
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [isFavorite] = useState(false); // TODO: 추후 즐겨찾기 토글로 변경
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const selectedCount = selectedIds.length;
 
-  // zustand
+  // drafts store
   const addDrafts = useTaskDraftStore((s) => s.addDrafts);
+
+  // favorite store
+  const fetchFavorites = useFavoriteStore((s) => s.fetchFavorites);
+  const favoriteIds = useFavoriteStore((s) => s.favoriteIds);
+  const toggleFavorite = useFavoriteStore((s) => s.toggleFavorite);
 
   // 바텀시트 열림/닫힘 시 body scroll 제어
   useEffect(() => {
@@ -66,7 +70,7 @@ function AddTodoBottomSheet({
       try {
         const response = await getCategoryList({
           category: categoryType,
-          favorite: isFavorite,
+          favorite: false, // 즐겨찾기 필터는 아직 안 쓰는 컨셉
           // q: searchQuery,
         });
 
@@ -84,7 +88,13 @@ function AddTodoBottomSheet({
     };
 
     fetchData();
-  }, [isOpen, categoryType, isFavorite]);
+  }, [isOpen, categoryType]);
+
+  // 바텀시트 열릴 때 즐겨찾기 최신화
+  useEffect(() => {
+    if (!isOpen) return;
+    fetchFavorites();
+  }, [isOpen, fetchFavorites]);
 
   const handleSelectItem = (item: CategoryItem) => {
     setSelectedIds((prev) =>
@@ -101,81 +111,60 @@ function AddTodoBottomSheet({
     return categories.filter((c) => c.name.toLowerCase().includes(q));
   }, [categories, searchQuery]);
 
+  // 렌더링용 viewItems: 즐겨찾기 여부는 favoriteIds 기준으로 덮어씀
+  const viewItems = useMemo(() => {
+    return filteredCategories.map((item) => ({
+      ...item,
+      isFavorite: favoriteIds.has(item.taskTypeId),
+    }));
+  }, [filteredCategories, favoriteIds]);
 
-  // 로컬 시간을 한국 기준 시간으로 변환
+  // 로컬 날짜 YYYY-MM-DD
   const toLocalYMD = (d: Date) => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   };
 
-
-  //태스크 추가 
+  // draft 추가
   const handleAddTasks = () => {
     if (selectedIds.length === 0) return;
 
     const now = new Date();
     const date = toLocalYMD(now);
     const time = now.toTimeString().slice(0, 5); // HH:mm
-    //const weekday = now.getDay(); // 0~6
 
     // selectedIds -> 실제 item들 뽑기
     const selectedItems = categories.filter((c) =>
       selectedIds.includes(c.taskTypeId)
     );
 
-    // 이번에 선택한 draft 생성
+    // 바텀시트는 "최소 draft 생성": weekday/tag 같은 건 여기서 안 넣어도 됨
     const newDrafts: TaskDraft[] = selectedItems.map((it) => ({
-      draftId: crypto.randomUUID(), 
-      categoryType : categoryType,
+      draftId: crypto.randomUUID(),
+      categoryType,
       taskTypeId: it.taskTypeId,
       taskName: it.name,
       point: it.point,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      isFavorite: (it as any).isFavorite ?? false, // 즐겨찾기 로직 추후 수정
+      // 현재 즐겨찾기 상태 반영(서버 기준)
+      isFavorite: favoriteIds.has(it.taskTypeId),
       date,
       time,
-      //weekday,
       assigneeId: undefined,
       assigneeName: undefined,
     }));
 
-    // 기존에 있던 것 + 새로 추가된 것 
     addDrafts(newDrafts);
-
-
 
     onClose();
     navigate('/calendar/task');
   };
 
-    const handleToggleFavorite = async (taskTypeId: number) => {
-    const target = categories.find((c) => c.taskTypeId === taskTypeId);
-    if (!target) return;
-
-    const next = !target.isFavorite;
-
-    try {
-      if (next) {
-        await postFavorite(taskTypeId);
-      } else {
-        await deleteFavorite(taskTypeId);
-      }
-
-      // ⭐ 여기서 UI 상태 갱신
-      setCategories((prev) =>
-        prev.map((c) =>
-          c.taskTypeId === taskTypeId
-            ? { ...c, isFavorite: next }
-            : c
-        )
-      );
-    } catch {
-      alert('즐겨찾기 변경 실패');
-    }
+  // 즐겨찾기 토글: store가 낙관적 업데이트 하므로 UI 즉시 반영됨
+  const handleToggleFavorite = async (taskTypeId: number) => {
+    await toggleFavorite(taskTypeId);
   };
-
 
   return (
     <>
@@ -236,9 +225,9 @@ function AddTodoBottomSheet({
             <div className="flex items-center justify-center py-12">
               <p className="text-body-m text-gray-600">로딩 중...</p>
             </div>
-          ) : filteredCategories.length > 0 ? (
+          ) : viewItems.length > 0 ? (
             <div className="space-y-2">
-              {filteredCategories.map((item) => (
+              {viewItems.map((item) => (
                 <AddTodoListItem
                   key={item.taskTypeId}
                   item={item}

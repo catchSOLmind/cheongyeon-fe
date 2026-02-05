@@ -39,6 +39,14 @@ function AddTodoPage() {
   const drafts = useTaskDraftStore((s) => s.drafts);
   const clearDrafts = useTaskDraftStore((s) => s.clear);
 
+  console.log(
+  drafts.map((d) => ({
+    draftId: d.draftId,
+    taskTypeId: d.taskTypeId,
+    type: typeof d.taskTypeId,
+  }))
+);
+
   const todos: DraftTaskItemData[] = useMemo(() => {
   return drafts.map((draft) => ({
     id: draft.draftId, // UI 키
@@ -70,8 +78,13 @@ function AddTodoPage() {
     // date 정책: 일단 "첫 draft의 date"로 통일 (또는 선택한 날짜로 통일)
     const date = drafts[0].date;
 
+    
+
     // 여러 개 taskTypeId 모아서 보내기
-    const taskTypeIds = drafts.map((d) => d.taskTypeId);
+    // 일, 시간 등 모든 필드가 중복된 일은 하나로 통합함 , 하나라도 다르면 다른걸로 처리
+    const taskTypeIds = Array.from(
+    new Set(drafts.map((d) => d.taskTypeId))
+    );
 
     try {
       const res = await addMyTasks({ date, taskTypeIds });
