@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTaskDraftStore } from '../../stores/useTaskDraftStore';
 import type { TaskDraft } from '../../stores/useTaskDraftStore';
 
+
 interface AddTodoBottomSheetProps {
   categoryType: CategoryType;
   name?: string;
@@ -114,6 +115,7 @@ function AddTodoBottomSheet({
 
     // 이번에 선택한 draft 생성
     const newDrafts: TaskDraft[] = selectedItems.map((it) => ({
+      categoryType : categoryType,
       taskTypeId: it.taskTypeId,
       taskName: it.name,
       point: it.point,

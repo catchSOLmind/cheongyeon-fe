@@ -1,8 +1,10 @@
 // 할 일 추가 페이지 내에서 임시로 저장되는 할일 부분
 
 import { create } from 'zustand';
+import type { CategoryType } from '../types/category.types';
 
 export type TaskDraft = {
+  categoryType: CategoryType;
   taskTypeId: number;
   taskName: string;
   point: number;

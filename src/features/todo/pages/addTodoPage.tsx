@@ -39,6 +39,7 @@ function AddTodoPage() {
 
   const todos: DraftTaskItemData[] = useMemo(() => {
     return drafts.map((draft) => ({
+      categoryType: draft.categoryType,
       id: String(draft.taskTypeId),              // UI key 용
       title: draft.taskName,
       date: draft.date,                          // 나중에 포맷팅 가능
