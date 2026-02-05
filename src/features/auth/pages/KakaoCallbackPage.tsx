@@ -34,7 +34,7 @@ function KakaoCallbackPage() {
         params: {
           code,
           // 배포 전 필요 시만 사용
-          redirectUri: import.meta.env.VITE_KAKAO_REDIRECT_URI,
+          //redirectUri: import.meta.env.VITE_KAKAO_REDIRECT_URI,
         },
       })
       .then((response) => {
