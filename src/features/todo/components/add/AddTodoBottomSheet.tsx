@@ -14,16 +14,18 @@ import type { TaskDraft } from '../../stores/useTaskDraftStore';
 import { useFavoriteStore } from '../../stores/useFavoritrStore';
 
 interface AddTodoBottomSheetProps {
-  categoryType: CategoryType;
+  categoryType?: CategoryType;
   name?: string;
   favorite?: boolean;
   isOpen: boolean;
+  isFavoriteMode: boolean;
   onClose: () => void;
 }
 
 function AddTodoBottomSheet({
   categoryType,
   isOpen,
+  isFavoriteMode,
   onClose,
 }: AddTodoBottomSheetProps) {
   const navigate = useNavigate();
@@ -69,8 +71,8 @@ function AddTodoBottomSheet({
       setIsLoading(true);
       try {
         const response = await getCategoryList({
-          category: categoryType,
-          favorite: false, // 즐겨찾기 필터는 아직 안 쓰는 컨셉
+          category: isFavoriteMode ? undefined : categoryType, // 카테고리 
+          favorite: categoryType === null, // 즐겨찾기
           // q: searchQuery,
         });
 
@@ -111,13 +113,20 @@ function AddTodoBottomSheet({
     return categories.filter((c) => c.name.toLowerCase().includes(q));
   }, [categories, searchQuery]);
 
-  // 렌더링용 viewItems: 즐겨찾기 여부는 favoriteIds 기준으로 덮어씀
+  // 렌더링용 viewItems
   const viewItems = useMemo(() => {
-    return filteredCategories.map((item) => ({
+    const items = filteredCategories.map((item) => ({
       ...item,
       isFavorite: favoriteIds.has(item.taskTypeId),
     }));
-  }, [filteredCategories, favoriteIds]);
+
+    // ⭐ 즐겨찾기 모드면 즐겨찾기만
+    if (isFavoriteMode) {
+      return items.filter((item) => item.isFavorite);
+    }
+
+    return items;
+  }, [filteredCategories, favoriteIds, isFavoriteMode]);
 
   // 로컬 날짜 YYYY-MM-DD
   const toLocalYMD = (d: Date) => {
@@ -135,15 +144,19 @@ function AddTodoBottomSheet({
     const date = toLocalYMD(now);
     const time = now.toTimeString().slice(0, 5); // HH:mm
 
-    // selectedIds -> 실제 item들 뽑기
-    const selectedItems = categories.filter((c) =>
+    // selectedIds -> viewItems에서 실제 item들 뽑기
+    const selectedItems = viewItems.filter((c) =>
       selectedIds.includes(c.taskTypeId)
     );
+    
+    if (!isFavoriteMode && !categoryType) return;
 
     // 바텀시트는 "최소 draft 생성": weekday/tag 같은 건 여기서 안 넣어도 됨
     const newDrafts: TaskDraft[] = selectedItems.map((it) => ({
       draftId: crypto.randomUUID(),
-      categoryType,
+      categoryType: isFavoriteMode // 즐겨찾기 탭의 경우 아이템이 가진 category , 이외엔 타입
+        ? it.category
+        : categoryType!,
       taskTypeId: it.taskTypeId,
       taskName: it.name,
       point: it.point,

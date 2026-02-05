@@ -19,33 +19,39 @@ import { useNavigate } from 'react-router-dom';
 function AddTodoPage() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [isFavoriteMode, setIsFavoriteMode] = useState(false);
   const navigate = useNavigate();
-
-  const handleCategoryClick = (categoryType: CategoryType | '') => {
-    if (!categoryType) {
-      // 즐겨찾기 처리
-      return;
-    }
-    setSelectedCategory(categoryType);
-    setIsBottomSheetOpen(true);
-  };
-
 
   const handleCloseBottomSheet = () => {
     setIsBottomSheetOpen(false);
     setSelectedCategory(null);
   };
 
+    const handleCategoryClick = (categoryType: CategoryType | '') => {
+    if (!categoryType) {
+      // ⭐ 즐겨찾기 탭
+      setIsFavoriteMode(true);
+      setSelectedCategory(null);
+      setIsBottomSheetOpen(true);
+      return;
+    }
+
+      setIsFavoriteMode(false);
+      setSelectedCategory(categoryType);
+      setIsBottomSheetOpen(true);
+    };
+
   const drafts = useTaskDraftStore((s) => s.drafts);
   const clearDrafts = useTaskDraftStore((s) => s.clear);
 
-  console.log(
-  drafts.map((d) => ({
-    draftId: d.draftId,
-    taskTypeId: d.taskTypeId,
-    type: typeof d.taskTypeId,
-  }))
-);
+
+//   console.log(
+//   drafts.map((d) => ({
+//     draftId: d.draftId,
+//     taskTypeId: d.taskTypeId,
+//     type: typeof d.taskTypeId,
+//   }))
+// );
 
   const todos: DraftTaskItemData[] = useMemo(() => {
   return drafts.map((draft) => ({
@@ -152,10 +158,10 @@ function AddTodoPage() {
       </div>
 
       {/* 바텀시트 */}
-      {isBottomSheetOpen && selectedCategory && (
+      {isBottomSheetOpen && (
         <AddTodoBottomSheet
-          categoryType={selectedCategory}
-          name={categories.find((c) => c.categoryType === selectedCategory)?.name || ''}
+          categoryType={selectedCategory ?? undefined}
+          isFavoriteMode={isFavoriteMode}
           isOpen={isBottomSheetOpen}
           onClose={handleCloseBottomSheet}
         />
