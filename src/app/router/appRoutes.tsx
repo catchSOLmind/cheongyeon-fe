@@ -63,11 +63,18 @@ export const appRouter = createBrowserRouter([
       { path: '/calendar/feedback', element: <FeedbackPage /> },
       { path: '/calendar/feedback-finish', element: <FeedbackFinishPage /> },
       { path: '/calendar/edit', element: <FeedbackPage /> }, // 디자인 완료 후 수정
-      { path: '/test-start', element: <TestStartPage /> },
-      { path: '/test', element: <TestPage /> },
-      { path: '/test-result', element: <TestResultPage /> },
-    ],
-  },
+    ],},
+    {
+      // 로그인  여부와 상관없이 테스트 페이지 접근 가능 
+      element: (
+      <DefaultLayout />
+      ),
+      children: [
+        { path: '/test-start', element: <TestStartPage /> },
+        { path: '/test', element: <TestPage /> },
+        { path: '/test-result', element: <TestResultPage /> },
+      ],
+    },
   // 404
   {
     path: '*',
