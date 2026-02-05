@@ -6,7 +6,9 @@ import AddTodoListItem from './AddTodoListItem';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import ImgSearch from '@/assets/todo/icon-search.svg';
-import { addMyTasks } from '../../api/myWorkApi';
+import { useNavigate } from 'react-router-dom';
+import { useTaskDraftStore } from '../../stores/useTaskDraftStore';
+
 
 
 interface AddTodoBottomSheetProps {
@@ -24,7 +26,7 @@ function AddTodoBottomSheet({
 }: AddTodoBottomSheetProps) {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [isFavorite , setIsFavorite] = useState(false);
+  const [isFavorite] = useState(false); //임시로 false 처리 , 추후 변경
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const selectedCount = selectedIds.length;
@@ -73,22 +75,44 @@ function AddTodoBottomSheet({
       : [...prev, item.taskTypeId]                  // 선택
   );}
 
-  const handleAddTasks = async () => {
+  const navigate = useNavigate();
+  const setDrafts = useTaskDraftStore((s) => s.setDrafts);
+
+  const handleAddTasks = () => {
   if (selectedIds.length === 0) return;
 
-  try {
-    await addMyTasks({
-      date: new Date().toISOString().slice(0, 10), // YYYY-MM-DD
-      taskTypeIds: selectedIds,
-    });
+  const now = new Date();
+  const date = now.toISOString().slice(0, 10);
+  const time = now.toTimeString().slice(0, 5);
+  const weekday = now.getDay();
 
-    // 성공 → 바텀시트 닫기
-    onClose();
-  } catch (error) {
-    console.error('할 일 추가 실패:', error);
-    alert('할 일 추가에 실패했어요. 다시 시도해주세요.');
-  }
+  // selectedIds -> 실제 item들 뽑기
+  const selectedItems = categories.filter((c) => selectedIds.includes(c.taskTypeId));
+
+  // draft 생성
+  const drafts = selectedItems.map((it) => ({
+    taskTypeId: it.taskTypeId,
+    taskName: it.name,
+    point: it.point,
+    isFavorite: it.isFavorite ?? false,
+    date,
+    time,
+    weekday,
+    assigneeId: undefined,
+    assigneeName: undefined,
+  }));
+
+  // zustand에 저장
+  setDrafts(drafts);
+
+  // 바텀시트 닫고, 할일 추가 페이지로 이동
+  onClose();
+  navigate('/calendar/task');
 };
+
+useEffect(() => {
+  if (!isOpen) setSelectedIds([]);
+}, [isOpen]);
 
   return (
     

@@ -7,45 +7,15 @@ import { categories } from '../data/categoryTypeImages';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 
-interface TodoItemData {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  points: number;
-  assignee: {
-    name: string;
-    avatar?: string;
-  };
-  tag: string;
-  isFavorite: boolean;
-  isCompleted: boolean;
-}
+import { useTaskDraftStore } from '../stores/useTaskDraftStore';
+import { useMemo } from 'react';
 
-// 목업 데이터 - TODO: API 연동 후 제거
-const mockTodos: TodoItemData[] = [
-  {
-    id: '1',
-    title: '창틀 청소',
-    date: '1월 21일 (금)',
-    time: '오전 11:00',
-    points: 30,
-    assignee: {
-      name: '금',
-      avatar: '🐕',
-    },
-    tag: '금',
-    isFavorite: true,
-    isCompleted: false,
-  },
-];
+import type { DraftTaskItemData } from '../types/draftTask.types';
+
 
 function AddTodoPage() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
-
-  // 나의 할 일은 항상 표시 (상시 띄워놓기)
-  const todos = mockTodos;
 
     const handleCategoryClick = (categoryType: CategoryType | '') => {
     if (!categoryType) {
@@ -61,6 +31,27 @@ function AddTodoPage() {
     setIsBottomSheetOpen(false);
     setSelectedCategory(null);
   };
+
+  const drafts = useTaskDraftStore((s) => s.drafts);
+
+  const todos: DraftTaskItemData[] = useMemo(() => {
+    return drafts.map((draft) => ({
+      id: String(draft.taskTypeId),              // UI key 용
+      title: draft.taskName,
+      date: draft.date,                          // 나중에 포맷팅 가능
+      time: draft.time,
+      points: draft.point,
+      assignee: {
+        name: draft.assigneeName ?? '미지정',
+      },
+      tag:
+        draft.weekday !== undefined
+          ? ['일', '월', '화', '수', '목', '금', '토'][draft.weekday]
+          : '',
+      isFavorite: draft.isFavorite,
+      isCompleted: false,                        // draft 단계에서는 기본 false
+    }));
+  }, [drafts]);
 
   return (
     <div className='h-screen flex flex-col'>
@@ -94,29 +85,20 @@ function AddTodoPage() {
         {/* 나의 할 일 섹션 - 상시 표시 */}
         <div className="mb-6">
           <h2 className="text-label-m text-gray-500 mb-4">나의 할 일</h2>
-          
-          {/* 할 일 목록 */}
-          {todos.length > 0 ? (
-            <div className="flex flex-col gap-3">
-              {todos.map((todo) => (
-                <TodoItem
-                  key={todo.id}
-                  id={todo.id}
-                  title={todo.title}
-                  date={todo.date}
-                  time={todo.time}
-                  points={todo.points}
-                  assignee={todo.assignee}
-                  tag={todo.tag}
-                  isFavorite={todo.isFavorite}
-                  isCompleted={todo.isCompleted}
-                />
-              ))}
-            </div>
+            {/* 할 일 목록 */}
+              {todos.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  {todos.map((todo) => (
+                    <TodoItem
+                      key={todo.id}
+                      {...todo}
+                    />
+                  ))}
+                </div>
           ) : (
             /* 빈 상태 메시지 */
             <div className="flex flex-col items-center justify-center py-12">
-              <p className="text-display-xs text-black mb-2">오늘 할 일이 없어요</p>
+              <p className="text-display-xs text-black mb-2">추가된 할 일이 없어요</p>
               <p className="text-body-m-regular text-gray-600">할 일을 추가하고 일정을 계획해보세요</p>
             </div>
           )}

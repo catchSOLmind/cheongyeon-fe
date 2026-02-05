@@ -1,5 +1,5 @@
 //내 할일 추가 
-
+// 내 할일 페이지에서 내 할일 추가를 누르면 API 가 요청되는 형식
 // 요청 바디
 export type AddTasksRequest = {
   date: string; // "YYYY-MM-DD"

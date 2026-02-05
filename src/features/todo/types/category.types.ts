@@ -1,3 +1,5 @@
+
+// 바텀시트를 열었을 때 카테고리별 가사 목록들
 export type CategoryType = 'BATHROOM' | 'KITCHEN' | 'LAUNDRY' | 'BEDROOM' | 'LIVING' | 'TRASH' | 'ETC';
 export type SubCategoryType = "PET" | "BABY" | "OTHER";
 
