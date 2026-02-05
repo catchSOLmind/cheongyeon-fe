@@ -35,8 +35,7 @@ function AddTodoBottomSheet({
   const selectedCount = selectedIds.length;
 
   // zustand
-  const storedDrafts = useTaskDraftStore((s) => s.drafts);
-  const setDrafts = useTaskDraftStore((s) => s.setDrafts);
+  const addDrafts = useTaskDraftStore((s) => s.addDrafts);
 
   // 바텀시트 열림/닫힘 시 body scroll 제어
   useEffect(() => {
@@ -115,7 +114,7 @@ function AddTodoBottomSheet({
     const now = new Date();
     const date = toLocalYMD(now);
     const time = now.toTimeString().slice(0, 5); // HH:mm
-    const weekday = now.getDay(); // 0~6
+    //const weekday = now.getDay(); // 0~6
 
     // selectedIds -> 실제 item들 뽑기
     const selectedItems = categories.filter((c) =>
@@ -124,6 +123,7 @@ function AddTodoBottomSheet({
 
     // 이번에 선택한 draft 생성
     const newDrafts: TaskDraft[] = selectedItems.map((it) => ({
+      draftId: crypto.randomUUID(), 
       categoryType : categoryType,
       taskTypeId: it.taskTypeId,
       taskName: it.name,
@@ -132,13 +132,14 @@ function AddTodoBottomSheet({
       isFavorite: (it as any).isFavorite ?? false, // 즐겨찾기 로직 추후 수정
       date,
       time,
-      weekday,
+      //weekday,
       assigneeId: undefined,
       assigneeName: undefined,
     }));
 
     // 기존에 있던 것 + 새로 추가된 것 
-    setDrafts([...storedDrafts, ...newDrafts]);
+    addDrafts(newDrafts);
+
 
 
     onClose();

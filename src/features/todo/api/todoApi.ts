@@ -21,8 +21,8 @@ export const getCategoryList = async (
   const queryString = queryParams.toString();
   const url = queryString ? `/task-types?${queryString}` : '/task-types';
 
-  console.log('[getCategoryList] params:', params);
-  console.log('[getCategoryList] url:', url);
+  // console.log('[getCategoryList] params:', params);
+  // console.log('[getCategoryList] url:', url);
   
   const response = await authenticatedClient.get<CategoryListResponse>(url);
   return response.data;

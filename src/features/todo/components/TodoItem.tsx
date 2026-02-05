@@ -23,7 +23,7 @@ interface TodoItemProps {
     name: string;
     avatar?: string;
   };
-  tag: string;
+  tag?: string;
   isFavorite: boolean;
   isCompleted: boolean;
 }
@@ -41,6 +41,7 @@ export function TodoItem({
   const category = categories.find((c) => c.categoryType === categoryType);
   const categoryIcon = category?.image;
   const avatarUrl = useUserStore((s) => s.profile?.profileImageUrl);
+  const hasTag = Boolean(tag?.trim());
 
   return (
   <div className="bg-gray-50 rounded-lg p-4">
@@ -99,10 +100,12 @@ export function TodoItem({
               className="w-6 h-6 rounded-full object-cover flex-shrink-0"
             />
 
-            {/* 태그 */}
-            <span className="px-2 py-0.5 bg-primary-50 text-[#424B4C] rounded-full text-body-s whitespace-nowrap">
-              {tag}
-            </span>
+            {/* 반복 요일 태그 */}
+            {hasTag && (
+              <span className="px-2 py-0.5 bg-primary-50 text-[#424B4C] rounded-full text-body-s whitespace-nowrap">
+                {tag}
+              </span>
+            )}
           </div>
         </div>
       </div>

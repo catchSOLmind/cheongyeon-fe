@@ -64,6 +64,10 @@ export const useUserStore = create<UserState>((set, get) => ({
           profile: {
             ...state.profile,
             houseworkTypeLabel: profile.houseworkTypeLabel,
+            profileImageUrl:
+            profile.profileImageUrl ||
+            state.profile.profileImageUrl ||
+            DEFAULT_PROFILE_IMAGE,  
           },
           isLoading: false,
           isProfileFetched: true,

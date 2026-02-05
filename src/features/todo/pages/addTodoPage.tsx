@@ -40,24 +40,28 @@ function AddTodoPage() {
   const clearDrafts = useTaskDraftStore((s) => s.clear);
 
   const todos: DraftTaskItemData[] = useMemo(() => {
-    return drafts.map((draft) => ({
-      categoryType: draft.categoryType,
-      id: String(draft.taskTypeId),              // UI key 용
-      title: draft.taskName,
-      date: draft.date,                          // 나중에 포맷팅 가능
-      time: draft.time,
-      points: draft.point,
-      assignee: {
-        name: draft.assigneeName ?? '미지정',
-      },
-      tag:
-        draft.weekday !== undefined
-          ? ['일', '월', '화', '수', '목', '금', '토'][draft.weekday]
-          : '',
-      isFavorite: draft.isFavorite,
-      isCompleted: false,                        // draft 단계에서는 기본 false
-    }));
-  }, [drafts]);
+  return drafts.map((draft) => ({
+    id: draft.draftId,
+    categoryType: draft.categoryType,      
+    title: draft.taskName,
+    date: draft.date,
+    time: draft.time,
+    points: draft.point,
+
+    assignee: {
+      name: draft.assigneeName ?? '미지정',
+    },
+
+    tag:
+      draft.weekday !== undefined
+        ? ['일', '월', '화', '수', '목', '금', '토'][draft.weekday]
+        : '',
+
+    isFavorite: draft.isFavorite,
+    isCompleted: false,
+  }));
+}, [drafts]);
+
 
   const handleSubmitToCalendar = async () => {
     if (drafts.length === 0) return;
@@ -86,7 +90,7 @@ function AddTodoPage() {
       <Header title="할 일 추가" showBackButton />
       
     
-        <div className="px-5 py-6">
+        <div className="px-5 py-6 pb-16">
         {/* 카테고리 그리드 */}
         <div className="grid grid-cols-4 gap-[6px] mb-6">
           {categories.map((category) => (
