@@ -3,6 +3,9 @@ import Header from '@/shared/components/Header';
 import { getCategoryList } from '../../api/todoApi';
 import type { CategoryItem, CategoryType } from '../../types/category.types';
 import AddTodoListItem from './AddTodoListItem';
+import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
+import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
+import ImgSearch from '@/assets/todo/icon-search.svg';
 
 
 interface AddTodoBottomSheetProps {
@@ -19,9 +22,12 @@ function AddTodoBottomSheet({
   onClose,
 }: AddTodoBottomSheetProps) {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isFavorite , setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const selectedCount = selectedIds.length;
+
 
   useEffect(() => {
     if (isOpen) {
@@ -59,7 +65,16 @@ function AddTodoBottomSheet({
     fetchData();
   }, [isOpen, categoryType, isFavorite, searchQuery]);
 
+  const handleSelectItem = (item: CategoryItem) => {
+  setSelectedIds((prev) =>
+    prev.includes(item.taskTypeId)
+      ? prev.filter((id) => id !== item.taskTypeId) // 선택 해제
+      : [...prev, item.taskTypeId]                  // 선택
+  );
+}
+
   return (
+    
     <>
       {/* 오버레이 - 검정색 투명 처리 (헤더 포함) */}
       <div
@@ -99,13 +114,14 @@ function AddTodoBottomSheet({
         {/* 컨텐츠 */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {/* 검색 */}
-          <div className="mb-4">
+          <div className="relative mb-4">
+            <img src={ImgSearch} alt="검색" className="absolute w-[18px] h-[18px] ml-3 mt-2" />
             <input
               type="text"
-              placeholder="할 일 검색..."
+              placeholder="할 일을 검색해보세요"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-body-m focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 pl-9 rounded-lg text-body-m bg-gray-200 text-[#A6A6A6]"
             />
           </div>
 
@@ -116,34 +132,34 @@ function AddTodoBottomSheet({
             </div>
           ) : categories.length > 0 ? (
             <div className="space-y-2">
-              {categories.map((category) => (
-                <div
-                  key={category.taskTypeId}
-                  className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-body-m-bold text-black mb-1">
-                        {category.name}
-                      </h3>
-                      <p className="text-body-s text-gray-600">{category.category}</p>
-                    </div>
-                    {category.isFavorite && (
-                      <span className="text-xl">⭐</span>
-                    )}
-                  </div>
-                </div>
+             {categories.map((item) => (
+                <AddTodoListItem
+                  key={item.taskTypeId}
+                  item={item}
+                  isSelected={selectedIds.includes(item.taskTypeId)}
+                  onClick={handleSelectItem}
+                />
               ))}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12">
               <p className="text-body-m text-gray-600 mb-2">할 일이 없습니다</p>
               <p className="text-body-s text-gray-400">
-                {searchQuery ? '검색 결과가 없습니다' : '할 일을 추가해보세요'}
+                {searchQuery ? '검색 결과가 없습니다' : '카테고리에 할 일이 없습니다'}
               </p>
             </div>
           )}
         </div>
+          <BottomCTAWrapper sticky showTopBorder>
+          <BottomCTAButton
+            label={
+              selectedCount === 0
+                ? '할 일을 선택해주세요'
+                : `${selectedCount}개 추가하기`
+            }
+            disabled={selectedCount === 0}
+          />
+        </BottomCTAWrapper>
       </div>
     </>
   );

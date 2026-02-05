@@ -65,7 +65,7 @@ function AddTodoPage() {
       <Header title="할 일 추가" showBackButton />
       
     
-             <div className="px-5 py-6">
+        <div className="px-5 py-6">
         {/* 카테고리 그리드 */}
         <div className="grid grid-cols-4 gap-[6px] mb-6">
           {categories.map((category) => (

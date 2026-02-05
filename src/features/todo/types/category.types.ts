@@ -1,13 +1,3 @@
-// 카테고리 목록 응답
-export interface CategoryListResponse {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: {
-    items: Category[];
-  };
-}
-
 export type CategoryType = 'BATHROOM' | 'KITCHEN' | 'LAUNDRY' | 'BEDROOM' | 'LIVING' | 'TRASH' | 'ETC';
 export type SubCategoryType = "PET" | "BABY" | "OTHER";
 
@@ -20,6 +10,25 @@ export interface CategoryItem {
   point: number;
   isFavorite: boolean;
 }
+
+// 카테고리 조회 요청 파라미터
+export interface GetCategoryListParams {
+  category?: CategoryType;
+  subCategory?: SubCategoryType;
+  favorite?: boolean;
+}
+
+
+// 카테고리 목록 응답
+export interface CategoryListResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    items: CategoryItem[]; 
+  };
+}
+
 
 //세부 항목 등록하기 
 export interface AddCategoryRequest {
