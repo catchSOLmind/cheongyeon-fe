@@ -4,6 +4,7 @@ import IconClock from '@/assets/todo/icon-clock.svg';
 import IconStar from '@/assets/todo/icon-star.svg';
 import IconStarFill from '@/assets/todo/icon-star-fill.svg';
 
+//사용자의 할일 아이템 조회
 interface TodoItemProps {
   id: string;
   title: string;

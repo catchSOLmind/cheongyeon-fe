@@ -40,6 +40,7 @@ function AddTodoBottomSheet({
       setIsLoading(true);
       try {
         const response = await getCategoryList({
+          groupId: 0, // 임시로 0 설정, 실제 그룹 ID로 변경 필요
           category: categoryId,
           q: searchQuery || undefined,
         });
@@ -56,18 +57,27 @@ function AddTodoBottomSheet({
     fetchData();
   }, [isOpen, categoryId, searchQuery]);
 
-  if (!isOpen) return null;
-
   return (
     <>
       {/* 오버레이 - 검정색 투명 처리 (헤더 포함) */}
       <div
-        className="fixed inset-0 bg-black/50 z-[60] transition-opacity duration-200"
+        className={`
+          fixed inset-0 bg-black/50 z-[60] 
+          transition-opacity duration-200
+          ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+        `}
         onClick={onClose}
       />
 
       {/* 바텀시트 */}
-      <div className="fixed inset-x-0 top-3 bottom-0 z-[70] bg-white rounded-t-3xl shadow-lg flex flex-col transform transition-transform duration-300 ease-out">
+      <div className={`
+        fixed inset-x-0 bottom-0 z-[70] 
+        bg-white rounded-t-3xl shadow-lg 
+        flex flex-col 
+        top-3
+        transition-transform duration-300 ease-out
+        ${isOpen ? 'translate-y-0' : 'translate-y-full'}
+      `}>
         {/* 드래그 핸들 */}
         <button
           onClick={onClose}

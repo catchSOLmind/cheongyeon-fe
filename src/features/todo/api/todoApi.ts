@@ -1,23 +1,31 @@
 import { authenticatedClient } from '@/features/auth/api/client';
 import type { AddCategoryRequest, CategoryListResponse } from '../types/category.types';
 
-// 카테고리 목록 조회
 export interface GetCategoryListParams {
+  groupId: number; // required 추가
   category?: string;
   favorite?: boolean;
   q?: string;
 }
 
 export const getCategoryList = async (
-  params?: GetCategoryListParams
+  params: GetCategoryListParams // optional 제거
 ): Promise<CategoryListResponse> => {
   const queryParams = new URLSearchParams();
-  if (params?.category) queryParams.append('category', params.category);
-  if (params?.favorite !== undefined) queryParams.append('favorite', String(params.favorite));
-  if (params?.q) queryParams.append('q', params.q);
+  
+  // groupId는 필수
+  queryParams.append('groupId', String(params.groupId));
+  
+  if (params.category) queryParams.append('category', params.category);
+  if (params.favorite !== undefined) queryParams.append('favorite', String(params.favorite));
+  if (params.q) queryParams.append('q', params.q);
 
   const queryString = queryParams.toString();
-  const url = `/task-types${queryString ? `?${queryString}` : ''}`;
+  const url = `/task-types?${queryString}`;
+  
+  // 로그
+  console.log('[getCategoryList] params:', params);
+  console.log('[getCategoryList] url:', url);
   
   const response = await authenticatedClient.get<CategoryListResponse>(url);
   return response.data;

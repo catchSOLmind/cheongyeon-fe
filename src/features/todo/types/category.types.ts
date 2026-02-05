@@ -11,17 +11,17 @@ export interface CategoryListResponse {
 // 카테고리 항목
 export interface Category {
     taskTypeId: number;
-    category: string;
+    category: 'BATHROOM' | 'KITCHEN' | 'LAUNDRY' | 'BEDROOM' | 'LIVING' | 'TRASH' | 'ETC';
+    subCategory?: "PET" | "BABY" | "OTHER";
     name: string;
+    point: number;
     isFavorite: boolean;
   }
 
 //세부 항목 등록하기 
 export interface AddCategoryRequest {
-    taskTypeId: number;
-    category: string;
+    category: 'BATHROOM' | 'KITCHEN' | 'LAUNDRY' | 'BEDROOM' | 'LIVING' | 'TRASH' | 'ETC';
+    subCategory?: "PET" | "BABY" | "OTHER";
     name: string;
-    // 추후 추가될 필드
-    //isFavorite: boolean;
 }
 
