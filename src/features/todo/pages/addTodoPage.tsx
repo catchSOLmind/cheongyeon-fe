@@ -9,8 +9,6 @@ import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 
 import { useTaskDraftStore } from '../stores/useTaskDraftStore';
 import type { DraftTaskItemData } from '../types/draftTask.types';
-
-import { addMyTasks } from '../api/myWorkApi';
 import { useNavigate } from 'react-router-dom';
 import { useFavoriteStore } from '../stores/useFavoritrStore';
 
@@ -72,25 +70,18 @@ function AddTodoPage() {
     }));
   }, [drafts, favoriteIds]); 
 
-  const handleSubmitToCalendar = async () => {
-    if (drafts.length === 0) return;
+    const handleSubmitToCalendar = async () => {
+      if (drafts.length === 0) return;
 
-    const date = drafts[0].date;
+      try {
+        clearDrafts();
+        navigate('/calendar');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (e) {
+        alert('캘린더 추가에 실패했어요. 다시 시도해주세요.');
+      }
+    };
 
-    // 여러 개 taskTypeId 모아서 보내기 
-    // 일, 시간 등 모든 필드가 중복된 일은 하나로 통합함 , 하나라도 다르면 다른걸로 처리
-    const taskTypeIds = Array.from(new Set(drafts.map((d) => d.taskTypeId)));
-
-    try {
-      const res = await addMyTasks({ date, taskTypeIds });
-      clearDrafts();
-      navigate('/calendar');
-      console.log('추가 성공:', res.createdCount);
-    } catch (e) {
-      console.error('추가 실패:', e);
-      alert('캘린더 추가에 실패했어요. 다시 시도해주세요.');
-    }
-  };
 
   return (
     <div className="h-screen flex flex-col">
