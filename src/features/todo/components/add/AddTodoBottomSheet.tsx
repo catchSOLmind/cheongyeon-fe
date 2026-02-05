@@ -9,6 +9,7 @@ import ImgSearch from '@/assets/todo/icon-search.svg';
 import { useNavigate } from 'react-router-dom';
 import { useTaskDraftStore } from '../../stores/useTaskDraftStore';
 import type { TaskDraft } from '../../stores/useTaskDraftStore';
+import { deleteFavorite , postFavorite } from '../../api/favoriteApi';
 
 
 interface AddTodoBottomSheetProps {
@@ -16,6 +17,7 @@ interface AddTodoBottomSheetProps {
   name?: string;
   favorite?: boolean;
   isOpen: boolean;
+  onToggleFavorite?: (taskTypeId: number) => void;
   onClose: () => void;
 }
 
@@ -108,6 +110,8 @@ function AddTodoBottomSheet({
   return `${y}-${m}-${day}`;
   };
 
+
+  //태스크 추가 
   const handleAddTasks = () => {
     if (selectedIds.length === 0) return;
 
@@ -145,6 +149,33 @@ function AddTodoBottomSheet({
     onClose();
     navigate('/calendar/task');
   };
+
+    const handleToggleFavorite = async (taskTypeId: number) => {
+    const target = categories.find((c) => c.taskTypeId === taskTypeId);
+    if (!target) return;
+
+    const next = !target.isFavorite;
+
+    try {
+      if (next) {
+        await postFavorite(taskTypeId);
+      } else {
+        await deleteFavorite(taskTypeId);
+      }
+
+      // ⭐ 여기서 UI 상태 갱신
+      setCategories((prev) =>
+        prev.map((c) =>
+          c.taskTypeId === taskTypeId
+            ? { ...c, isFavorite: next }
+            : c
+        )
+      );
+    } catch {
+      alert('즐겨찾기 변경 실패');
+    }
+  };
+
 
   return (
     <>
@@ -213,6 +244,7 @@ function AddTodoBottomSheet({
                   item={item}
                   isSelected={selectedIds.includes(item.taskTypeId)}
                   onClick={handleSelectItem}
+                  onToggleFavorite={handleToggleFavorite}
                 />
               ))}
             </div>

@@ -17,3 +17,4 @@ export const deleteFavorite = async (taskTypeId: number): Promise<FavoriteRespon
   return response.data;
 };
 
+

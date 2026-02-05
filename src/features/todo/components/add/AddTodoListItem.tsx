@@ -9,12 +9,20 @@ import { categories } from '@/features/todo/data/categoryTypeImages';
 interface AddTodoListItemProps {
   item: CategoryItem;
   isSelected?: boolean;
+  onToggleFavorite?: (taskTypeId: number) => void;
   onClick?: (item: CategoryItem) => void;
 }
 
-function AddTodoListItem({ item, isSelected = false, onClick }: AddTodoListItemProps) {
+function AddTodoListItem({ item, isSelected = false, onToggleFavorite, onClick }: AddTodoListItemProps) {
   // item.category에 해당하는 이미지 찾기 
   const categoryData = categories.find(c => c.categoryType === item.category);
+  
+  const handleClickFavorite = (
+    e: React.MouseEvent<HTMLImageElement>
+  ) => {
+    e.stopPropagation(); // 카드 선택 방지
+    onToggleFavorite?.(item.taskTypeId);
+  };
 
   return (
   <div
@@ -49,10 +57,11 @@ function AddTodoListItem({ item, isSelected = false, onClick }: AddTodoListItemP
           </div>
 
         {/* 즐겨찾기 별 */}
-        <img 
+        <img
           src={item.isFavorite ? IconStarFill : IconStar}
           alt="즐겨찾기"
-          className="w-6 h-6"
+          className="w-6 h-6 cursor-pointer"
+          onClick={handleClickFavorite}
         />
     </div>
     </div>

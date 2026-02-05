@@ -13,6 +13,8 @@
  * const updateDraft = useTaskDraftStore((s) => s.updateDraft);
  * const removeDraft = useTaskDraftStore((s) => s.removeDraft);
  * const clearDrafts = useTaskDraftStore((s) => s.clear);
+ * const toggleFavoriteByTaskTypeId = useTaskDraftStore((s) => s.toggleFavoriteByTaskTypeId);
+ *
  *
  * [Flow]
  * 1. 할 일 선택 시
@@ -60,6 +62,7 @@ type TaskDraftState = {
   addDrafts: (drafts: TaskDraft[]) => void; // 여러 개 한번에 추가(바텀시트용)
   updateDraft: (draftId: string, patch: Partial<TaskDraft>) => void;
   removeDraft: (draftId: string) => void;
+  toggleFavoriteByTaskTypeId: (taskTypeId: number, isFavorite: boolean) => void;
   clear: () => void;
 };
 
@@ -82,6 +85,13 @@ export const useTaskDraftStore = create<TaskDraftState>((set) => ({
   removeDraft: (draftId) =>
     set((state) => ({
       drafts: state.drafts.filter((d) => d.draftId !== draftId),
+    })),
+
+  toggleFavoriteByTaskTypeId: (taskTypeId, isFavorite) =>
+    set((state) => ({
+      drafts: state.drafts.map((d) =>
+        d.taskTypeId === taskTypeId ? { ...d, isFavorite } : d
+      ),
     })),
 
   clear: () => set({ drafts: [] }),

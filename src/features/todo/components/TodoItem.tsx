@@ -9,11 +9,14 @@ import { categories } from '../data/categoryTypeImages';
 import type { CategoryType } from '../types/category.types';
 
 import { useUserStore } from '@/features/auth/stores/useUserStore';
+import { useTaskDraftStore } from '../stores/useTaskDraftStore';
+import { deleteFavorite , postFavorite } from '../api/favoriteApi';
 
 
 //사용자의 할일 아이템 조회
 interface TodoItemProps {
   categoryType: CategoryType;
+  taskTypeId: number;
   id: string;
   title: string;
   date: string;
@@ -30,6 +33,7 @@ interface TodoItemProps {
 
 export function TodoItem({
   categoryType,
+  taskTypeId,
   title,
   date,
   time,
@@ -41,7 +45,22 @@ export function TodoItem({
   const category = categories.find((c) => c.categoryType === categoryType);
   const categoryIcon = category?.image;
   const avatarUrl = useUserStore((s) => s.profile?.profileImageUrl);
+  const toggleFavoriteByTaskTypeId = useTaskDraftStore((s) => s.toggleFavoriteByTaskTypeId);
   const hasTag = Boolean(tag?.trim());
+
+
+  const handleClickFavorite = async () => {
+    const next = !isFavorite;
+    try {
+      if (next) await postFavorite(taskTypeId);
+      else await deleteFavorite(taskTypeId);
+
+      toggleFavoriteByTaskTypeId(taskTypeId, next);
+    } catch (e) {
+      alert('즐겨찾기 변경 실패');
+    }
+  };
+
 
   return (
   <div className="bg-gray-50 rounded-lg p-4">
@@ -76,7 +95,7 @@ export function TodoItem({
             </div>
           </div>
 
-          <button className="flex-shrink-0">
+          <button className="flex-shrink-0" onClick={handleClickFavorite} type="button">
             <img
               src={isFavorite ? IconStarFill : IconStar}
               alt="즐겨찾기"
