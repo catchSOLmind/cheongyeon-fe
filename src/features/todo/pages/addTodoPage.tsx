@@ -4,6 +4,8 @@ import { TodoItem } from '../components/TodoItem';
 import AddTodoBottomSheet from '../components/add/AddTodoBottomSheet';
 import type { CategoryType } from '../types/category.types';
 import { categories } from '../data/categoryTypeImages';
+import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
+import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 
 interface TodoItemData {
   id: string;
@@ -61,7 +63,7 @@ function AddTodoPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className='h-screen flex flex-col'>
       <Header title="할 일 추가" showBackButton />
       
     
@@ -130,6 +132,10 @@ function AddTodoPage() {
           onClose={handleCloseBottomSheet}
         />
       )}
+
+      <BottomCTAWrapper fixed showTopBorder>
+        <BottomCTAButton label='캘린더에 추가하기'/>
+      </BottomCTAWrapper>
     </div>
   );
 }

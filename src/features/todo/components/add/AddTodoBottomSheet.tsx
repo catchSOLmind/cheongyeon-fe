@@ -171,7 +171,7 @@ function AddTodoBottomSheet({
           <BottomCTAButton
             label={
               selectedCount === 0
-                ? '할 일을 선택해주세요'
+                ? '0개 추가하기'
                 : `${selectedCount}개 추가하기`
             }
             disabled={selectedCount === 0}

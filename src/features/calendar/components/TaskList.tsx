@@ -1,16 +1,19 @@
-import type { TaskItem as TaskItemType } from '../types/task.types'; 
-import TaskItemComponent from './TaskItem';  // ✅ 이대로 유지
+import { useState } from 'react';
+import type { MyTaskWeekItem } from '../types/task.types'; 
+import TaskItem from './TaskItem';
 import IconStar from '@/assets/calendar/icon-star.svg';
 
 interface TaskListProps {
-  tasks: TaskItemType[];
+  task: MyTaskWeekItem[];
   isLoading?: boolean;
   selectedDate: Date;
   onTaskUpdate?: () => void;
 }
 
-function TaskList({ tasks, isLoading, selectedDate, onTaskUpdate }: TaskListProps) {
-  // 날짜 포맷팅 (예: "1월 1일 오늘")
+function TaskList({ task, isLoading, selectedDate }: TaskListProps) {
+  const [localCompletedIds, setLocalCompletedIds] = useState<Set<number>>(new Set());
+
+  // 날짜 포맷팅
   const formatDisplayDate = (date: Date): string => {
     const today = new Date();
     const isToday =
@@ -21,6 +24,19 @@ function TaskList({ tasks, isLoading, selectedDate, onTaskUpdate }: TaskListProp
     const month = date.getMonth() + 1;
     const day = date.getDate();
     return `${month}월 ${day}일${isToday ? ' 오늘' : ''}`;
+  };
+
+  // 완료 토글
+  const handleToggleComplete = (occurrenceId: number) => {
+    setLocalCompletedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(occurrenceId)) {
+        newSet.delete(occurrenceId);
+      } else {
+        newSet.add(occurrenceId);
+      }
+      return newSet;
+    });
   };
 
   if (isLoading) {
@@ -45,20 +61,24 @@ function TaskList({ tasks, isLoading, selectedDate, onTaskUpdate }: TaskListProp
       </div>
 
       {/* 할일 리스트 */}
-      {tasks.length === 0 ? (
+      {!task || task.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-full">
-        <span className="text-center mt-20 text-black text-display-xs">
-          오늘 할 일이 없어요
-        </span>
-        <span className="text-center text-gray-500 mb-20">
-          할 일을 추가하고 일정을 계획해보세요
-        </span>
+          <span className="text-center mt-20 text-black text-display-xs">
+            오늘 할 일이 없어요
+          </span>
+          <span className="text-center text-gray-500 mb-20">
+            할 일을 추가하고 일정을 계획해보세요
+          </span>
         </div>
-        
       ) : (
         <div className="space-y-3">
-          {tasks.map((task) => (
-            <TaskItemComponent key={task.occurrenceId} task={task} onUpdate={onTaskUpdate} />
+          {task.map((taskItem) => (
+            <TaskItem 
+              key={taskItem.occurrenceId}
+              task={taskItem}
+              isLocallyCompleted={localCompletedIds.has(taskItem.occurrenceId)}
+              onToggleComplete={() => handleToggleComplete(taskItem.occurrenceId)}
+            />
           ))}
         </div>
       )}
