@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import Header from '@/shared/components/Header';
 import { TodoItem } from '../components/TodoItem';
-import AddTodoBottomSheet from '../components/AddTodoBottomSheet';
-
-interface Category {
-  id: string;
-  name: string;
-  icon: string;
-}
+import AddTodoBottomSheet from '../components/add/AddTodoBottomSheet';
+import type { CategoryType } from '../types/category.types';
+import { categories } from '../data/categoryTypeImages';
 
 interface TodoItemData {
   id: string;
@@ -23,17 +19,6 @@ interface TodoItemData {
   isFavorite: boolean;
   isCompleted: boolean;
 }
-
-const categories: Category[] = [
-  { id: 'favorite', name: '즐겨찾기', icon: '⭐' },
-  { id: 'bathroom', name: '화장실', icon: '🚽' },
-  { id: 'kitchen', name: '주방', icon: '🍽️' },
-  { id: 'laundry', name: '빨래', icon: '🧺' },
-  { id: 'bedroom', name: '침실', icon: '🛏️' },
-  { id: 'living', name: '거실', icon: '🛋️' },
-  { id: 'trash', name: '쓰레기', icon: '🗑️' },
-  { id: 'other', name: '기타', icon: '➕' },
-];
 
 // 목업 데이터 - TODO: API 연동 후 제거
 const mockTodos: TodoItemData[] = [
@@ -54,16 +39,21 @@ const mockTodos: TodoItemData[] = [
 ];
 
 function AddTodoPage() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
   // 나의 할 일은 항상 표시 (상시 띄워놓기)
   const todos = mockTodos;
 
-  const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(categoryId);
+    const handleCategoryClick = (categoryType: CategoryType | '') => {
+    if (!categoryType) {
+      // 즐겨찾기 처리
+      return;
+    }
+    setSelectedCategory(categoryType);
     setIsBottomSheetOpen(true);
   };
+
 
   const handleCloseBottomSheet = () => {
     setIsBottomSheetOpen(false);
@@ -74,28 +64,30 @@ function AddTodoPage() {
     <div className="min-h-screen">
       <Header title="할 일 추가" showBackButton />
       
-      <div className="px-5 py-6">
+    
+             <div className="px-5 py-6">
         {/* 카테고리 그리드 */}
         <div className="grid grid-cols-4 gap-[6px] mb-6">
           {categories.map((category) => (
             <button
-              key={category.id}
-              onClick={() => handleCategoryClick(category.id)}
+              key={category.categoryType || 'favorite'}
+              onClick={() => handleCategoryClick(category.categoryType)}
               className={`
                 flex flex-col items-center justify-center gap-2 p-3 rounded-lg
                 transition-all
                 ${
-                  selectedCategory === category.id
+                  selectedCategory === category.categoryType  
                     ? 'bg-primary-50 border border-primary'
                     : 'bg-white text-gray-800 hover:bg-gray-100'
                 }
               `}
             >
-              <span className="text-[28px]">{category.icon}</span>
+              <img src={category.image} alt={category.name} className="w-8 h-11" />
               <span className="text-label-m text-black">{category.name}</span>
             </button>
           ))}
         </div>
+
 
         {/* 나의 할 일 섹션 - 상시 표시 */}
         <div className="mb-6">
@@ -132,8 +124,8 @@ function AddTodoPage() {
       {/* 바텀시트 */}
       {isBottomSheetOpen && selectedCategory && (
         <AddTodoBottomSheet
-          categoryId={selectedCategory}
-          categoryName={categories.find((c) => c.id === selectedCategory)?.name || ''}
+          categoryType={selectedCategory}
+          name={categories.find((c) => c.categoryType === selectedCategory)?.name || ''}
           isOpen={isBottomSheetOpen}
           onClose={handleCloseBottomSheet}
         />

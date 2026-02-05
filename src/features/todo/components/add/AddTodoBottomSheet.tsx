@@ -1,22 +1,25 @@
 import { useEffect, useState } from 'react';
 import Header from '@/shared/components/Header';
-import { getCategoryList } from '../api/todoApi';
-import type { Category } from '../types/category.types';
+import { getCategoryList } from '../../api/todoApi';
+import type { CategoryItem, CategoryType } from '../../types/category.types';
+import AddTodoListItem from './AddTodoListItem';
+
 
 interface AddTodoBottomSheetProps {
-  categoryId: string;
-  categoryName: string;
+  categoryType: CategoryType;
+  name?: string;
+  favorite?: boolean;
   isOpen: boolean;
   onClose: () => void;
 }
 
 function AddTodoBottomSheet({
-  categoryId,
-  categoryName,
+  categoryType: categoryType,
   isOpen,
   onClose,
 }: AddTodoBottomSheetProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [isFavorite , setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -40,9 +43,8 @@ function AddTodoBottomSheet({
       setIsLoading(true);
       try {
         const response = await getCategoryList({
-          groupId: 0, // 임시로 0 설정, 실제 그룹 ID로 변경 필요
-          category: categoryId,
-          q: searchQuery || undefined,
+          category: categoryType,
+          favorite: isFavorite,
         });
         if (response.isSuccess && response.result) {
           setCategories(response.result.items);
@@ -55,7 +57,7 @@ function AddTodoBottomSheet({
     };
 
     fetchData();
-  }, [isOpen, categoryId, searchQuery]);
+  }, [isOpen, categoryType, isFavorite, searchQuery]);
 
   return (
     <>
@@ -89,7 +91,7 @@ function AddTodoBottomSheet({
 
         {/* 헤더 */}
         <Header
-          title={categoryName}
+          title='할 일 추가'
           showBackButton
           onBackClick={onClose}
         />

@@ -1,29 +1,26 @@
 import { authenticatedClient } from '@/features/auth/api/client';
-import type { AddCategoryRequest, CategoryListResponse } from '../types/category.types';
+import type { CategoryType, SubCategoryType, CategoryListResponse, AddCategoryRequest } from '../types/category.types';
+
+
 
 export interface GetCategoryListParams {
-  groupId: number; // required 추가
-  category?: string;
+  category?: CategoryType;
+  subCategory?: SubCategoryType;
   favorite?: boolean;
-  q?: string;
 }
 
 export const getCategoryList = async (
-  params: GetCategoryListParams // optional 제거
+  params: GetCategoryListParams
 ): Promise<CategoryListResponse> => {
   const queryParams = new URLSearchParams();
   
-  // groupId는 필수
-  queryParams.append('groupId', String(params.groupId));
-  
   if (params.category) queryParams.append('category', params.category);
+  if (params.subCategory) queryParams.append('subCategory', params.subCategory);
   if (params.favorite !== undefined) queryParams.append('favorite', String(params.favorite));
-  if (params.q) queryParams.append('q', params.q);
 
   const queryString = queryParams.toString();
-  const url = `/task-types?${queryString}`;
-  
-  // 로그
+  const url = queryString ? `/task-types?${queryString}` : '/task-types';
+
   console.log('[getCategoryList] params:', params);
   console.log('[getCategoryList] url:', url);
   

@@ -53,7 +53,7 @@ const setupRequestInterceptor = (instance: AxiosInstance) => {
         config.headers.Authorization = `Bearer ${token}`; // 헤더에 토큰 추가
       }
       // 로그
-      console.log('[API REQUEST] headers(after):', config.headers);
+      // console.log('[API REQUEST] headers(after):', config.headers);
       return config; // 수정된 설정으로 요청 진행
     },
     (error) => {
