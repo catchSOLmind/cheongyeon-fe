@@ -30,7 +30,7 @@ function AddTodoListItem({ item, isSelected = false, onClick }: AddTodoListItemP
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1">
           {/* 청소 카테고리 이미지 영역 */}
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
             {categoryData?.image && (
               <img src={categoryData.image} alt={item.category} className="w-6 h-6" />
             )}

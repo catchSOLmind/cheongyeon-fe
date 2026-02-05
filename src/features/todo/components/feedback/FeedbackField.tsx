@@ -1,5 +1,5 @@
-import DropdownSelect from '@/features/todo/components/DropdownSelect';
-import CategoryChoiceItem from '@/features/todo/components/CategoryChoiceItem';
+import DropdownSelect from '@/features/todo/components/feedback/DropdownSelect';
+import MemberChoiceItem from '@/features/todo/components/feedback/MemberChoiceItem';
 
 type Props = {
     labelId: string;  
@@ -35,7 +35,7 @@ type Props = {
           >
             <div className="px-4 py-2">
               {categories.map((c) => (
-                <CategoryChoiceItem
+                <MemberChoiceItem
                   key={c.id}
                   id={c.id}
                   name={c.name}

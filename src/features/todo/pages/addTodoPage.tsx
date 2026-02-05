@@ -12,6 +12,8 @@ import { useMemo } from 'react';
 
 import type { DraftTaskItemData } from '../types/draftTask.types';
 
+import { addMyTasks } from '../api/myWorkApi';
+
 
 function AddTodoPage() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
@@ -33,6 +35,7 @@ function AddTodoPage() {
   };
 
   const drafts = useTaskDraftStore((s) => s.drafts);
+  const clearDrafts = useTaskDraftStore((s) => s.clear);
 
   const todos: DraftTaskItemData[] = useMemo(() => {
     return drafts.map((draft) => ({
@@ -52,6 +55,28 @@ function AddTodoPage() {
       isCompleted: false,                        // draft 단계에서는 기본 false
     }));
   }, [drafts]);
+
+  const handleSubmitToCalendar = async () => {
+    if (drafts.length === 0) return;
+
+    // ✅ date 정책: 일단 "첫 draft의 date"로 통일 (또는 선택한 날짜로 통일)
+    const date = drafts[0].date;
+
+    // ✅ 여러 개 taskTypeId 모아서 보내기
+    const taskTypeIds = drafts.map((d) => d.taskTypeId);
+
+    try {
+      const res = await addMyTasks({ date, taskTypeIds });
+
+      // 성공 처리: draft 비우고, 이전 화면으로 이동 등
+      clearDrafts();
+      // navigate('/calendar'); 같은 처리
+      console.log('추가 성공:', res.createdCount);
+    } catch (e) {
+      console.error('추가 실패:', e);
+      alert('캘린더 추가에 실패했어요. 다시 시도해주세요.');
+    }
+  };
 
   return (
     <div className='h-screen flex flex-col'>
@@ -116,8 +141,12 @@ function AddTodoPage() {
       )}
 
       <BottomCTAWrapper fixed showTopBorder>
-        <BottomCTAButton label='캘린더에 추가하기'/>
-      </BottomCTAWrapper>
+      <BottomCTAButton
+        label="캘린더에 추가하기"
+        disabled={drafts.length === 0}
+        onClick={handleSubmitToCalendar}
+      />
+    </BottomCTAWrapper>
     </div>
   );
 }
