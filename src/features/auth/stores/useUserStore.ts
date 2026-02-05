@@ -1,9 +1,26 @@
 // src/features/auth/stores/useUserStore.ts
+
+/**
+ * 🧠 useUserStore
+ *
+ * [Usage]
+ * const profile = useUserStore((s) => s.profile);
+ * const avatarUrl = useUserStore((s) => s.profile?.profileImageUrl);
+ * const fetchProfile = useUserStore((s) => s.fetchProfile);
+ *
+ * [When]
+ * - 로그인 직후: setProfileFromLogin(profile)
+ * - 앱 진입 시: fetchProfile()
+ * - 로그아웃 시: clearProfile()
+ */
+
+
 import { create } from 'zustand';
 import type { AxiosError } from 'axios';
 import { authenticatedClient } from '../api/client';
 import type { ProfileResponse } from '@/features/calendar/types/profile.types';
 import type { UserProfile } from '@/features/calendar/types/user.types';
+import DEFAULT_PROFILE_IMAGE from '@/assets/common/img-default-profile.svg'
 
 interface UserState {
   profile: UserProfile | null;
@@ -72,10 +89,15 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // 로그인 응답으로 먼저 전역 반영 
   setProfileFromLogin: (profile) => {
-    set({ profile, 
-          isProfileFetched: false,
-          error: null });
-  },
+  set({
+    profile: {
+      ...profile,
+      profileImageUrl: profile.profileImageUrl || DEFAULT_PROFILE_IMAGE,
+    },
+    isProfileFetched: false,
+    error: null,
+  });
+},
 
   clearProfile: () =>
     set({

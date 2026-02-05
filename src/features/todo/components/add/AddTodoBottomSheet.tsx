@@ -100,11 +100,20 @@ function AddTodoBottomSheet({
     return categories.filter((c) => c.name.toLowerCase().includes(q));
   }, [categories, searchQuery]);
 
+
+  // 로컬 시간을 한국 기준 시간으로 변환
+  const toLocalYMD = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+  };
+
   const handleAddTasks = () => {
     if (selectedIds.length === 0) return;
 
     const now = new Date();
-    const date = now.toISOString().slice(0, 10); // YYYY-MM-DD
+    const date = toLocalYMD(now);
     const time = now.toTimeString().slice(0, 5); // HH:mm
     const weekday = now.getDay(); // 0~6
 

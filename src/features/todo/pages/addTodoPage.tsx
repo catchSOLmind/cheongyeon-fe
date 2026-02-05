@@ -13,13 +13,15 @@ import { useMemo } from 'react';
 import type { DraftTaskItemData } from '../types/draftTask.types';
 
 import { addMyTasks } from '../api/myWorkApi';
+import { useNavigate } from 'react-router-dom';
 
 
 function AddTodoPage() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const navigate = useNavigate();
 
-    const handleCategoryClick = (categoryType: CategoryType | '') => {
+  const handleCategoryClick = (categoryType: CategoryType | '') => {
     if (!categoryType) {
       // 즐겨찾기 처리
       return;
@@ -60,10 +62,10 @@ function AddTodoPage() {
   const handleSubmitToCalendar = async () => {
     if (drafts.length === 0) return;
 
-    // ✅ date 정책: 일단 "첫 draft의 date"로 통일 (또는 선택한 날짜로 통일)
+    // date 정책: 일단 "첫 draft의 date"로 통일 (또는 선택한 날짜로 통일)
     const date = drafts[0].date;
 
-    // ✅ 여러 개 taskTypeId 모아서 보내기
+    // 여러 개 taskTypeId 모아서 보내기
     const taskTypeIds = drafts.map((d) => d.taskTypeId);
 
     try {
@@ -71,7 +73,7 @@ function AddTodoPage() {
 
       // 성공 처리: draft 비우고, 이전 화면으로 이동 등
       clearDrafts();
-      // navigate('/calendar'); 같은 처리
+      navigate('/calendar');
       console.log('추가 성공:', res.createdCount);
     } catch (e) {
       console.error('추가 실패:', e);

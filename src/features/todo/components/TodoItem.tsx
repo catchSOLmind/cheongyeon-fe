@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import IconCoin from '@/assets/todo/icon-coin.svg';
 import IconCalendar from '@/assets/todo/icon-calendar.svg';
 import IconClock from '@/assets/todo/icon-clock.svg';
@@ -6,6 +7,9 @@ import IconStarFill from '@/assets/todo/icon-star-fill.svg';
 
 import { categories } from '../data/categoryTypeImages';
 import type { CategoryType } from '../types/category.types';
+
+import { useUserStore } from '@/features/auth/stores/useUserStore';
+
 
 //사용자의 할일 아이템 조회
 interface TodoItemProps {
@@ -36,6 +40,7 @@ export function TodoItem({
 }: TodoItemProps) {
   const category = categories.find((c) => c.categoryType === categoryType);
   const categoryIcon = category?.image;
+  const avatarUrl = useUserStore((s) => s.profile?.profileImageUrl);
 
   return (
   <div className="bg-gray-50 rounded-lg p-4">
@@ -87,11 +92,14 @@ export function TodoItem({
           </div>
 
           <div className="flex items-center gap-2 min-w-0">
-            {assignee.avatar && (
-              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs">
-                {assignee.avatar}
-              </div>
-            )}
+            {/* 내 프로필 사진 */}
+            <img
+              src={avatarUrl || ''}
+              alt="내 프로필"
+              className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+            />
+
+            {/* 태그 */}
             <span className="px-2 py-0.5 bg-primary-50 text-[#424B4C] rounded-full text-body-s whitespace-nowrap">
               {tag}
             </span>
