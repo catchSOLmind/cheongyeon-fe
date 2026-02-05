@@ -6,6 +6,7 @@ import AddTodoListItem from './AddTodoListItem';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import ImgSearch from '@/assets/todo/icon-search.svg';
+import { addMyTasks } from '../../api/myWorkApi';
 
 
 interface AddTodoBottomSheetProps {
@@ -70,8 +71,24 @@ function AddTodoBottomSheet({
     prev.includes(item.taskTypeId)
       ? prev.filter((id) => id !== item.taskTypeId) // 선택 해제
       : [...prev, item.taskTypeId]                  // 선택
-  );
-}
+  );}
+
+  const handleAddTasks = async () => {
+  if (selectedIds.length === 0) return;
+
+  try {
+    await addMyTasks({
+      date: new Date().toISOString().slice(0, 10), // YYYY-MM-DD
+      taskTypeIds: selectedIds,
+    });
+
+    // 성공 → 바텀시트 닫기
+    onClose();
+  } catch (error) {
+    console.error('할 일 추가 실패:', error);
+    alert('할 일 추가에 실패했어요. 다시 시도해주세요.');
+  }
+};
 
   return (
     
@@ -158,6 +175,7 @@ function AddTodoBottomSheet({
                 : `${selectedCount}개 추가하기`
             }
             disabled={selectedCount === 0}
+            onClick={handleAddTasks}
           />
         </BottomCTAWrapper>
       </div>

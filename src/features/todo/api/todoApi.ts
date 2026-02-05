@@ -2,7 +2,7 @@ import { authenticatedClient } from '@/features/auth/api/client';
 import type { CategoryType, SubCategoryType, CategoryListResponse, AddCategoryRequest } from '../types/category.types';
 
 
-
+// 카테고리 목록 조회
 export interface GetCategoryListParams {
   category?: CategoryType;
   subCategory?: SubCategoryType;
