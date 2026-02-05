@@ -29,7 +29,7 @@ function AllworkPage() {
   // 내 할일 조회 API 호출
   // TODO: groupId는 실제 그룹/집 ID로 변경 필요 (현재는 임시로 1 사용)
   const { tasks, weekDates, isLoading, refetch } = useMyTasks({
-    groupId: 1, // TODO: 실제 groupId로 변경
+    //groupId: 1, // TODO: 실제 groupId로 변경
     date: selectedDateStr,
     enabled: true,
   });
@@ -85,7 +85,7 @@ function AllworkPage() {
       {/* 선택된 날짜의 할일 리스트 */}
       <div className="min-h-[270px] bg-[#fafafa]">
       <TaskList
-        tasks={tasks}
+        task={tasks}
         isLoading={isLoading}
         selectedDate={selectedDate}
         onTaskUpdate={refetch}

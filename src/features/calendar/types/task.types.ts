@@ -1,33 +1,28 @@
-
 // 내 할일 조회 요청
 export interface MyTaskRequest {
-  groupId: number;
   date: string; // YYYY-MM-DD
 }
 
-// 내 할일 조회 응답
-export interface MyTaskResponse {
-  weekDates: string[]; // ["YYYY-MM-DD", ...]
-  items: TaskItem[];
-}
+export type TaskStatus = 'WAITING' | 'IN_PROGRESS' | 'INCOMPLETED' | 'COMPLETED';
 
-// 할일 아이템 (API 응답)
-export interface TaskItem {
+// 내 할일(주간) 아이템
+export type MyTaskWeekItem = {
   occurrenceId: number;
   taskId: number;
   taskTypeId: number;
   taskName: string;
-  time: string | null; // "HH:mm" 형식 또는 null
-  status: 'UNCOMPLETED' | 'COMPLETED';
-  isTakeover: boolean;
-  primaryAssignedMemberId: number;
-}
+  point: number;
+  time: string; 
+  status: TaskStatus;
+  primaryAssignedMemberId: number | null;
+  takeover: boolean;
+};
 
-// 할일 상태 업데이트 요청
-export interface UpdateTaskStatusRequest {
-  occurrenceId: number;
-  status: 'UNCOMPLETED' | 'COMPLETED';
-  doneByMemberId: number;
-  doneAt: string; // YYYY-MM-DD HH:mm:ss
-  updatedAt: string; // YYYY-MM-DD HH:mm:ss
+// 내 할일 조회 응답
+export interface MyTaskResponse {
+  weekStart: string;     // YYYY-MM-DD
+  weekEnd: string;       // YYYY-MM-DD
+  weekDates: string[];   // ["YYYY-MM-DD", ...]
+  selectedDate: string;  // YYYY-MM-DD
+  items: MyTaskWeekItem[];
 }

@@ -22,41 +22,30 @@ function MyworkPage() {
 
   const { profile } = useUserStore();
 
-
-  // 선택된 날짜를 YYYY-MM-DD 형식으로 변환
   const selectedDateStr = formatDateKey(selectedDate);
 
-  // 내 할일 조회 API 호출
-  // TODO: groupId는 실제 그룹/집 ID로 변경 필요 (현재는 임시로 1 사용)
   const { tasks, weekDates, isLoading, refetch } = useMyTasks({
-    groupId: 1, // TODO: 실제 groupId로 변경
     date: selectedDateStr,
     enabled: true,
   });
 
-  // 캘린더 표시용 날짜별 할일 개수
   const tasksByDate = useMemo(() => {
-    // API가 이미 해당 주의 할일을 반환하므로
-    // weekDates에 대해 간단히 표시용 데이터 생성
     const result: Record<string, number> = {};
     weekDates.forEach(date => {
-      result[date] = 1; // 할일이 있다고 표시 (실제 개수는 서버에서 관리)
+      result[date] = 1;
     });
     return result;
   }, [weekDates]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
-    // 선택한 날짜가 다른 월이면 currentDate도 업데이트
     if (date.getMonth() !== currentDate.getMonth() || date.getFullYear() !== currentDate.getFullYear()) {
       setCurrentDate(date);
     }
   };
 
-
   return (
     <div>
-      {/* 날짜 선택기 */}
       <div className="flex items-center justify-between px-5 py-2">
         <div className="flex items-center">
           <span className="px-2 text-display-s text-[#262626]">{formatMonthYear(currentDate)}</span>
@@ -72,9 +61,8 @@ function MyworkPage() {
             className="w-full h-full object-cover"
           />
         </button>
-              </div>
+      </div>
 
-      {/* 캘린더 */}
       <div className="px-3 bg-white mt-4">
         <Calendar
           currentDate={currentDate}
@@ -83,15 +71,13 @@ function MyworkPage() {
         />
       </div>
 
-      {/* 선택된 날짜의 할일 리스트 */}
       <TaskList
-        tasks={tasks}
+        task={tasks}
         isLoading={isLoading}
         selectedDate={selectedDate}
         onTaskUpdate={refetch}
       />
 
-      {/* 플로팅 액션 버튼 */}
       <FloatingActionButton
         showFeedback={false}
         showEdit={true}

@@ -1,9 +1,9 @@
 // features/todo/pages/FeedbackPage.tsx
 import { useState } from 'react';
 import Header from '@/shared/components/Header';
-import MemberChoiceItem from '../components/MemberChoiceItem';
-import DropdownSelect from '../components/DropdownSelect';
-import FeedbackField from '../components/FeedbackField';
+import MemberChoiceItem from '../components/feedback/MemberChoiceItem';
+import DropdownSelect from '../components/feedback/DropdownSelect';
+import FeedbackField from '../components/feedback/FeedbackField';
 import { useFeedbackFields } from '../hooks/useFeedbackFields';
 import { complimentStickers } from '../data/feedbackStamps';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';

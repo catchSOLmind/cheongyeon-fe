@@ -1,23 +1,28 @@
 import { authenticatedClient } from '@/features/auth/api/client';
-import type { AddCategoryRequest, CategoryListResponse } from '../types/category.types';
+import type { CategoryType, SubCategoryType, CategoryListResponse, AddCategoryRequest } from '../types/category.types';
+
 
 // 카테고리 목록 조회
 export interface GetCategoryListParams {
-  category?: string;
+  category?: CategoryType;
+  subCategory?: SubCategoryType;
   favorite?: boolean;
-  q?: string;
 }
 
 export const getCategoryList = async (
-  params?: GetCategoryListParams
+  params: GetCategoryListParams
 ): Promise<CategoryListResponse> => {
   const queryParams = new URLSearchParams();
-  if (params?.category) queryParams.append('category', params.category);
-  if (params?.favorite !== undefined) queryParams.append('favorite', String(params.favorite));
-  if (params?.q) queryParams.append('q', params.q);
+  
+  if (params.category) queryParams.append('category', params.category);
+  if (params.subCategory) queryParams.append('subCategory', params.subCategory);
+  if (params.favorite !== undefined) queryParams.append('favorite', String(params.favorite));
 
   const queryString = queryParams.toString();
-  const url = `/task-types${queryString ? `?${queryString}` : ''}`;
+  const url = queryString ? `/task-types?${queryString}` : '/task-types';
+
+  // console.log('[getCategoryList] params:', params);
+  // console.log('[getCategoryList] url:', url);
   
   const response = await authenticatedClient.get<CategoryListResponse>(url);
   return response.data;
