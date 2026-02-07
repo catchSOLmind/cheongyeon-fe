@@ -5,7 +5,7 @@ interface BottomCTAWrapperProps {
   showTopBorder?: boolean;
   className?: string;
   /** 앱쉘 최대 폭 (Tailwind class) */
-  maxWidthClass?: string; // default: 'max-w-[375px]'
+  maxWidthClass?: string; // default: 'max-w-[385px]'
 }
 
 export function BottomCTAWrapper({
@@ -14,7 +14,7 @@ export function BottomCTAWrapper({
   fixed = false,
   showTopBorder = false,
   className = '',
-  maxWidthClass = 'max-w-[375px]',
+  maxWidthClass = 'max-w-[385px]',
 }: BottomCTAWrapperProps) {
   const positionClass = fixed ? 'fixed' : sticky ? 'sticky' : 'relative';
   const borderClass = showTopBorder ? 'border-t border-gray-200' : '';
