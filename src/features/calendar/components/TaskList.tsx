@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { MyTaskWeekItem } from '../types/task.types'; 
 import TaskItem from './TaskItem';
 import IconStar from '@/assets/calendar/icon-star.svg';
-import { postMyTasks } from '../api/taskApi';
+import { CompleteMyTasks } from '../api/taskApi';
 
 interface TaskListProps {
   task: MyTaskWeekItem[];
@@ -49,7 +49,7 @@ function TaskList({ task, isLoading, selectedDate }: TaskListProps) {
 
     // 서버 반영
     try {
-      await postMyTasks(occurrenceId);
+      await CompleteMyTasks(occurrenceId);
     }
     catch{
       // 서버 반영 실패시 UI 적용 취소

@@ -12,6 +12,8 @@ import type { DraftTaskItemData } from '../types/draftTask.types';
 import { useNavigate } from 'react-router-dom';
 import { useFavoriteStore } from '../stores/useFavoritrStore';
 
+import { addMyTasks } from '../api/myWorkApi';
+
 function AddTodoPage() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
@@ -74,10 +76,14 @@ function AddTodoPage() {
       if (drafts.length === 0) return;
 
       try {
+        const date = drafts[0]?.date;
+        if (!date) return;
+        const taskTypeIds = Array.from(new Set(drafts.map((d) => d.taskTypeId)));
+        await addMyTasks({ date, taskTypeIds });
+        
         clearDrafts();
         navigate('/calendar');
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (e) {
+      } catch {
         alert('캘린더 추가에 실패했어요. 다시 시도해주세요.');
       }
     };

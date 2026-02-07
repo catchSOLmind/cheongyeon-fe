@@ -15,7 +15,7 @@ export const getMyTasks = async (params: MyTaskRequest): Promise<MyTaskResponse>
 };
 
 // 내 할일 완료하기
-export const postMyTasks = async(
+export const CompleteMyTasks = async(
   occurrenceId: number 
 ) : Promise<MyTaskCompleteReponse> => {
   const response = await authenticatedClient.post<MyTaskCompleteReponse>(`/my-tasks/${occurrenceId}/complete`);
