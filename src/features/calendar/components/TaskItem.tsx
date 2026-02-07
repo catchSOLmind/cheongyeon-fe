@@ -1,5 +1,10 @@
-import type { MyTaskWeekItem } from '../types/task.types';
-import { useUserStore } from '@/features/auth/stores/useUserStore';
+// src/features/calendar/components/TaskItem.tsx
+import type { MyTaskWeekItem, TaskStatus } from '../types/task.types';
+import { categories } from '@/features/todo/data/categoryTypeImages'; 
+import IconCoin from '@/assets/todo/icon-coin.svg';
+import IconCheckFill from '@/assets/calendar/img-check-fill.svg';
+import IconCheck from '@/assets/calendar/img-check.svg';
+
 
 interface TaskItemProps {
   task: MyTaskWeekItem;
@@ -16,69 +21,89 @@ const formatTime = (time?: string | null): string => {
   return `${period} ${displayHour}:${minutes}`;
 };
 
-function TaskItem({ task, isLocallyCompleted, onToggleComplete }: TaskItemProps) {
-  const profile = useUserStore((state) => state.profile);
+const getStatus = (status: TaskStatus) => {
+  const label =
+    status === 'WAITING'
+      ? '대기중'
+      : status === 'IN_PROGRESS'
+        ? '진행중'
+        : status === 'COMPLETED'
+          ? '완료'
+          : '대기중';
 
+  // 완료 , 대기중
+  const className =
+    status === 'WAITING'
+      ? 'bg-primary-50 text-primary-400'
+      : status === 'IN_PROGRESS'
+        ? 'bbg-primary-500 text-primary-400'
+        : status === 'COMPLETED'
+          ? 'bg-primary text-white'
+          : 'bg-primary-50 text-primary-400';
+
+  return { label, className };
+};
+
+export default function TaskItem({ task, isLocallyCompleted, onToggleComplete }: TaskItemProps) {
   const isCompleted = (isLocallyCompleted ?? false) || task.status === 'COMPLETED';
-  const isMyTask = !!profile?.userId && profile.userId === task.primaryAssignedMemberId;
+
+  // 카테고리
+  const category = categories.find((c) => c.categoryType === task.category);
+  const categoryIcon = category?.image;
+
+  // 로컬 완료면 칩도 완료로 보이게
+  const effectiveStatus: TaskStatus = isCompleted ? 'COMPLETED' : task.status;
+  const { label: statusLabel, className: statusClassName } = getStatus(effectiveStatus);
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-white rounded-2xl">
-      {/* 체크박스 */}
-      <button
-        type="button"
-        onClick={onToggleComplete}
-        className={`
-          w-5 h-5 rounded border-2 flex items-center justify-center shrink-0
-          transition-colors
-          ${isCompleted ? 'bg-primary border-primary' : 'bg-gray-100 border-gray-300'}
-        `}
-        aria-label={isCompleted ? '완료 취소' : '완료'}
-      >
-        {isCompleted && (
-          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        )}
-      </button>
+    <div className="w-full rounded-xl bg-white p-4 ">
+      <div className="flex items-center gap-3">
+        {/* 카테고리 아이콘 */}
+        <div className="w-8 h-8 rounded-lg bg-[#FAE0F8] flex items-center justify-center">
+          {categoryIcon ? (
+            <img src={categoryIcon} alt={category?.name ?? '카테고리'} className="w-8 h-8" />
+          ) : (
+            <div className="w-8 h-8 rounded bg-gray-200" />
+          )}
+        </div>
 
-      {/* 제목/시간 */}
-      <div className="flex-1 min-w-0">
-        <h3 className={`text-body-m-bold text-black ${isCompleted ? 'line-through text-gray-400' : ''}`}>
-          {task.taskName}
-        </h3>
-
-        {task.time && (
-          <p className="text-body-s text-black mt-0.5">
-            {formatTime(task.time)}
-          </p>
-        )}
-      </div>
-
-      {/* 오른쪽 영역 */}
-      <div className="flex items-center gap-2 shrink-0">
-        {/* 이관 상태 */}
-        {task.takeover && (
-          <div className="px-3 py-1 bg-primary-50 text-primary-400 rounded-lg text-label-m">
-            이관됨
+        {/* 제목 + 서브라인(시간 | 포인트) */}
+        <div className="flex-1 min-w-0">
+          <div
+            className={'text-body-m-bold text-black'}>
+            {task.taskName}
           </div>
-        )}
 
-        {/* 내 할 일 표시(프로필) */}
-        {isMyTask && profile && (
-          <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
-            {profile.profileImageUrl ? (
-              <img src={profile.profileImageUrl} alt={profile.nickname} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <span className="text-xs text-gray-500">{profile.nickname?.charAt(0) || '?'}</span>
-              </div>
+          <div className="mt-1 flex items-center gap-2 text-body-m text-gray-700">
+            {!!task.time && <span>{formatTime(task.time)}</span>}
+
+            {!!task.time && (
+              <span className="text-gray-300" aria-hidden>
+                |
+              </span>
             )}
+
+            <div className="flex items-center gap-1">
+              <img src={IconCoin} alt="포인트" className="w-4 h-4" />
+              <span className='text-body-s text-black'>{task.point} 포인트</span>
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* 상태 + 체크 */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className={['px-3 py-1 rounded-lg text-body-m-bold', statusClassName].join(' ')}>
+            {statusLabel}
+          </div>
+
+          <img
+              src={isCompleted ? IconCheckFill : IconCheck}
+              alt={isCompleted ? '완료' : '미완료'}
+              onClick={onToggleComplete}
+              className="w-8 h-8"
+            />
+        </div>
       </div>
     </div>
   );
 }
-
-export default TaskItem;

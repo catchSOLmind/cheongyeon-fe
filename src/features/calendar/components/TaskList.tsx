@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { MyTaskWeekItem } from '../types/task.types'; 
 import TaskItem from './TaskItem';
 import IconStar from '@/assets/calendar/icon-star.svg';
+import { postMyTasks } from '../api/taskApi';
 
 interface TaskListProps {
   task: MyTaskWeekItem[];
@@ -12,6 +13,7 @@ interface TaskListProps {
 
 function TaskList({ task, isLoading, selectedDate }: TaskListProps) {
   const [localCompletedIds, setLocalCompletedIds] = useState<Set<number>>(new Set());
+  const [pendingIds, setPendingIds] = useState<Set<number>>(new Set()); // 중복 클릭 방지
 
   // 날짜 포맷팅
   const formatDisplayDate = (date: Date): string => {
@@ -26,17 +28,41 @@ function TaskList({ task, isLoading, selectedDate }: TaskListProps) {
     return `${month}월 ${day}일${isToday ? ' 오늘' : ''}`;
   };
 
-  // 완료 토글
-  const handleToggleComplete = (occurrenceId: number) => {
-    setLocalCompletedIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(occurrenceId)) {
-        newSet.delete(occurrenceId);
-      } else {
-        newSet.add(occurrenceId);
-      }
-      return newSet;
+  // 완료 토글 (로컬 반영)
+  const toggleLocalComplete = (occurrenceId: number) => {
+    // 현재 occurrenceId 존재 시 다음 occurrenceId 삭제 
+    setLocalCompletedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(occurrenceId)) next.delete(occurrenceId);
+      else next.add(occurrenceId);
+      return next;
+      });
+  };
+
+  const handleToggleComplete = async (occurrenceId: number) => {
+    // 중복 요청 방지 - 이미 요청중이면 무시 
+    if (pendingIds.has(occurrenceId)) return;
+
+    // UI 먼저 반영
+    toggleLocalComplete(occurrenceId);
+    setPendingIds((prev)=> new Set(prev).add(occurrenceId));
+
+    // 서버 반영
+    try {
+      await postMyTasks(occurrenceId);
+    }
+    catch{
+      // 서버 반영 실패시 UI 적용 취소
+      toggleLocalComplete(occurrenceId);
+    }
+    finally{
+      // penging 제거 
+      setPendingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(occurrenceId);
+      return next;
     });
+    }
   };
 
   if (isLoading) {

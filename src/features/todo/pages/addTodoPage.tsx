@@ -21,7 +21,7 @@ function AddTodoPage() {
   const handleCloseBottomSheet = () => {
     setIsBottomSheetOpen(false);
     setSelectedCategory(null);
-    setIsFavoriteMode(false); // ✅ 닫을 때 같이 정리(선택)
+    setIsFavoriteMode(false); // 닫을 때 같이 정리
   };
 
   const handleCategoryClick = (categoryType: CategoryType | '') => {

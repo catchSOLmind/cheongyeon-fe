@@ -1,5 +1,8 @@
 import { authenticatedClient } from '@/features/auth/api/client';
-import type { MyTaskRequest, MyTaskResponse } from '../types/task.types';
+import type { MyTaskRequest, MyTaskResponse , MyTaskCompleteReponse } from '../types/task.types';
+
+// "내 할일" 과 관련된 task 타입 
+
 
 // 내 할일 조회
 export const getMyTasks = async (params: MyTaskRequest): Promise<MyTaskResponse> => {
@@ -11,4 +14,10 @@ export const getMyTasks = async (params: MyTaskRequest): Promise<MyTaskResponse>
   return response.data;
 };
 
-// 내 할일 추가는 할일 추가 페이지에서 처리
+// 내 할일 완료하기
+export const postMyTasks = async(
+  occurrenceId: number 
+) : Promise<MyTaskCompleteReponse> => {
+  const response = await authenticatedClient.post<MyTaskCompleteReponse>(`/my-tasks/${occurrenceId}/complete`);
+    return response.data
+};
