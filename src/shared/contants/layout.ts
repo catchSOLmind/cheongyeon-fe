@@ -1,6 +1,6 @@
 export const LAYOUT = {
   // Figma 기준 iPhone canvas
-  CANVAS_WIDTH: 375,
+  CANVAS_WIDTH: 385,
   //CANVAS_HEIGHT: 873,
 
   // optional: safe min
