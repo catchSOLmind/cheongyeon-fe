@@ -14,13 +14,13 @@
  * - 로그아웃 시: clearProfile()
  */
 
+// src/features/auth/stores/useUserStore.ts
 
 import { create } from 'zustand';
 import type { AxiosError } from 'axios';
 import { authenticatedClient } from '../api/client';
-import type { ProfileResponse } from '@/features/calendar/types/profile.types';
-import type { UserProfile } from '@/features/calendar/types/user.types';
-import DEFAULT_PROFILE_IMAGE from '@/assets/common/img-default-profile.svg'
+import type { ProfileResponse, UserProfile } from '@/features/calendar/types/profile.types';
+import DEFAULT_PROFILE_IMAGE from '@/assets/common/img-default-profile.svg';
 
 interface UserState {
   profile: UserProfile | null;
@@ -29,7 +29,7 @@ interface UserState {
   error: string | null;
 
   fetchProfile: () => Promise<void>;
-  setProfileFromLogin: (profile: UserProfile) => void; 
+  setProfileFromLogin: (profile: UserProfile) => void;
   clearProfile: () => void;
 }
 
@@ -39,74 +39,110 @@ export const useUserStore = create<UserState>((set, get) => ({
   isProfileFetched: false,
   error: null,
 
-  // 프로필 조회 (/profile)
-  fetchProfile: async () => {
-    // 이미 로딩 중이면 중복 요청 방지
-    if (get().isLoading) return;
+fetchProfile: async () => {
+  const state = get();
 
-    set({ isLoading: true, error: null });
+  if (state.isLoading) {
+    //console.log('⏳ Already loading profile...');
+    return;
+  }
 
-    try {
-      //console.log('[fetchProfile] 시작, 현재 profile:', get().profile); // 로그 1 
+  if (state.isProfileFetched && state.profile) {
+    //console.log('✅ Profile already fetched:', state.profile);
+    return;
+  }
 
-      const res = await authenticatedClient.get<ProfileResponse>('/profile');
-      const profile = res.data.result.profile;
+  //console.log('🚀 Fetching profile...');
+  set({ isLoading: true, error: null });
 
-      //console.log('[fetchProfile] API 응답:', profile); // 로그 2
+  try {
+    const res = await authenticatedClient.get<ProfileResponse>('/profile');
+    // console.log('📦 Full API Response:', res);
+    // console.log('📦 Response data:', res.data);
+    // console.log('📦 Response data.result:', res.data);
 
-      // 전역 저장: userId / nickname / profileImageUrl / houseworkTypeLabel (+email)
-      set((state) => {if (!state.profile) {
-        // 로그인 전인데 /profile 먼저 치는 케이스 방지
-        //console.error('[fetchProfile] profile이 없어서 실패');  // 로그 3
-        return { isLoading: false, error: 'No userId in store yet' };
-        }
-        return {
-          profile: {
-            ...state.profile,
-            houseworkTypeLabel: profile.houseworkTypeLabel,
-            profileImageUrl:
-            profile.profileImageUrl ||
-            state.profile.profileImageUrl ||
-            DEFAULT_PROFILE_IMAGE,  
-          },
-          isLoading: false,
-          isProfileFetched: true,
-        };
-      });
-    } catch (err) {
-      const axiosError = err as AxiosError;
-      const isUnauthorized = axiosError.response?.status === 401;
-
-      // 401이면 인증 만료 → 로그아웃 처리
-      if (isUnauthorized) {
-        import('./useAuthStore')
-          .then(({ useAuthStore }) => useAuthStore.getState().logout())
-          .catch(() => {});
-      }
-
-      set({
-        error: err instanceof Error ? err.message : 'Failed to fetch profile',
-        isLoading: false,
-      });
+    // API 응답 구조 확인
+    if (!res.data) {
+      throw new Error('No data in response');
     }
-  },
 
-  // 로그인 응답으로 먼저 전역 반영 
-  setProfileFromLogin: (profile) => {
-  set({
-    profile: {
-      ...profile,
-      profileImageUrl: profile.profileImageUrl || DEFAULT_PROFILE_IMAGE,
-    },
-    isProfileFetched: false,
-    error: null,
-  });
+    // res.data.result가 없는 경우 처리
+    const responseData = res.data || res.data;
+    
+    console.log('📦 Response data to use:', responseData);
+
+    // profile과 personalityInfo가 있는지 확인
+    if (!responseData.profile || !responseData.personalityInfo) {
+      //console.error('❌ Invalid response structure:', responseData);
+      throw new Error('Invalid profile response structure');
+    }
+
+    const { profile, personalityInfo } = responseData;
+
+    const userProfile = {
+      userId: profile.userId,
+      groupId: profile.groupId,
+      nickname: profile.nickname,
+      profileImageUrl: profile.profileImageUrl ?? DEFAULT_PROFILE_IMAGE,
+      hasCompleted: personalityInfo.hasCompleted,
+      houseworkType: personalityInfo.houseworkType,
+      houseworkTypeLabel: personalityInfo.houseworkTypeLabel,
+    };
+
+    //console.log('💾 Saving profile to store:', userProfile);
+
+    set({
+      profile: userProfile,
+      isLoading: false,
+      isProfileFetched: true,
+      error: null,
+    });
+  } catch (err) {
+    //console.error('❌ Profile fetch error:', err);
+    
+    const axiosError = err as AxiosError;
+    const isUnauthorized = axiosError.response?.status === 401;
+
+    console.log('🔍 Error details:', {
+      status: axiosError.response?.status,
+      data: axiosError.response?.data,
+      message: err instanceof Error ? err.message : 'Unknown error',
+      isUnauthorized
+    });
+
+    if (isUnauthorized) {
+      // console.log('🚪 Unauthorized - logging out...');
+      import('./useAuthStore')
+        .then(({ useAuthStore }) => useAuthStore.getState().logout())
+        .catch(() => {});
+    }
+
+    set({
+      error: err instanceof Error ? err.message : 'Failed to fetch profile',
+      isLoading: false,
+      isProfileFetched: false,
+    });
+  }
 },
 
-  clearProfile: () =>
+  setProfileFromLogin: (profile) => {
+    // console.log('📝 Setting profile from login:', profile);
+    set({
+      profile: {
+        ...profile,
+        profileImageUrl: profile.profileImageUrl || DEFAULT_PROFILE_IMAGE,
+      },
+      isProfileFetched: true, // 로그인시에는 true로 설정
+      error: null,
+    });
+  },
+
+  clearProfile: () => {
+    // console.log('🗑️ Clearing profile...');
     set({
       profile: null,
       isProfileFetched: false,
       error: null,
-    }),
+    });
+  },
 }));

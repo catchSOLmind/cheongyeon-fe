@@ -2,7 +2,7 @@ import cheongyeonLogo from '@/assets/calendar/logo-cheongyeon-black.svg';
 import IconBell from '@/assets/calendar/icon-bell.svg';
 import IconPaper from '@/assets/calendar/icon-paper.svg';
 import MyworkPage from './MyworkPage';
-import AllworkPage from './AllworkPage';
+import GroupworkPage from './GroupworkPage';
 import useSlideIndicator from '../hooks/useSlideIndicator';
 
 function CalendarPage() {
@@ -70,7 +70,7 @@ function CalendarPage() {
       </div>
 
       {/* 탭에 따른 페이지 렌더링 */}
-      {activeTab === 'my' ? <MyworkPage /> : <AllworkPage />}
+      {activeTab === 'my' ? <MyworkPage /> : <GroupworkPage />}
     </div>
   );
 }

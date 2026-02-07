@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 interface DropdownSelectProps {
   isOpen: boolean;
   onToggle: () => void;
-  selectedValue: string | null;
+  selectedValue: number | null;
   placeholder: string;
   displayValue?: string;
   showProfile?: boolean;
