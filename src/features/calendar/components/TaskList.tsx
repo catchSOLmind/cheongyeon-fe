@@ -1,14 +1,16 @@
 // src/features/calendar/components/TaskList.tsx
 import { useState } from 'react';
-import type { MyTaskWeekItem, TaskStatus } from '../types/task.types';
+import type { MyTaskWeekItem } from '../types/task.types';
 import TaskItem from './TaskItem';
 import IconStar from '@/assets/calendar/icon-star.svg';
 
 import EditBottomSheet from '@/features/calendar/components/EditBottomSheet';
 import CalendarBottomSheet from '@/shared/components/CalendarBottomSheet';
 import StatusChangeBottomSheet from '@/features/calendar/components/StatusChangeBottomSheet';
+import ReasonChangeBottomSheet from './ReasonChangeBottomSheet';
+import { updateMyTaskStatus } from '../api/taskApi';
 
-type SheetType = 'edit' | 'calendar' | 'status' | null;
+type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | null;
 
 interface TaskListProps {
   task: MyTaskWeekItem[];
@@ -148,29 +150,33 @@ export default function TaskList({
       />
 
       {/* 🔄 상태 변경 바텀시트 (확인 시 1번만 API 호출, 완료 선택이면 complete 호출) */}
-      <StatusChangeBottomSheet
-        key={`${selectedTask?.occurrenceId ?? 'none'}-${selectedTask?.status ?? 'none'}-${sheet === 'status'}`} // ✅ 열릴 때 초기화
-        open={sheet === 'status'}
-        initialStatus={selectedTask?.status ?? 'WAITING'}
-        onClose={closeAllSheets}
-        onConfirm={async (nextStatus: TaskStatus) => {
-          if (!selectedTask) return;
+        <StatusChangeBottomSheet
+          open={sheet === 'status'}
+          onClose={closeAllSheets}
+          initialStatus={selectedTask?.status ?? 'WAITING'}
+          onConfirmStatus={async (status) => {
+            if (!selectedTask) return;
+            await updateMyTaskStatus(selectedTask.occurrenceId, { status });
+            onTaskUpdate?.();
+          }}
+          onOpenIncompleteReason={() => setSheet('reason')}
+        />
 
-          if (nextStatus === 'COMPLETED') {
-            // ✅ 상태변경-완료는 여기서도 onCompleteTask로 통일 (API 중복 방지)
-            await onCompleteTask(selectedTask.occurrenceId);
+        <ReasonChangeBottomSheet
+          open={sheet === 'reason'}
+          onClose={closeAllSheets}
+          onConfirm={async ({ reasonCode, reasonText }) => {
+            if (!selectedTask) return;
+            await updateMyTaskStatus(selectedTask.occurrenceId, {
+              status: 'INCOMPLETED',
+              reasonCode,
+              reasonText,
+            });
+            onTaskUpdate?.();
+            closeAllSheets();
+          }}
+        />
 
-            // UI도 즉시 맞추기 (시트에서 완료 눌렀으면 체크도 완료처럼)
-            setLocalCompletedIds((prev) => new Set(prev).add(selectedTask.occurrenceId));
-          } else {
-            console.log('상태 변경 API TODO', selectedTask.occurrenceId, nextStatus);
-            // TODO: update status API 붙이면 여기서 호출
-          }
-
-          onTaskUpdate?.(); // ✅ 확정 저장 느낌이라 refetch OK
-          closeAllSheets();
-        }}
-      />
     </div>
   );
 }
