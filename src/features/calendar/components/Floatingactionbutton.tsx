@@ -50,8 +50,10 @@ function FloatingActionButton({
       />
 
       {/* 플로팅 버튼 컨테이너 */}
-      <div className="fixed bottom-20 right-5 z-[70] flex flex-col items-end gap-3">
-        {/* ✅ 확장 메뉴: 열렸을 때만 pointer-events 활성화 */}
+    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-[375px] z-[70 pointer-events-none">
+    <div className="flex justify-end pr-5">
+    <div className="flex flex-col items-end gap-3">
+              {/* 확장 메뉴: 열렸을 때만 pointer-events 활성화 */}
         <div
           className={[
             'flex flex-col gap-3 transition-all duration-300 origin-bottom',
@@ -112,6 +114,8 @@ function FloatingActionButton({
             <img src={IconPlus} alt="할일 추가" className="w-5 h-5" />
           )}
         </button>
+      </div>
+      </div>
       </div>
     </>
   );
