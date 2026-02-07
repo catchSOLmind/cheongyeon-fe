@@ -119,7 +119,9 @@ function AddTodoPage() {
           {todos.length > 0 ? (
             <div className="flex flex-col gap-3">
               {todos.map((todo) => (
-                <TodoItem key={todo.id} {...todo} />
+                <TodoItem key={todo.id}
+                {...todo}
+                onFavoriteChanged={fetchFavorites} />
               ))}
             </div>
           ) : (
