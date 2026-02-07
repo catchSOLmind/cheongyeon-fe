@@ -14,7 +14,7 @@ export const getMyTasks = async (params: MyTaskRequest): Promise<MyTaskResponse>
   return response.data;
 };
 
-// 내 할일 완료하기
+// 내 할일 상태 변경하기
 export const CompleteMyTasks = async(
   occurrenceId: number 
 ) : Promise<MyTaskCompleteReponse> => {

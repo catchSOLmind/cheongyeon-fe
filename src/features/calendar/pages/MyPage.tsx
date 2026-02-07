@@ -31,7 +31,7 @@ export default function MyPage() {
         setLoading(true);
         setErrorMsg(null);
 
-        const res = await getProfile(); // ✅ 여기서 호출
+        const res = await getProfile();
         if (!alive) return;
 
         setData(res);
