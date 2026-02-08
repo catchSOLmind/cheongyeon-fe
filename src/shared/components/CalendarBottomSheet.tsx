@@ -80,6 +80,7 @@ export default function CalendarBottomSheet({
   value = null,
   onChange,
   onConfirm,
+  ctaLabel = '설정하기',
 }: CalendarBottomSheetProps) {
   // 내부 선택 상태(초기값은 value)
   const [selectedDate, setSelectedDate] = useState<Date | null>(value);
@@ -191,7 +192,7 @@ export default function CalendarBottomSheet({
         <BottomCTAWrapper fixed showTopBorder >
             <BottomCTAButton 
                 onClick={handleConfirm}
-                label='설정하기'/>
+                label={ctaLabel}/>
         </BottomCTAWrapper>
         
       </div>
