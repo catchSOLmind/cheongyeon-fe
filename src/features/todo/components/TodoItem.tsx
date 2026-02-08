@@ -16,7 +16,7 @@ import IconTrash from '@/assets/todo/icon-trash.svg';
 interface TodoItemProps {
   categoryType: CategoryType;
   taskTypeId: number;
-  id: string;
+  id: string; // draftId
   title: string;
   date: string;
   time: string;
@@ -29,12 +29,14 @@ interface TodoItemProps {
   isFavorite: boolean;
   onFavoriteChanged?: () => void;
   isCompleted: boolean;
+  onClick?: () => void;
 }
 
 const DELETE_BUTTON_WIDTH = 80; // 삭제 버튼 너비
 const SNAP_THRESHOLD = DELETE_BUTTON_WIDTH / 2; // Snapping 임계값
 
 export function TodoItem({
+  id,
   categoryType,
   taskTypeId,
   title,
@@ -45,6 +47,7 @@ export function TodoItem({
   tag,
   isFavorite,
   onFavoriteChanged,
+  onClick,
 }: TodoItemProps) {
   const category = categories.find((c) => c.categoryType === categoryType);
   const categoryIcon = category?.image;
@@ -96,7 +99,7 @@ export function TodoItem({
     
     // Fade out
     setTimeout(() => {
-      removeDraft(String(taskTypeId));
+      removeDraft(id); // draftId로 삭제
     }, 100);
   };
 
@@ -154,6 +157,7 @@ export function TodoItem({
         dragElastic={0.1}
         onDragEnd={handleDragEnd}
         style={{ x }}
+        onClick={onClick}
         className="bg-white rounded-lg p-4 cursor-grab active:cursor-grabbing relative z-10"
       >
         <div className="flex items-center gap-3">

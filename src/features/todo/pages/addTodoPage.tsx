@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FC } from 'react';
 import Header from '@/shared/components/Header';
 import { TodoItem } from '../components/TodoItem';
 import AddTodoBottomSheet from '../components/add/AddTodoBottomSheet';
@@ -13,22 +13,24 @@ import { useNavigate } from 'react-router-dom';
 import { useFavoriteStore } from '../stores/useFavoritrStore';
 
 import { addMyTasks } from '../api/myWorkApi';
+import EditDraftFlowBottomSheet from '../components/EditDraftBottomsheet';
 
 function AddTodoPage() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [isFavoriteMode, setIsFavoriteMode] = useState(false);
+  const [editDraftId, setEditDraftId] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
   const handleCloseBottomSheet = () => {
     setIsBottomSheetOpen(false);
     setSelectedCategory(null);
-    setIsFavoriteMode(false); // 닫을 때 같이 정리
+    setIsFavoriteMode(false);
   };
 
   const handleCategoryClick = (categoryType: CategoryType | '') => {
     if (!categoryType) {
-      // ⭐ 즐겨찾기 탭
       setIsFavoriteMode(true);
       setSelectedCategory(null);
       setIsBottomSheetOpen(true);
@@ -47,13 +49,13 @@ function AddTodoPage() {
   const fetchFavorites = useFavoriteStore((s) => s.fetchFavorites);
 
   useEffect(() => {
-    fetchFavorites(); // AddTodoPage 진입 시 한 번 최신화
+    fetchFavorites();
   }, [fetchFavorites]);
 
   const todos: DraftTaskItemData[] = useMemo(() => {
     return drafts.map((draft) => ({
-      id: draft.draftId, // UI 키
-      taskTypeId: draft.taskTypeId, // 즐겨찾기를 위한 taskTypeId
+      id: draft.draftId,
+      taskTypeId: draft.taskTypeId,
       categoryType: draft.categoryType,
       title: draft.taskName,
       date: draft.date,
@@ -66,28 +68,34 @@ function AddTodoPage() {
         draft.weekday !== undefined
           ? ['일', '월', '화', '수', '목', '금', '토'][draft.weekday]
           : '',
-      // favoriteStore 기준으로 표시
       isFavorite: favoriteIds.has(draft.taskTypeId),
       isCompleted: false,
     }));
-  }, [drafts, favoriteIds]); 
+  }, [drafts, favoriteIds]);
 
-    const handleSubmitToCalendar = async () => {
-      if (drafts.length === 0) return;
+  const handleSubmitToCalendar = async () => {
+    if (drafts.length === 0) return;
 
-      try {
-        const date = drafts[0]?.date;
-        if (!date) return;
-        const taskTypeIds = Array.from(new Set(drafts.map((d) => d.taskTypeId)));
-        await addMyTasks({ date, taskTypeIds });
-        
-        clearDrafts();
-        navigate('/calendar');
-      } catch {
-        alert('캘린더 추가에 실패했어요. 다시 시도해주세요.');
-      }
-    };
+    try {
+      const date = drafts[0]?.date;
+      if (!date) return;
+      const taskTypeIds = Array.from(new Set(drafts.map((d) => d.taskTypeId)));
 
+      await addMyTasks({ date, taskTypeIds });
+
+      clearDrafts();
+      navigate('/calendar/task');
+    } catch {
+      alert('캘린더 추가에 실패했어요. 다시 시도해주세요.');
+    }
+  };
+
+  // EditDraftBottomsheet 컴포넌트 Props에 draftId가 아직 없어서 생기는 TS 에러만 이 파일에서 우회
+  const EditDraftFlowBottomSheetTyped = EditDraftFlowBottomSheet as unknown as FC<{
+    open: boolean;
+    onClose: () => void;
+    draftId: string;
+  }>;
 
   return (
     <div className="h-screen flex flex-col">
@@ -125,9 +133,12 @@ function AddTodoPage() {
           {todos.length > 0 ? (
             <div className="flex flex-col gap-3">
               {todos.map((todo) => (
-                <TodoItem key={todo.id}
-                {...todo}
-                onFavoriteChanged={fetchFavorites} />
+                <TodoItem
+                  key={todo.id}
+                  {...todo}
+                  onFavoriteChanged={fetchFavorites}
+                  onClick={() => setEditDraftId(todo.id)}
+                />
               ))}
             </div>
           ) : (
@@ -141,7 +152,16 @@ function AddTodoPage() {
         </div>
       </div>
 
-      {/* 바텀시트 */}
+      {/* ✅ 편집 바텀시트 */}
+      {editDraftId && (
+        <EditDraftFlowBottomSheetTyped
+          open={!!editDraftId}
+          onClose={() => setEditDraftId(null)}
+          draftId={editDraftId}
+        />
+      )}
+
+      {/* 추가 바텀시트 */}
       {isBottomSheetOpen && (
         <AddTodoBottomSheet
           categoryType={selectedCategory ?? undefined}

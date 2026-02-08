@@ -12,7 +12,7 @@ import type { CategoryType } from '@/features/todo/types/category.types';
 type NavState = {
   occurrenceId: number;
   taskName: string;
-  categoryType: CategoryType; // ✅ 여기서 categoryType으로 받는다고 했으니 그대로
+  categoryType: CategoryType;
   fromDate: string; // "YYYY-MM-DD" or "1월 21일 (수)" whatever 너가 넘긴 값
   fromTime: string; // "HH:mm"
   toDate: string;   // "YYYY-MM-DD"

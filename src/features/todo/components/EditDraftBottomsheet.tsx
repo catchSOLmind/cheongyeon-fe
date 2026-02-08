@@ -197,7 +197,7 @@ type Props = {
   calendarCtaLabel?: string; // "변경하기" | "연결하기"
 };
 
-export default function EditAllFlowBottomSheet({
+export default function EditDraftFlowBottomSheet({
   open,
   onClose,
   initialDate = null,
