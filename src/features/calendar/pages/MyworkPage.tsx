@@ -31,6 +31,9 @@ function MyworkPage() {
     enabled: true,
   });
 
+    const safeTasks = tasks ?? [];
+
+
 const tasksByDate = useMemo(() => {
   const result: Record<string, number> = {};
   
@@ -48,7 +51,7 @@ const tasksByDate = useMemo(() => {
     }
   };
 
-  // ✅ 체크/상태변경-완료에서 호출되는 API: refetch는 여기서 하지 말자(깜빡임 원인)
+  // 체크/상태변경-완료에서 호출되는 API: refetch는 여기서 하지 말자(깜빡임 원인)
   const handleCompleteTask = useCallback(async (occurrenceId: number) => {
     await completeMyTasks(occurrenceId);
   }, []);
@@ -81,7 +84,7 @@ const tasksByDate = useMemo(() => {
       </div>
 
       <TaskList
-        task={tasks}
+        task={safeTasks}
         isLoading={isLoading}
         selectedDate={selectedDate}
         onTaskUpdate={refetch}          // 확정 저장(바텀시트 confirm)에서만 사용
