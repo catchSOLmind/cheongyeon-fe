@@ -43,7 +43,8 @@ export const appRouter = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <HomePage01 /> },
+      { index: true, element: <Navigate to="/login" replace /> },
+      { path: 'home01', element: <HomePage01 /> },
       { path: 'home02', element: <HomePage02 /> },
       { path: 'home03', element: <HomePage03 /> },
       { path: 'home04', element: <HomePage04 /> },
