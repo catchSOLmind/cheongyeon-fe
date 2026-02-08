@@ -28,7 +28,7 @@ function FeedbackPage() {
 
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
 
 
   //멤버 선택

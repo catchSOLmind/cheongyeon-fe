@@ -6,7 +6,7 @@ import { setAccessToken, setRefreshToken } from '../utils/token';
 import { useAuthStore } from '../stores/useAuthStore';
 import { useUserStore } from '../stores/useUserStore';
 import type { KakaoLoginResponse } from '../types/auth.types';
-import type { UserProfile } from '@/features/calendar/types/user.types';
+import type { UserProfile } from '@/features/calendar/types/profile.types';
 
 function KakaoCallbackPage() {
   const hasRequested = useRef(false);
@@ -47,14 +47,20 @@ function KakaoCallbackPage() {
         // 2) 인증 상태 업데이트
         initializeAuth();
 
-        // 3) 전역 프로필 저장 (닉네임/이메일/프로필이미지/태그)
+        // 3) 전역 프로필 저장 (닉네임/프로필이미지/태그)
         const profile: UserProfile = {
-          userId: user.userId,
-          nickname: user.nickname,
-          email: user.email,
-          profileImageUrl: user.profileImg ?? null,
-          houseworkTypeLabel: null,                
-        };
+            userId: user.userId,
+            nickname: user.nickname,
+
+            // 로그인 응답 키에 맞춰서
+            profileImageUrl: user.profileImg ?? null, 
+
+            // 나중에 프로필 API로 채울 값
+            hasCompleted: false,
+            groupId: null,
+            houseworkType: undefined,
+            houseworkTypeLabel: null,
+          };
         setProfileFromLogin(profile);
 
         // 4) 홈으로 이동

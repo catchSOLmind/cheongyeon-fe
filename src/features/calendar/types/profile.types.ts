@@ -32,10 +32,10 @@ export interface ProfileResponse {
 // userstore 용 프로필타입 
 export type UserProfile = {
   userId: number;
-  groupId: number;
+  groupId?: number | null;
   nickname: string;
-  profileImageUrl: string | null ;
+  profileImageUrl?: string | null ;
   hasCompleted: boolean;
-  houseworkType: ResultType;
-  houseworkTypeLabel: string | null;
+  houseworkType?: ResultType | null ;
+  houseworkTypeLabel?: string | null;
 };

@@ -17,6 +17,7 @@ export default function TestResultPage() {
   const navigate = useNavigate();
   const { title, tags, description, cautionPoint } = result || {};
 
+
   if (!result) {
     return <div>결과가 없습니다. 다시 테스트를 진행해주세요.</div>;
   }
