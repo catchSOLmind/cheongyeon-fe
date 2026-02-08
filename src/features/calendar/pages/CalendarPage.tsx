@@ -9,7 +9,7 @@ function CalendarPage() {
   const { activeTab, indicatorStyle, myTabRef, allTabRef, handleTabClick } = useSlideIndicator('my');
 
   return (
-    <div className="bg-white max-w-[375px]">
+    <div className="bg-white">
       {/* 상단 헤더 */}
       <div className="bg-white sticky top-0 z-50 ">
         <div className="flex items-center justify-between h-14 px-5">
