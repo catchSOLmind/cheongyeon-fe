@@ -28,6 +28,7 @@ jobs:
       # GitHub Secrets에 설정된 환경변수를 빌드 타임에 주입
       - name: Build
         env:
+          VITE_KAKAO_SDK_KEY: ${{ secrets.VITE_KAKAO_SDK_KEY }}
           VITE_KAKAO_REDIRECT_URI: ${{ secrets.VITE_KAKAO_REDIRECT_URI }}
           VITE_KAKAO_LOGIN_REST_API_KEY: ${{ secrets.VITE_KAKAO_LOGIN_REST_API_KEY }}
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
