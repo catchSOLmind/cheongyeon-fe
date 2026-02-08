@@ -1,29 +1,41 @@
-// 나의 활동 프로필 조회 응답
+
+import type { ResultType } from "@/features/test/types/test.types";
+
 export interface ProfileResponse {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: {
-    profile: {
-      nickname: string;
-      email: string;
-      profileImageUrl: string | null;
-      houseworkType: string | null;
-      houseworkTypeLabel: string | null;
-    };
-    summary?: {
-      streakDays: number;
-      totalPoints: number;
-      completedTaskCount: number;
-    };
-    monthlyActivity?: {
-      month: string; // "2026-01"
-      totalCount: number;
-      categories: {
-        categoryName: string;
-        count: number;
-        mySharePercent: number;
-      }[];
-    };
+  profile: {
+    userId: number;
+    groupId: number;
+    nickname: string;
+    profileImageUrl: string | null;
+  };
+  personalityInfo: {
+    hasCompleted: boolean;
+    houseworkType: ResultType; // null 포함
+    houseworkTypeLabel: string | null;
+  };
+  summary?: {
+    streakDays: number;
+    totalPoints: number;
+    completedTaskCount: number;
+  };
+  monthlyActivity?: {
+    month: string;
+    totalCount: number;
+    categories: {
+      categoryName: string;
+      count: number;
+      mySharePercent: number;
+    }[];
   };
 }
+
+// userstore 용 프로필타입 
+export type UserProfile = {
+  userId: number;
+  groupId?: number | null;
+  nickname: string;
+  profileImageUrl?: string | null ;
+  hasCompleted: boolean;
+  houseworkType?: ResultType | null ;
+  houseworkTypeLabel?: string | null;
+};

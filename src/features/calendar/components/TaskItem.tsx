@@ -1,157 +1,120 @@
-import { useState } from 'react';
-import type { TaskItem as TaskItemType } from '../types/task.types';
-import { updateTaskStatus } from '../api/taskApi';
-import { useUserStore } from '@/features/auth/stores/useUserStore';
+// src/features/calendar/components/TaskItem.tsx
+import type { MyTaskWeekItem, TaskStatus } from '../types/task.types';
+import { categories } from '@/features/todo/data/categoryTypeImages';
+import IconCoin from '@/assets/todo/icon-coin.svg';
+import IconCheckFill from '@/assets/calendar/img-check-fill.svg';
+import IconCheck from '@/assets/calendar/img-check.svg';
 
 interface TaskItemProps {
-  task: TaskItemType;  // Task → TaskItemType
-  onUpdate?: () => void;
+  task: MyTaskWeekItem;
+  isLocallyCompleted?: boolean;
+  onToggleComplete?: () => void;
+  onOpenBottomSheet?: (task: MyTaskWeekItem) => void;
 }
 
-// 시간 포맷팅 (HH:mm -> 오전/오후 HH:mm)
 const formatTime = (time?: string | null): string => {
   if (!time) return '';
-  
   const [hours, minutes] = time.split(':');
   const hour = parseInt(hours, 10);
   const period = hour < 12 ? '오전' : '오후';
   const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  
   return `${period} ${displayHour}:${minutes}`;
 };
 
-// 날짜 시간 포맷팅 (YYYY-MM-DD HH:mm:ss)
-const formatDateTime = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+const getStatus = (status: TaskStatus) => {
+  const label =
+    status === 'WAITING'
+      ? '대기중'
+      : status === 'IN_PROGRESS'
+        ? '진행중'
+        : status === 'COMPLETED'
+          ? '완료'
+          : '미완료';
+
+  const className =
+    status === 'WAITING'
+      ? 'bg-primary-50 text-primary-400'
+      : status === 'IN_PROGRESS'
+        ? 'bg-primary-50 text-primary-400'
+        : status === 'COMPLETED'
+          ? 'bg-primary text-white'
+          : 'bg-primary-50 text-primary-400';
+
+  return { label, className };
 };
 
-// 개별 할일 아이템 컴포넌트
-function TaskItem({ task, onUpdate }: TaskItemProps) {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const profile = useUserStore((state) => state.profile);
+export default function TaskItem({
+  task,
+  isLocallyCompleted,
+  onToggleComplete,
+  onOpenBottomSheet,
+}: TaskItemProps) {
+  const isCompleted = (isLocallyCompleted ?? false) || task.status === 'COMPLETED';
 
-  const handleToggleComplete = async () => {
-    if (!profile?.userId) {
-      console.error('사용자 정보가 없습니다');
-      return;
-    }
-
-    setIsUpdating(true);
-    try {
-      const now = new Date();
-      // 'COMPLETED' ↔ 'UNCOMPLETED' 토글
-      const newStatus = task.status === 'COMPLETED' ? 'UNCOMPLETED' : 'COMPLETED';
-      
-      await updateTaskStatus({
-        occurrenceId: task.occurrenceId,
-        status: newStatus,
-        doneByMemberId: profile.userId,
-        doneAt: formatDateTime(now),
-        updatedAt: formatDateTime(now),
-      });
-      
-      onUpdate?.();
-    } catch (error) {
-      console.error('할일 업데이트 실패:', error);
-    } finally {
-      setIsUpdating(false);
-    }
+  const handleCardClick = () => {
+    onOpenBottomSheet?.(task);
   };
 
-  const isCompleted = task.status === 'COMPLETED';
-  const isMyTask = profile?.userId === task.primaryAssignedMemberId;
+  const category = categories.find((c) => c.categoryType === task.category);
+  const categoryIcon = category?.image;
+
+  const effectiveStatus: TaskStatus = isCompleted ? 'COMPLETED' : task.status;
+  const { label: statusLabel, className: statusClassName } = getStatus(effectiveStatus);
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-white rounded-2xl">
-      {/* 왼쪽: 체크박스 */}
-      <button
-        onClick={handleToggleComplete}
-        disabled={isUpdating}
-        className={`
-          w-5 h-5 rounded border-2 flex items-center justify-center shrink-0
-          transition-colors
-          ${
-            isCompleted
-              ? 'bg-primary border-primary'
-              : 'bg-gray-100 border-gray-300'
-          }
-          ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        `}
-        aria-label={isCompleted ? '완료 취소' : '완료'}
-      >
-        {isCompleted && (
-          <svg
-            className="w-3 h-3 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-        )}
-      </button>
+    <div
+      className="w-full rounded-xl bg-white p-4"
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+    >
+      <div className="flex items-center gap-3">
+        {/* 카테고리 아이콘 */}
+        <div className="w-8 h-8 rounded-lg bg-[#FAE0F8] flex items-center justify-center">
+          {categoryIcon ? (
+            <img src={categoryIcon} alt={category?.name ?? '카테고리'} className="w-8 h-8" />
+          ) : (
+            <div className="w-8 h-8 rounded bg-gray-200" />
+          )}
+        </div>
 
-      {/* 중앙: 제목과 시간 */}
-      <div className="flex-1 min-w-0">
-        <h3
-          className={`
-            text-body-m-bold text-black
-            ${isCompleted ? 'line-through text-gray-400' : ''}
-          `}
-        >
-          {task.taskName}
-        </h3>
-        {task.time && (
-          <p className="text-body-s text-black mt-0.5">
-            {formatTime(task.time)}
-          </p>
-        )}
-      </div>
+        {/* 제목 + 서브라인(시간 | 포인트) */}
+        <div className="flex-1 min-w-0">
+          <div className="text-body-m-bold text-black">{task.taskName}</div>
 
-      {/* 오른쪽: 상태 버튼 */}
-      <div className="flex items-center gap-2 shrink-0">
-        {/* 이관 상태 표시 */}
-        {task.isTakeover && (
-          <button
-            className="px-3 py-1 bg-primary-50 text-primary-400 rounded-lg text-label-m"
-            disabled
-          >
-            이관됨
-          </button>
-        )}
-        
-        {isMyTask && profile && (
-          <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
-            {profile.profileImageUrl ? (
-              <img
-                src={profile.profileImageUrl}
-                alt={profile.nickname}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <span className="text-xs text-gray-500">
-                  {profile.nickname?.charAt(0) || '?'}
-                </span>
-              </div>
+          <div className="mt-1 flex items-center gap-2 text-body-m text-gray-700">
+            {!!task.time && <span>{formatTime(task.time)}</span>}
+
+            {!!task.time && (
+              <span className="text-gray-300" aria-hidden>
+                |
+              </span>
             )}
+
+            <div className="flex items-center gap-1">
+              <img src={IconCoin} alt="포인트" className="w-4 h-4" />
+              <span className="text-body-s text-black">{task.point} 포인트</span>
             </div>
-            )}
+          </div>
+        </div>
+
+        {/* 상태 + 체크 */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className={['px-3 py-1 rounded-lg text-body-m-bold', statusClassName].join(' ')}>
+            {statusLabel}
+          </div>
+
+          <img
+            src={isCompleted ? IconCheckFill : IconCheck}
+            alt={isCompleted ? '완료' : '미완료'}
+            onClick={(e) => {
+              e.stopPropagation(); // 카드 클릭 방지
+              onToggleComplete?.();
+            }}
+            className="w-8 h-8"
+          />
+        </div>
       </div>
     </div>
   );
 }
-
-export default TaskItem;

@@ -1,5 +1,5 @@
 import { authenticatedClient } from '@/features/auth/api/client';
-import type { FavoriteResponse } from '../types/favorite.types';
+import type { FavoriteResponse , FavoriteTaskTypesResponse } from '../types/favorite.types';
 
 // 즐겨찾기 추가
 export const postFavorite = async (taskTypeId: number): Promise<FavoriteResponse> => {
@@ -16,4 +16,13 @@ export const deleteFavorite = async (taskTypeId: number): Promise<FavoriteRespon
   );
   return response.data;
 };
+
+// 즐겨찾기 목록 조회
+export const getFavoriteTaskTypes = async (): Promise<FavoriteTaskTypesResponse> => {
+  const { data } = await authenticatedClient.get<FavoriteTaskTypesResponse>(
+    '/task-types/favorites'
+  );
+  return data;
+};
+
 

@@ -2,14 +2,14 @@ import cheongyeonLogo from '@/assets/calendar/logo-cheongyeon-black.svg';
 import IconBell from '@/assets/calendar/icon-bell.svg';
 import IconPaper from '@/assets/calendar/icon-paper.svg';
 import MyworkPage from './MyworkPage';
-import AllworkPage from './AllworkPage';
+import GroupworkPage from './GroupworkPage';
 import useSlideIndicator from '../hooks/useSlideIndicator';
 
 function CalendarPage() {
   const { activeTab, indicatorStyle, myTabRef, allTabRef, handleTabClick } = useSlideIndicator('my');
 
   return (
-    <div className="bg-white">
+    <div className="bg-white max-w-[375px]">
       {/* 상단 헤더 */}
       <div className="bg-white sticky top-0 z-50 ">
         <div className="flex items-center justify-between h-14 px-5">
@@ -70,7 +70,7 @@ function CalendarPage() {
       </div>
 
       {/* 탭에 따른 페이지 렌더링 */}
-      {activeTab === 'my' ? <MyworkPage /> : <AllworkPage />}
+      {activeTab === 'my' ? <MyworkPage /> : <GroupworkPage />}
     </div>
   );
 }

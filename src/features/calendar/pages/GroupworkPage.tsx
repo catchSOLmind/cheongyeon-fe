@@ -1,19 +1,41 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Calendar from "../components/Calendar";
-import TaskList from "../components/TaskList";
+import GroupTaskList from "../components/GroupTaskList";
 import FloatingActionButton from "../components/Floatingactionbutton";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
-import { useMyTasks } from "../hooks/useMyTasks";
+import { useGroupTasks } from "../hooks/useGroupTasks";
 import { formatDateKey } from "../utils/dateUtils";
 import { Dashboard } from "../components/Dashboard";
 import ImgDefault from '@/assets/common/img-default-profile.svg';
 import { useUserStore } from "@/features/auth/stores/useUserStore";
 
-function AllworkPage() {
+function GroupworkPage() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const profile = useUserStore((s) => s.profile);
+  const fetchProfile = useUserStore((s) => s.fetchProfile);
+  const isProfileFetched = useUserStore((s) => s.isProfileFetched);
+  const isProfileLoading = useUserStore((s) => s.isLoading);
+
+  const groupId = profile?.groupId;
+
+  // 디버깅: groupId 확인
+  console.log('🔍 GroupworkPage Debug:', {
+    profile,
+    groupId,
+    isProfileFetched,
+    isProfileLoading,
+    hasGroupId: typeof groupId === 'number' && groupId > 0
+  });
+  
+  useEffect(() => {
+    if (!isProfileFetched) {
+      fetchProfile();
+    }
+  }, [isProfileFetched, fetchProfile]);
 
   const formatMonthYear = (date: Date) => {
     const year = date.getFullYear().toString().slice(-2);
@@ -21,49 +43,54 @@ function AllworkPage() {
     return `${year}년 ${month}월`;
   };
 
-  const { profile } = useUserStore();
-
-  // 선택된 날짜를 YYYY-MM-DD 형식으로 변환
   const selectedDateStr = formatDateKey(selectedDate);
 
-  // 내 할일 조회 API 호출
-  // TODO: groupId는 실제 그룹/집 ID로 변경 필요 (현재는 임시로 1 사용)
-  const { tasks, weekDates, isLoading, refetch } = useMyTasks({
-    groupId: 1, // TODO: 실제 groupId로 변경
+  const { tasks, weekDates, isLoading, refetch } = useGroupTasks({
+    groupId: groupId ?? 0,
     date: selectedDateStr,
-    enabled: true,
+    enabled: typeof groupId === 'number' && groupId > 0,
   });
 
-  // 캘린더 표시용 날짜별 할일 개수
   const tasksByDate = useMemo(() => {
-    // API가 이미 해당 주의 할일을 반환하므로
-    // weekDates에 대해 간단히 표시용 데이터 생성
     const result: Record<string, number> = {};
-    weekDates.forEach(date => {
-      result[date] = 1; // 할일이 있다고 표시 (실제 개수는 서버에서 관리)
+    weekDates.forEach((date) => {
+      result[date] = 1;
     });
     return result;
   }, [weekDates]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
-    // 선택한 날짜가 다른 월이면 currentDate도 업데이트
-    if (date.getMonth() !== currentDate.getMonth() || date.getFullYear() !== currentDate.getFullYear()) {
+    if (
+      date.getMonth() !== currentDate.getMonth() ||
+      date.getFullYear() !== currentDate.getFullYear()
+    ) {
       setCurrentDate(date);
     }
   };
 
+  if (isProfileLoading && !profile) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-body-m text-gray-500">프로필 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {/* 날짜 선택기 */}
       <div className="flex items-center justify-between px-5 py-2">
         <div className="flex items-center">
-          <span className="px-2 text-display-s text-[#262626]">{formatMonthYear(currentDate)}</span>
+          <span className="px-2 text-display-s text-[#262626]">
+            {formatMonthYear(currentDate)}
+          </span>
           <img src={IconDropdown} alt="dropdown" className="w-5 h-5" />
         </div>
+
         <button
           onClick={() => navigate('/mypage')}
           className="mx-4 w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+          type="button"
         >
           <img
             src={profile?.profileImageUrl || ImgDefault}
@@ -73,7 +100,6 @@ function AllworkPage() {
         </button>
       </div>
 
-      {/* 캘린더 */}
       <div className="px-3 bg-white mt-4">
         <Calendar
           currentDate={currentDate}
@@ -82,28 +108,22 @@ function AllworkPage() {
         />
       </div>
 
-      {/* 선택된 날짜의 할일 리스트 */}
       <div className="min-h-[270px] bg-[#fafafa]">
-      <TaskList
-        tasks={tasks}
-        isLoading={isLoading}
-        selectedDate={selectedDate}
-        onTaskUpdate={refetch}
-      />
+        <GroupTaskList
+          task={tasks}
+          isLoading={isLoading}
+          selectedDate={selectedDate}
+          onTaskUpdate={refetch}
+        />
       </div>
 
       <div className="px-3 bg-white mt-4">
         <Dashboard />
       </div>
 
-      {/* 플로팅 액션 버튼 */}
-      <FloatingActionButton
-        showFeedback={true}
-        showEdit={true}
-        showAddTask={true}
-      />
+      <FloatingActionButton showFeedback showEdit showAddTask />
     </div>
   );
 }
 
-export default AllworkPage;
+export default GroupworkPage;

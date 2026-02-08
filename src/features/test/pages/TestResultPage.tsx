@@ -4,9 +4,11 @@ import { useLocation } from "react-router-dom";
 import type { TestResult } from "@/features/test/types/test.types";
 import { TopResultCard } from "../components/ResultCard";
 import RecommendCard from "../components/RecommendCard";
-import Header from "@/shared/components/Header";
+import LogoHeader from "@/shared/components/LogoHeader";
 import { useNavigate } from "react-router-dom";
 import IconRetry from "@/assets/test/icon-retry.svg";
+import ImgAgree from "@/assets/test/img-agreement.png";
+import Iconright from "@/assets/common/icon-right.svg";
 
 
 export default function TestResultPage() {
@@ -15,13 +17,14 @@ export default function TestResultPage() {
   const navigate = useNavigate();
   const { title, tags, description, cautionPoint } = result || {};
 
+
   if (!result) {
     return <div>결과가 없습니다. 다시 테스트를 진행해주세요.</div>;
   }
 
   return (
     <div className="pb-24"  >
-      <Header title="가사 성향 테스트" showBackButton />
+      <LogoHeader title="우리집" />
       {/* page container */}
       <div className="mx-auto w-full max-w-[420px] px-5 pb-28 pt-4 bg-gray-50]">
         <TopResultCard
@@ -74,6 +77,45 @@ export default function TestResultPage() {
         </div>
       </div>
       </div>
+        {/*협약서 페이지로 이동하기 */}
+
+        <div
+          className="
+            mt-9 relative rounded-[12px] overflow-hidden mx-5
+            bg-[#DFF6F8]
+            px-6 py-8">
+          {/* 배경 이미지 */}
+          <div
+            className="
+              absolute inset-0
+              bg-no-repeat bg-right bg-contain mt-10
+              pointer-events-none
+            "
+            style={{
+              backgroundImage: `url(${ImgAgree})`,
+            }}
+          />
+              <div className="relative z-10">
+                <h2 className="text-display-xs text-primary-600 mb-10">
+                  우리집 청소 규칙을 정해볼까요?
+                </h2>
+
+                <button
+                  type="button"
+                  className="
+                    inline-flex items-center gap-1
+                    bg-white
+                    px-[6px] py-[8px]
+                    rounded-[4px]
+                    text-body-m text-gray-800
+                  "
+                  onClick={() => navigate('/agreement')}>
+                  우리집 협약서 작성 시작하기
+                  <img src= {Iconright} className="w-5 h-5"/>
+                </button>
+              </div>
+            </div>
+
 
         {/* 5) bottom fixed actions */}
         <div className="fixed bottom-0 left-0 right-0 border-t bg-white">

@@ -1,4 +1,4 @@
-import type { TaskItem } from '../types/task.types';
+import type { MyTaskWeekItem } from '../types/task.types';
 
 // 기존 Task 타입 (컴포넌트에서 사용)
 export interface Task {
@@ -17,7 +17,7 @@ export interface Task {
 }
 
 // TaskItem을 Task로 변환
-export const taskItemToTask = (item: TaskItem, date: string): Task => {
+export const taskItemToTask = (item: MyTaskWeekItem, date: string): Task => {
   return {
     id: item.occurrenceId.toString(),
     occurrenceId: item.occurrenceId, // API 호출에 필요
@@ -32,12 +32,12 @@ export const taskItemToTask = (item: TaskItem, date: string): Task => {
 };
 
 // TaskItem 배열을 Task 배열로 변환 (요청한 날짜 기준)
-export const taskItemsToTasks = (items: TaskItem[], requestDate: string): Task[] => {
+export const taskItemsToTasks = (items: MyTaskWeekItem[], requestDate: string): Task[] => {
   return items.map((item) => taskItemToTask(item, requestDate));
 };
 
 // TaskItem 배열을 날짜별로 그룹화 (캘린더 표시용)
-export const groupTaskItemsByDate = (items: TaskItem[], weekDates: string[]): Record<string, number> => {
+export const groupTaskItemsByDate = (items: MyTaskWeekItem[], weekDates: string[]): Record<string, number> => {
   // 서버 응답 구조상 items에 날짜 정보가 없으므로,
   // weekDates의 각 날짜에 대해 items 개수를 균등 분배하거나
   // 실제로는 서버에서 날짜별로 필터링된 데이터가 올 것으로 예상

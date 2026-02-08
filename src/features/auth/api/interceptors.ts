@@ -52,6 +52,8 @@ const setupRequestInterceptor = (instance: AxiosInstance) => {
       if (token) {
         config.headers.Authorization = `Bearer ${token}`; // 헤더에 토큰 추가
       }
+      // 로그
+      // console.log('[API REQUEST] headers(after):', config.headers);
       return config; // 수정된 설정으로 요청 진행
     },
     (error) => {
@@ -69,13 +71,21 @@ const setupResponseInterceptor = (instance: AxiosInstance) => {
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+      // console.log('[403]', {
+      // method: error.config?.method,
+      // fullUrl: `${(error.config as any)?.baseURL}${error.config?.url}`,
+      // status: error.response?.status,
+      // data: error.response?.data,
+      // headers: error.response?.headers,
+      // });
+
       // 로그인/리프레시 요청은 401 처리에서 제외 (무한 루프 방지)
       if (isAuthExcludedPath(originalRequest.url)) {
         return Promise.reject(error);
       }
 
-      // 401 에러(인증 실패)이고, 아직 재시도하지 않은 요청인 경우
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      // 401 에러(인증 실패), 403 에러 이고, 아직 재시도하지 않은 요청인 경우
+      if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
         // 재시도 플래그를 먼저 설정 (무한 루프 방지)
         // 대기열 요청과 갱신 시작 요청 모두에 적용
         originalRequest._retry = true;
