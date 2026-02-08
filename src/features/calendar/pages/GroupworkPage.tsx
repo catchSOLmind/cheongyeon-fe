@@ -51,13 +51,20 @@ function GroupworkPage() {
     enabled: typeof groupId === 'number' && groupId > 0,
   });
 
-  const tasksByDate = useMemo(() => {
-    const result: Record<string, number> = {};
-    weekDates.forEach((date) => {
-      result[date] = 1;
-    });
-    return result;
-  }, [weekDates]);
+const tasksByDate = useMemo(() => {
+  const result: Record<string, number> = {};
+  
+  // 방어 로직 추가
+  if (!weekDates || !Array.isArray(weekDates)) {
+    console.warn('weekDates is not available:', weekDates);
+    return result; // 빈 객체 반환
+  }
+  
+  weekDates.forEach((date) => {
+    result[date] = 1;
+  });
+  return result;
+}, [weekDates]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
