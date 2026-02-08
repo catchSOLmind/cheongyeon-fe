@@ -57,6 +57,15 @@ export default function BottomSheet({
   showHandle = true,
   showHeaderDivider = true,
 }: BottomSheetProps) {
+
+  //닫힘 애니메이션을 위해 mount 상태 분리
+  const [isMounted, setIsMounted] = React.useState(open);
+
+  // open 되면 먼저 마운트
+  React.useEffect(() => {
+    if (open) setIsMounted(true);
+  }, [open]);
+
   React.useEffect(() => {
     if (!open || !closeOnEsc) return;
 
@@ -68,7 +77,13 @@ export default function BottomSheet({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, closeOnEsc, onClose]);
 
-  if (!open) return null;
+  // slide-down 애니메이션 후 unmount
+  const handleTransitionEnd = () => {
+    if (!open) setIsMounted(false);
+  };
+
+  //바로 null 처리하지 않음
+  if (!isMounted) return null;
 
   return (
     <div className="fixed inset-0 z-[999]">
@@ -76,7 +91,12 @@ export default function BottomSheet({
       <button
         type="button"
         aria-label="Close bottom sheet"
-        className="absolute inset-0 bg-black/20"
+        className={[
+          'absolute inset-0 bg-black/20 z-[0]',
+          // backdrop fade 애니메이션
+          'transition-opacity duration-250 ease-out',
+          open ? 'opacity-100' : 'opacity-0',
+        ].join(' ')}
         onClick={closeOnBackdrop ? onClose : undefined}
       />
 
@@ -85,11 +105,16 @@ export default function BottomSheet({
         role="dialog"
         aria-modal="true"
         style={{ height }}
+        // slide 애니메이션 종료 감지
+        onTransitionEnd={handleTransitionEnd}
         className={[
           'absolute bottom-0 left-1/2 w-full max-w-[390px] -translate-x-1/2',
           'rounded-t-2xl bg-white',
           'shadow-[0_-10px_30px_rgba(0,0,0,0.12)]',
-          'max-h-[80vh] overflow-hidden', // 안전장치
+          'max-h-[80vh] overflow-hidden',
+          // slide-up / slide-down 애니메이션
+          'transition-transform duration-250 ease-out will-change-transform',
+          open ? 'translate-y-0' : 'translate-y-full','z-[1]',
           className,
         ].join(' ')}
       >
@@ -108,7 +133,8 @@ export default function BottomSheet({
                 {title}
               </div>
             )}
-            {showHeaderDivider && <div className="mt-3 h-px w-full bg-white" />}
+            {showHeaderDivider && <div className="mt-3 h-px w-full bg-gray-200
+" />}
           </div>
         )}
 

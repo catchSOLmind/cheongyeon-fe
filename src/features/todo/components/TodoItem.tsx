@@ -27,6 +27,7 @@ interface TodoItemProps {
   };
   tag?: string;
   isFavorite: boolean;
+  onFavoriteChanged?: () => void;
   isCompleted: boolean;
 }
 
@@ -43,6 +44,7 @@ export function TodoItem({
   //assignee,
   tag,
   isFavorite,
+  onFavoriteChanged,
 }: TodoItemProps) {
   const category = categories.find((c) => c.categoryType === categoryType);
   const categoryIcon = category?.image;
@@ -76,6 +78,8 @@ export function TodoItem({
       if (next) await postFavorite(taskTypeId);
       else await deleteFavorite(taskTypeId);
       toggleFavoriteByTaskTypeId(taskTypeId, next);
+      onFavoriteChanged?.()
+    
     } catch{
      alert('즐겨찾기 변경 실패');
     }

@@ -1,17 +1,20 @@
-import { useState, useMemo } from "react";
+// src/features/calendar/pages/MyworkPage.tsx (경로는 네 프로젝트 기준)
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Calendar from "../components/Calendar";
 import TaskList from "../components/TaskList";
 import FloatingActionButton from "../components/Floatingactionbutton";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 import { useMyTasks } from "../hooks/useMyTasks";
-import { formatDateKey } from "../utils/dateUtils";
+import { formatDateKey } from "../utils/dateUtils"; 
 import { useUserStore } from "@/features/auth/stores/useUserStore";
 import ImgDefault from '@/assets/common/img-default-profile.svg';
 
+import { completeMyTasks } from "../api/taskApi";
+
 function MyworkPage() {
   const navigate = useNavigate();
-  const [currentDate, setCurrentDate] = useState(new Date()); 
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const formatMonthYear = (date: Date) => {
@@ -21,7 +24,6 @@ function MyworkPage() {
   };
 
   const { profile } = useUserStore();
-
   const selectedDateStr = formatDateKey(selectedDate);
 
   const { tasks, weekDates, isLoading, refetch } = useMyTasks({
@@ -31,7 +33,7 @@ function MyworkPage() {
 
   const tasksByDate = useMemo(() => {
     const result: Record<string, number> = {};
-    weekDates.forEach(date => {
+    weekDates.forEach((date) => {
       result[date] = 1;
     });
     return result;
@@ -43,6 +45,11 @@ function MyworkPage() {
       setCurrentDate(date);
     }
   };
+
+  // ✅ 체크/상태변경-완료에서 호출되는 API: refetch는 여기서 하지 말자(깜빡임 원인)
+  const handleCompleteTask = useCallback(async (occurrenceId: number) => {
+    await completeMyTasks(occurrenceId);
+  }, []);
 
   return (
     <div>
@@ -75,14 +82,11 @@ function MyworkPage() {
         task={tasks}
         isLoading={isLoading}
         selectedDate={selectedDate}
-        onTaskUpdate={refetch}
+        onTaskUpdate={refetch}          // 확정 저장(바텀시트 confirm)에서만 사용
+        onCompleteTask={handleCompleteTask} // 체크/완료 API는 여기로
       />
 
-      <FloatingActionButton
-        showFeedback={false}
-        showEdit={true}
-        showAddTask={true}
-      />
+      <FloatingActionButton showFeedback={false} showEdit={true} showAddTask={true} />
     </div>
   );
 }

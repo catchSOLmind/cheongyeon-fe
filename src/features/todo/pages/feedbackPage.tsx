@@ -1,5 +1,5 @@
 // features/todo/pages/FeedbackPage.tsx
-import { useState } from 'react';
+import { useState , useEffect } from 'react';
 import Header from '@/shared/components/Header';
 import MemberChoiceItem from '../components/feedback/MemberChoiceItem';
 import DropdownSelect from '../components/feedback/DropdownSelect';
@@ -8,15 +8,10 @@ import { useFeedbackFields } from '../hooks/useFeedbackFields';
 import { complimentStickers } from '../data/feedbackStamps';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
+import { getFeedbackTemplate } from '../api/feedbackApi';
+import type { GroupMember } from '../types/feedback.types';
+import { getTestResultLabel } from '@/shared/utils/getTestResultLabel';
 
-
-// TODO: API 연동 후 제거
-const mockMembers = [
-  { id: '1', name: '멤버 1', tag: '효율이' },
-  { id: '2', name: '멤버 2', tag: '태그1' },
-  { id: '3', name: '멤버 3', tag: '태그2' },
-  { id: '4', name: '멤버 4', tag: '태그2' },
-];
 
 const mockCategories = [
   { id: '1', name: '화장실' },
@@ -31,8 +26,13 @@ function FeedbackPage() {
   const maxLength = 100;
   const maxFeedbackCount = 5;
 
+  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isLoading, setIsLoading] = useState(true);
+
+
   //멤버 선택
-  const [selectedMember, setSelectedMember] = useState<string | null>(null);
+  const [selectedMember, setSelectedMember] = useState<number | null>(null);
   const [isMemberDropdownOpen, setIsMemberDropdownOpen] = useState(false);
 
   // 칭찬 스티커 선택
@@ -52,11 +52,27 @@ function FeedbackPage() {
       initialCount: 1,
       maxLength,
     });
+  
+    useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const res = await getFeedbackTemplate();
+        setGroupMembers(res.result?.groupMembers ?? []);
+      } catch (e) {
+        console.error('피드백 템플릿 로드 실패', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+      fetchFeedback();
+    }, []);
     
   // 피드백 받는 멤버
-  const selectedMemberData = mockMembers.find((m) => m.id === selectedMember);
+  const selectedMemberData = groupMembers.find(
+    (m) => m.groupMemberId === selectedMember
+  );
 
-  const handleMemberSelect = (memberId: string) => {
+  const handleMemberSelect = (memberId: number) => {
     setSelectedMember(memberId);
     setIsMemberDropdownOpen(false);
   };
@@ -71,6 +87,7 @@ function FeedbackPage() {
     !!selectedMember &&
     (selectedStickers.length > 0 || feedbacks.some((f) => f.text.trim().length > 0));
 
+    // 제출 
   const handleSubmit = () => {
     console.log('피드백 제출', {
       selectedMember,
@@ -80,7 +97,7 @@ function FeedbackPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="min-h-screen bg-white">
       <Header title="피드백 남기기" showBackButton />
 
       <div className="px-5 py-5">
@@ -92,18 +109,19 @@ function FeedbackPage() {
             onToggle={() => setIsMemberDropdownOpen(!isMemberDropdownOpen)}
             selectedValue={selectedMember}
             placeholder="멤버를 선택해주세요"
-            displayValue={selectedMemberData?.name ?? undefined}
+            displayValue={selectedMemberData?.nickname ?? undefined}
             showProfile={true}
-            showTag={selectedMemberData?.tag ?? undefined}
+            showTag={selectedMemberData?.testResultType ?? undefined}
           >
-            {mockMembers.map((member) => (
+            {groupMembers.map((m) => (
               <MemberChoiceItem
-                key={member.id}
-                id={member.id}
-                name={member.name}
-                tag={member.tag}
-                isSelected={selectedMember === member.id}
-                onClick={() => handleMemberSelect(member.id)}
+                key={m.groupMemberId}
+                groupMemberId={m.groupMemberId}
+                nickname={m.nickname}
+                profileImageUrl={m.profileImageUrl ?? undefined}
+                testResultTypeLabel={getTestResultLabel(m.testResultType)}
+                isSelected={selectedMember === m.groupMemberId}
+                onClick={() => handleMemberSelect(m.groupMemberId)}
               />
             ))}
           </DropdownSelect>

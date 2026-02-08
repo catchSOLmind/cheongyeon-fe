@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getMyTasks } from '../api/taskApi';
-import type { MyTaskRequest, TaskItem } from '../types/task.types';
+import type { MyTaskRequest, MyTaskWeekItem } from '../types/task.types';
 
 interface UseMyTasksOptions extends MyTaskRequest {
   enabled?: boolean; // 자동 조회 여부
 }
 
 interface UseMyTasksReturn {
-  tasks: TaskItem[];
+  tasks: MyTaskWeekItem[];
   weekDates: string[];
   isLoading: boolean;
   error: Error | null;
@@ -17,7 +17,7 @@ interface UseMyTasksReturn {
 // 내 할일 조회 hook
 export const useMyTasks = (options: UseMyTasksOptions): UseMyTasksReturn => {
   const { enabled = true, ...params } = options;
-  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [tasks, setTasks] = useState<MyTaskWeekItem[]>([]);
   const [weekDates, setWeekDates] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -34,7 +34,7 @@ export const useMyTasks = (options: UseMyTasksOptions): UseMyTasksReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [params.groupId, params.date]);
+  }, [params.date]);
 
   useEffect(() => {
     if (enabled) {

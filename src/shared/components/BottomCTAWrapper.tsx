@@ -19,7 +19,6 @@ export function BottomCTAWrapper({
   const positionClass = fixed ? 'fixed' : sticky ? 'sticky' : 'relative';
   const borderClass = showTopBorder ? 'border-t border-gray-200' : '';
 
-  // fixed일 때만 "앱쉘 폭"으로 제한 + 가운데 정렬
   const fixedWidthClass = fixed
     ? `left-1/2 -translate-x-1/2 w-full ${maxWidthClass}`
     : 'left-0 right-0';
@@ -32,13 +31,19 @@ export function BottomCTAWrapper({
         fixedWidthClass,
         'px-5 py-4 bg-white z-50',
         borderClass,
+        // fixed일 때 wrapper는 클릭 통과
+        fixed ? 'pointer-events-none' : '',
         className,
       ].join(' ')}
     >
-      {children}
+      {/* 버튼/컨텐츠만 클릭 가능 */}
+      <div className={fixed ? 'pointer-events-auto' : ''}>
+        {children}
+      </div>
     </div>
   );
 }
+
 
 // 사용 예시 - 옵션을 뒤에 붙이면 됨
 //   <BottomCTAWrapper sticky>

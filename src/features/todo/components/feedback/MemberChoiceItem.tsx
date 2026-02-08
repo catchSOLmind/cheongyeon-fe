@@ -1,16 +1,18 @@
+import ImgDefault from "@/assets/common/img-default-profile.svg";
+
 interface MemberChoiceItemProps {
-  id: string;
-  name: string;
-  profileImageUrl?: string;
-  tag?: string;
+  groupMemberId: number; // string → number로 변경
+  nickname: string;
+  profileImageUrl?: string | null;
+  testResultTypeLabel?: string | null; // FeedbackPage에서 전달하는 prop 이름과 일치
   isSelected: boolean;
   onClick: () => void;
 }
 
 function MemberChoiceItem({
-  name,
+  nickname,
   profileImageUrl,
-  tag,
+  testResultTypeLabel, // testResultType → testResultTypeLabel
   isSelected,
   onClick,
 }: MemberChoiceItemProps) {
@@ -27,23 +29,23 @@ function MemberChoiceItem({
         {profileImageUrl ? (
           <img
             src={profileImageUrl}
-            alt={name}
+            alt={nickname}
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <span className="text-xs">🐕</span>
+            <img src={ImgDefault} alt="기본 프로필" />
           </div>
         )}
       </div>
 
       {/* 이름 */}
-      <span className="text-body-m text-gray-800">{name}</span>
+      <span className="text-body-m text-gray-800">{nickname}</span>
 
       {/* 태그 */}
-      {tag && (
+      {testResultTypeLabel && (
         <span className="inline-block px-2 py-1 bg-primary-50 text-primary-400 text-label-m rounded-lg shrink-0">
-          {tag}
+          {testResultTypeLabel}
         </span>
       )}
     </button>
