@@ -55,7 +55,7 @@ export default function ChoiceReasonPage({
 
   return (
     <div className="min-h-dvh bg-white">
-      <Header title='이유 선택하기'/>
+      <Header title='이유 선택하기' showBackButton/>
       {/* Content */}
       <div className="px-5 pt-5 pb-28">
         {/* Task summary row */}

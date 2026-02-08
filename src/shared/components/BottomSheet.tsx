@@ -111,7 +111,7 @@ export default function BottomSheet({
           'absolute bottom-0 left-1/2 w-full w-full md:max-w-[385px] -translate-x-1/2',
           'rounded-t-2xl bg-white',
           'shadow-[0_-10px_30px_rgba(0,0,0,0.12)]',
-          'max-h-[80vh] overflow-hidden',
+          'overflow-hidden',
           // slide-up / slide-down 애니메이션
           'transition-transform duration-250 ease-out will-change-transform',
           open ? 'translate-y-0' : 'translate-y-full','z-[1]',

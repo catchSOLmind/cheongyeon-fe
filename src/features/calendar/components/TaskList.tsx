@@ -9,8 +9,9 @@ import StatusChangeBottomSheet from '@/features/calendar/components/StatusChange
 import ReasonChangeBottomSheet from './ReasonChangeBottomSheet';
 import { updateMyTaskStatus } from '../api/taskApi';
 import RescheduleFlowBottomSheet from './RescheduleBottomSheet';
+import EditAllFlowBottomSheet from '@/shared/components/EditAllBottomsheet';
 
-type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | null;
+type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | 'allEdit' | null;
 
 interface TaskListProps {
   task: MyTaskWeekItem[];
@@ -60,7 +61,7 @@ export default function TaskList({
   });
 };
 
-  // ✅ 체크 클릭: API 딱 1번 + refetch 없음(깜빡임 제거)
+  // 체크 클릭: API 딱 1번 + refetch 없음(깜빡임 제거)
   const handleToggleComplete = async (occurrenceId: number) => {
     if (pendingIds.has(occurrenceId)) return;
 
@@ -68,8 +69,8 @@ export default function TaskList({
     setPendingIds((prev) => new Set(prev).add(occurrenceId));
 
     try {
-      await onCompleteTask(occurrenceId); // ✅ 여기서만 API 호출
-      // refetch 안 함 (필요하면 아주 나중에 조용히 동기화 가능)
+      await onCompleteTask(occurrenceId); // 여기서만 API 호출
+      // refetch 안 함 
       // setTimeout(() => onTaskUpdate?.(), 800);
     } catch (e) {
       // 실패 시 롤백
@@ -130,16 +131,25 @@ export default function TaskList({
         task={selectedTask}
         onOpenDateChange={() => setSheet('calendar')}
         onOpenStatusChange={() => setSheet('status')}
+        onOpenAllChange={() => setSheet('allEdit') }
       />
 
-      {/* 📅 날짜 변경 바텀시트 (확정 시 refetch는 OK) */}
+      {/* 날짜 변경 바텀시트 */}
       <RescheduleFlowBottomSheet
         open={sheet === 'calendar'}
         onClose={closeAllSheets}
         initialDate={pickedDate}
       />
 
-      {/* 🔄 상태 변경 바텀시트 (확인 시 1번만 API 호출, 완료 선택이면 complete 호출) */}
+     {/* 📅 전체 수정 바텀시트*/}
+      <EditAllFlowBottomSheet
+        open={sheet === 'allEdit'}
+        onClose={closeAllSheets}
+        initialDate={pickedDate}
+      />
+
+
+      {/* 상태 변경 바텀시트 */}
         <StatusChangeBottomSheet
           open={sheet === 'status'}
           onClose={closeAllSheets}
