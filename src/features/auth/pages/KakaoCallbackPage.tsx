@@ -30,7 +30,7 @@ function KakaoCallbackPage() {
     // }
 
     publicClient
-      .post<KakaoLoginResponse>('/api/oauth/kakao/login', null, {
+      .post<KakaoLoginResponse>('/oauth/kakao/login', null, {
         params: {
           code,
           // 배포 전 필요 시만 사용
