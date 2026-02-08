@@ -12,6 +12,8 @@ import ImgStar from '@/assets/todo/icon-star.svg';
 import ImgStarFill from '@/assets/todo/icon-star-fill.svg';
 import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
 
+import { useTaskDraftStore } from '@/features/todo/stores/useTaskDraftStore';
+
 // ---------- Calendar UI utils ----------
 function getCalendarCells(year: number, month: number) {
   const firstDayOfMonth = new Date(year, month - 1, 1);
@@ -40,8 +42,34 @@ function getCalendarCells(year: number, month: number) {
 function formatMonthLabel(year: number, month: number) {
   return `${String(year).slice(2)}년 ${month}월`;
 }
-function formatDateLabel(d: Date) {
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+
+function formatKoreanDate(dateStr: string) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if (!y || !m || !d) return dateStr;
+  return `${y}년 ${m}월 ${d}일`;
+}
+
+function formatKoreanTime(timeStr: string) {
+  const [hh, mm] = timeStr.split(':').map(Number);
+  if (hh === undefined || mm === undefined) return timeStr;
+
+  const ampm = hh < 12 ? '오전' : '오후';
+  const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+  return `${ampm} ${hour12}:${String(mm).padStart(2, '0')}`;
+}
+
+function parseTimeToPicked(time: string) {
+  // "HH:mm"
+  const [hh, mm] = time.split(':').map(Number);
+  const ampm: '오전' | '오후' = hh < 12 ? '오전' : '오후';
+  const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+  return { ampm, hour: hour12, minute: mm ?? 0 };
+}
+
+function buildTimeString(picked: { ampm: '오전' | '오후'; hour: number; minute: number }) {
+  const h24 =
+    picked.ampm === '오후' ? (picked.hour % 12) + 12 : picked.hour % 12; // 오전 12시는 0시
+  return `${String(h24).padStart(2, '0')}:${String(picked.minute).padStart(2, '0')}`;
 }
 
 // ---------- WheelPicker (공통) ----------
@@ -190,14 +218,16 @@ const MOCK_MEMBERS = [
 type Step = 'FORM' | 'CALENDAR' | 'TIME' | 'ASSIGNEE' | 'DONE';
 
 type Props = {
+  draftId: string;
   open: boolean;
   onClose: () => void;
-  task: MyTaskWeekItem | null;
+  task?: MyTaskWeekItem | null; // (안쓰면 지워도 됨)
   initialDate?: Date | null;
   calendarCtaLabel?: string; // "변경하기" | "연결하기"
 };
 
 export default function EditDraftFlowBottomSheet({
+  draftId,
   open,
   onClose,
   initialDate = null,
@@ -220,15 +250,41 @@ export default function EditDraftFlowBottomSheet({
   // 담당자 (UI용)
   const [assignee, setAssignee] = useState<{ id: number; name: string; avatarUrl?: string | null } | null>(null);
 
+  const draft = useTaskDraftStore((s) => s.drafts.find((d) => d.draftId === draftId));
+  const updateDraft = useTaskDraftStore((s) => s.updateDraft);
+
   useEffect(() => {
     if (!open) return;
     setStep('FORM');
-    setPickedDate(initialDate);
 
-    const base = initialDate ?? new Date();
-    setViewYear(base.getFullYear());
-    setViewMonth(base.getMonth() + 1);
-  }, [open, initialDate]);
+    // ✅ draft 값으로 초기화
+    if (!draft) return;
+
+    // 날짜
+    if (draft.date) {
+      const [y, m, d] = draft.date.split('-').map(Number);
+      const nextDate = new Date(y, m - 1, d);
+      setPickedDate(nextDate);
+      setViewYear(nextDate.getFullYear());
+      setViewMonth(nextDate.getMonth() + 1);
+    } else {
+      setPickedDate(initialDate);
+      const base = initialDate ?? new Date();
+      setViewYear(base.getFullYear());
+      setViewMonth(base.getMonth() + 1);
+    }
+
+    // 시간
+    if (draft.time) setPickedTime(parseTimeToPicked(draft.time));
+    else setPickedTime({ ampm: '오전', hour: 11, minute: 0 });
+
+    // 담당자
+    setAssignee(
+      draft.assigneeName
+        ? { id: draft.assigneeId ?? -1, name: draft.assigneeName, avatarUrl: null }
+        : null
+    );
+  }, [open, draftId, draft, initialDate]);
 
   const STEP_HEIGHT: Record<Step, string> = {
     FORM: 'calc(100dvh - 10px)', // 상단 10px 남기고 꽉 채우기
@@ -248,20 +304,15 @@ export default function EditDraftFlowBottomSheet({
       showHeaderDivider={false}
       showHandle={true}
       height={height}
-      className={[
-        'px-0',
-        'max-h-[calc(100dvh-10px)]',
-      ].join(' ')}
+      className={['px-0', 'max-h-[calc(100dvh-10px)]'].join(' ')}
       contentClassName="px-0 pt-0"
     >
       {step === 'FORM' && (
         <FormStep
-          pickedDate={pickedDate}
+          draftId={draftId}
           onOpenCalendar={() => setStep('CALENDAR')}
           onOpenTime={() => setStep('TIME')}
           onOpenAssignee={() => setStep('ASSIGNEE')}
-          pickedTime={pickedTime}
-          assignee={assignee}
           onSave={() => setStep('DONE')}
         />
       )}
@@ -275,7 +326,15 @@ export default function EditDraftFlowBottomSheet({
           pickedDate={pickedDate}
           setPickedDate={setPickedDate}
           ctaLabel={calendarCtaLabel}
-          onConfirm={() => setStep('FORM')}
+          onConfirm={() => {
+            if (pickedDate) {
+              const yyyy = pickedDate.getFullYear();
+              const mm = String(pickedDate.getMonth() + 1).padStart(2, '0');
+              const dd = String(pickedDate.getDate()).padStart(2, '0');
+              updateDraft(draftId, { date: `${yyyy}-${mm}-${dd}` });
+            }
+            setStep('FORM');
+          }}
         />
       )}
 
@@ -284,6 +343,7 @@ export default function EditDraftFlowBottomSheet({
           value={pickedTime}
           onConfirm={(v) => {
             setPickedTime(v);
+            updateDraft(draftId, { time: buildTimeString(v) });
             setStep('FORM');
           }}
         />
@@ -295,6 +355,7 @@ export default function EditDraftFlowBottomSheet({
           selectedId={assignee?.id ?? null}
           onConfirm={(m) => {
             setAssignee(m);
+            updateDraft(draftId, { assigneeId: m.id, assigneeName: m.name });
             setStep('FORM');
           }}
         />
@@ -307,47 +368,55 @@ export default function EditDraftFlowBottomSheet({
 
 // ---------- Step 1: (UI) 편집 폼 ----------
 function FormStep({
-  pickedDate,
+  draftId,
   onOpenCalendar,
   onOpenTime,
   onOpenAssignee,
-  pickedTime,
-  assignee,
   onSave,
 }: {
-  pickedDate: Date | null;
+  draftId: string;
   onOpenCalendar: () => void;
   onOpenTime: () => void;
   onOpenAssignee: () => void;
-  pickedTime: { ampm: '오전' | '오후'; hour: number; minute: number };
-  assignee: { id: number; name: string; avatarUrl?: string | null } | null;
   onSave: () => void;
 }) {
   const [repeatOn, setRepeatOn] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+
+  const draft = useTaskDraftStore((s) => s.drafts.find((d) => d.draftId === draftId));
+  const updateDraft = useTaskDraftStore((s) => s.updateDraft);
+
+  if (!draft) return null;
+
+  const dateLabel = draft.date ? formatKoreanDate(draft.date) : '날짜를 선택해주세요';
+  const timeLabel = draft.time ? formatKoreanTime(draft.time) : '시간을 선택해주세요';
+  const assigneeLabel = draft.assigneeName ?? '담당자를 선택해주세요';
 
   const WEEKDAYS = [
-    { key: 'SUN', label: '일' },
-    { key: 'MON', label: '월' },
-    { key: 'TUE', label: '화' },
-    { key: 'WED', label: '수' },
-    { key: 'THU', label: '목' },
-    { key: 'FRI', label: '금' },
-    { key: 'SAT', label: '토' },
+    { key: 'SUN', label: '일', idx: 0 },
+    { key: 'MON', label: '월', idx: 1 },
+    { key: 'TUE', label: '화', idx: 2 },
+    { key: 'WED', label: '수', idx: 3 },
+    { key: 'THU', label: '목', idx: 4 },
+    { key: 'FRI', label: '금', idx: 5 },
+    { key: 'SAT', label: '토', idx: 6 },
   ] as const;
 
   type WeekdayKey = (typeof WEEKDAYS)[number]['key'];
-  const [selectedDays, setSelectedDays] = useState<WeekdayKey[]>(['FRI']);
+
+  const selectedKey: WeekdayKey | null =
+    draft.weekday === undefined ? null : WEEKDAYS.find((w) => w.idx === draft.weekday)?.key ?? null;
 
   const toggleDay = (day: WeekdayKey) => {
-    setSelectedDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
-  };
+    const w = WEEKDAYS.find((x) => x.key === day);
+    if (!w) return;
 
-  const timeLabel = `${pickedTime.ampm} ${pickedTime.hour}:${String(pickedTime.minute).padStart(2, '0')}`;
+    if (selectedKey === day) updateDraft(draftId, { weekday: undefined });
+    else updateDraft(draftId, { weekday: w.idx });
+  };
 
   return (
     <div className="pb-24">
-      <Header title="창틀청소" showBackButton />
+      <Header title={draft.taskName} showBackButton />
 
       {/* 업무 목록 */}
       <div className="mt-9 px-3">
@@ -359,12 +428,10 @@ function FormStep({
           </div>
 
           <div className="flex-1">
-            <p className="text-body-m-bold text-gray-700">창틀 청소</p>
-            {/* “1시간 + 코인 + 30포인트” 가로 정렬 */}
+            <p className="text-body-m-bold text-gray-700">{draft.taskName}</p>
             <div className="mt-1 flex items-center gap-1.5 text-body-s text-gray-500">
-              <span>1시간</span>
               <img src={Imgcoin} alt="" className="w-4 h-4" />
-              <span>30 포인트</span>
+              <span>{draft.point} 포인트</span>
             </div>
           </div>
 
@@ -372,10 +439,10 @@ function FormStep({
           <button
             type="button"
             className="h-10 w-10 flex items-center justify-center"
-            aria-label={isFavorite ? '즐겨찾기 해제' : '즐겨찾기'}
-            onClick={() => setIsFavorite((v) => !v)}
+            aria-label={draft.isFavorite ? '즐겨찾기 해제' : '즐겨찾기'}
+            onClick={() => updateDraft(draftId, { isFavorite: !draft.isFavorite })}
           >
-            <img src={isFavorite ? ImgStarFill : ImgStar} alt="" className="w-6 h-6" />
+            <img src={draft.isFavorite ? ImgStarFill : ImgStar} alt="" className="w-6 h-6" />
           </button>
         </div>
       </div>
@@ -388,9 +455,7 @@ function FormStep({
           className="w-full rounded-xl border border-gray-300 bg-[#FAFAFA] px-4 py-4 text-left"
           onClick={onOpenCalendar}
         >
-          <p className="text-body-m-bold text-gray-800">
-            {pickedDate ? formatDateLabel(pickedDate) : '날짜를 선택해주세요'}
-          </p>
+          <p className="text-body-m-bold text-gray-800">{dateLabel}</p>
         </button>
       </div>
 
@@ -414,19 +479,13 @@ function FormStep({
           <div className="flex items-center justify-between">
             <p className="text-body-m-bold text-gray-800">반복 주기 설정</p>
 
-            {/* 토글 우측 고정 */}
             <button
               type="button"
-              onClick={() => {
-                setRepeatOn((v) => {
-                  const next = !v;
-                  if (next && selectedDays.length === 0) setSelectedDays(['FRI']);
-                  return next;
-                });
-              }}
-              className={['relative w-12 h-7 rounded-full transition-colors', repeatOn ? 'bg-primary' : 'bg-gray-200'].join(
-                ' '
-              )}
+              onClick={() => setRepeatOn((v) => !v)}
+              className={[
+                'relative w-12 h-7 rounded-full transition-colors',
+                repeatOn ? 'bg-primary' : 'bg-gray-200',
+              ].join(' ')}
               aria-pressed={repeatOn}
               aria-label="반복 주기 설정"
             >
@@ -439,20 +498,20 @@ function FormStep({
             </button>
           </div>
 
-          {/* 토글 ON일 때 요일 버튼 */}
           {repeatOn && (
             <div className="mt-4">
               <div className="grid grid-cols-7 gap-1">
                 {WEEKDAYS.map((w) => {
-                  const active = selectedDays.includes(w.key);
+                  const active = selectedKey === w.key;
                   return (
                     <button
                       key={w.key}
                       type="button"
                       onClick={() => toggleDay(w.key)}
-                      className={['h-16 rounded-lg text-body-l-bold transition-colors', active ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'].join(
-                        ' '
-                      )}
+                      className={[
+                        'h-16 rounded-lg text-body-l-bold transition-colors',
+                        active ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800',
+                      ].join(' ')}
                     >
                       {w.label}
                     </button>
@@ -473,10 +532,8 @@ function FormStep({
           className="w-full rounded-xl border border-gray-300 bg-white px-3 py-3 flex items-center gap-3"
           onClick={onOpenAssignee}
         >
-          <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-            👤
-          </div>
-          <p className="text-body-m-bold text-gray-800">{assignee?.name ?? '담당자를 선택해주세요'}</p>
+          <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">👤</div>
+          <p className="text-body-m-bold text-gray-800">{assigneeLabel}</p>
         </button>
       </div>
 
@@ -511,7 +568,9 @@ function CalendarStep({
   const cells = useMemo(() => getCalendarCells(viewYear, viewMonth), [viewYear, viewMonth]);
 
   const selectedDay =
-    pickedDate && pickedDate.getFullYear() === viewYear && pickedDate.getMonth() === viewMonth - 1 ? pickedDate.getDate() : null;
+    pickedDate && pickedDate.getFullYear() === viewYear && pickedDate.getMonth() === viewMonth - 1
+      ? pickedDate.getDate()
+      : null;
 
   const handlePickDay = (day: number) => {
     const next = new Date(viewYear, viewMonth - 1, day);
@@ -576,7 +635,12 @@ function CalendarStep({
                   cell.isCurrentMonth ? (isSelected ? 'text-primary' : 'text-gray-800') : 'text-gray-800',
                 ].join(' ')}
               >
-                <span className={['w-10 h-10 rounded-full flex items-center justify-center', isSelected ? 'bg-primary-50' : 'bg-transparent'].join(' ')}>
+                <span
+                  className={[
+                    'w-10 h-10 rounded-full flex items-center justify-center',
+                    isSelected ? 'bg-primary-50' : 'bg-transparent',
+                  ].join(' ')}
+                >
                   {cell.day}
                 </span>
               </button>
@@ -648,11 +712,9 @@ export function TimeStep({
 
       <div className="-mt-8">
         <div className="relative rounded-2xl">
-          {/* 중앙 선택 하이라이트 */}
           <div className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 h-12 rounded-xl bg-gray-100" />
 
           <div className="grid grid-cols-3 text-center">
-            {/* 오전/오후 */}
             <div className="flex items-center justify-center">
               <WheelPicker
                 items={['오전', '오후'] as const}
@@ -663,7 +725,6 @@ export function TimeStep({
               />
             </div>
 
-            {/* 시 */}
             <div className="flex items-center justify-center">
               <WheelPicker
                 items={hours}
@@ -675,7 +736,6 @@ export function TimeStep({
               />
             </div>
 
-            {/* 분 */}
             <div className="flex items-center justify-center">
               <WheelPicker
                 items={minutes}
@@ -697,7 +757,6 @@ export function TimeStep({
   );
 }
 
-
 // ---------- Step 5: 담당자 고르기 (UI) ----------
 function AssigneeStep({
   members,
@@ -715,7 +774,6 @@ function AssigneeStep({
     <div className="flex flex-col h-full">
       <Header title="담당자 선택" />
 
-      {/* 스크롤 영역 */}
       <div className="mt-5 flex-1 overflow-y-auto px-1 space-y-[8px]">
         {members.map((m) => {
           const active = m.id === localId;
@@ -737,11 +795,7 @@ function AssigneeStep({
       </div>
 
       <BottomCTAWrapper fixed showTopBorder>
-        <BottomCTAButton
-          label="지정하기"
-          disabled={!picked}
-          onClick={() => picked && onConfirm(picked)}
-        />
+        <BottomCTAButton label="지정하기" disabled={!picked} onClick={() => picked && onConfirm(picked)} />
       </BottomCTAWrapper>
     </div>
   );
