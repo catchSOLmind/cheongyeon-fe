@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type FC } from 'react';
+// src/features/todo/pages/AddTodoPage.tsx
+import { useEffect, useMemo, useState } from 'react';
 import Header from '@/shared/components/Header';
 import { TodoItem } from '../components/TodoItem';
 import AddTodoBottomSheet from '../components/add/AddTodoBottomSheet';
@@ -14,6 +15,9 @@ import { useFavoriteStore } from '../stores/useFavoritrStore';
 
 import { addMyTasks } from '../api/myWorkApi';
 import EditDraftFlowBottomSheet from '../components/EditDraftBottomsheet';
+
+// 프로필 가져오기
+import { useUserStore } from '@/features/auth/stores/useUserStore';
 
 function AddTodoPage() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
@@ -48,30 +52,47 @@ function AddTodoPage() {
   const favoriteIds = useFavoriteStore((s) => s.favoriteIds);
   const fetchFavorites = useFavoriteStore((s) => s.fetchFavorites);
 
+  // ✅ 내 프로필
+  const profile = useUserStore((s) => s.profile);
+  const fetchProfile = useUserStore((s) => s.fetchProfile);
+
   useEffect(() => {
     fetchFavorites();
   }, [fetchFavorites]);
 
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
   const todos: DraftTaskItemData[] = useMemo(() => {
-    return drafts.map((draft) => ({
+  
+    return drafts.map((draft) => {
+    const assigneeName = draft.assignee?.nickname ?? profile?.nickname ?? '미지정';
+    const assigneeAvatar = draft.assignee?.profileImageUrl ?? profile?.profileImageUrl ?? null;
+
+    const repeat =
+      draft.repeat && draft.repeat.enabled
+        ? draft.repeat
+        : undefined; // enabled=false면 undefined
+
+    return {
       id: draft.draftId,
       taskTypeId: draft.taskTypeId,
       categoryType: draft.categoryType,
       title: draft.taskName,
       date: draft.date,
-      time: draft.time,
+      time: draft.time ?? null,
       points: draft.point,
-      assignee: {
-        name: draft.assigneeName ?? '미지정',
-      },
-      tag:
-        draft.weekday !== undefined
-          ? ['일', '월', '화', '수', '목', '금', '토'][draft.weekday]
-          : '',
+
+      assignee: { name: assigneeName, avatar: assigneeAvatar },
+      repeat,
+
       isFavorite: favoriteIds.has(draft.taskTypeId),
       isCompleted: false,
-    }));
-  }, [drafts, favoriteIds]);
+    };
+  });
+}, [drafts, favoriteIds, profile?.nickname, profile?.profileImageUrl]);
+
 
   const handleSubmitToCalendar = async () => {
     if (drafts.length === 0) return;
@@ -79,23 +100,18 @@ function AddTodoPage() {
     try {
       const date = drafts[0]?.date;
       if (!date) return;
+
       const taskTypeIds = Array.from(new Set(drafts.map((d) => d.taskTypeId)));
 
+      // ⚠️ 서버 요청 body는 "수정하면 안 된다"고 했으니 그대로 유지
       await addMyTasks({ date, taskTypeIds });
 
       clearDrafts();
-      navigate('/calendar/task');
+      navigate('/calendar');
     } catch {
       alert('캘린더 추가에 실패했어요. 다시 시도해주세요.');
     }
   };
-
-  // EditDraftBottomsheet 컴포넌트 Props에 draftId가 아직 없어서 생기는 TS 에러만 이 파일에서 우회
-  const EditDraftFlowBottomSheetTyped = EditDraftFlowBottomSheet as unknown as FC<{
-    open: boolean;
-    onClose: () => void;
-    draftId: string;
-  }>;
 
   return (
     <div className="h-screen flex flex-col">
@@ -144,9 +160,7 @@ function AddTodoPage() {
           ) : (
             <div className="flex flex-col items-center justify-center py-12">
               <p className="text-display-xs text-black mb-2">추가된 할 일이 없어요</p>
-              <p className="text-body-m-regular text-gray-600">
-                할 일을 추가하고 일정을 계획해보세요
-              </p>
+              <p className="text-body-m-regular text-gray-600">할 일을 추가하고 일정을 계획해보세요</p>
             </div>
           )}
         </div>
@@ -154,7 +168,7 @@ function AddTodoPage() {
 
       {/* ✅ 편집 바텀시트 */}
       {editDraftId && (
-        <EditDraftFlowBottomSheetTyped
+        <EditDraftFlowBottomSheet
           open={!!editDraftId}
           onClose={() => setEditDraftId(null)}
           draftId={editDraftId}
@@ -172,11 +186,7 @@ function AddTodoPage() {
       )}
 
       <BottomCTAWrapper fixed showTopBorder>
-        <BottomCTAButton
-          label="캘린더에 추가하기"
-          disabled={drafts.length === 0}
-          onClick={handleSubmitToCalendar}
-        />
+        <BottomCTAButton label="캘린더에 추가하기" disabled={drafts.length === 0} onClick={handleSubmitToCalendar} />
       </BottomCTAWrapper>
     </div>
   );

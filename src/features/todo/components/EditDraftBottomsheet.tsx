@@ -4,8 +4,6 @@ import BottomSheet from '@/shared/components/BottomSheet';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
-import ImgAlarm from '@/assets/calendar/img-alram.png';
-import { useNavigate } from 'react-router-dom';
 import Header from '@/shared/components/Header';
 import Imgcoin from '@/assets/todo/icon-coin.svg';
 import ImgStar from '@/assets/todo/icon-star.svg';
@@ -13,6 +11,9 @@ import ImgStarFill from '@/assets/todo/icon-star-fill.svg';
 import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
 
 import { useTaskDraftStore } from '@/features/todo/stores/useTaskDraftStore';
+
+// ✅ store 타입(assignee 구조 맞추기)
+import type { DraftAssignee } from '@/features/todo/types/draftTask.types';
 
 // ---------- Calendar UI utils ----------
 function getCalendarCells(year: number, month: number) {
@@ -66,19 +67,13 @@ function parseTimeToPicked(time: string) {
   return { ampm, hour: hour12, minute: mm ?? 0 };
 }
 
-function buildTimeString(picked: { ampm: '오전' | '오후'; hour: number; minute: number }) {
-  const h24 =
-    picked.ampm === '오후' ? (picked.hour % 12) + 12 : picked.hour % 12; // 오전 12시는 0시
-  return `${String(h24).padStart(2, '0')}:${String(picked.minute).padStart(2, '0')}`;
-}
-
 // ---------- WheelPicker (공통) ----------
 type WheelPickerProps<T extends string | number> = {
   items: T[];
   value: T;
   onChange: (v: T) => void;
-  itemHeight?: number; // 한 줄 높이
-  visibleCount?: number; // 보이는 줄 수 (홀수)
+  itemHeight?: number;
+  visibleCount?: number;
   renderItem?: (v: T) => React.ReactNode;
 };
 
@@ -215,15 +210,15 @@ const MOCK_MEMBERS = [
 ];
 
 // ---------- Flow ----------
-type Step = 'FORM' | 'CALENDAR' | 'TIME' | 'ASSIGNEE' | 'DONE';
+type Step = 'FORM' | 'CALENDAR' | 'TIME' | 'ASSIGNEE';
 
 type Props = {
   draftId: string;
   open: boolean;
   onClose: () => void;
-  task?: MyTaskWeekItem | null; // (안쓰면 지워도 됨)
+  task?: MyTaskWeekItem | null;
   initialDate?: Date | null;
-  calendarCtaLabel?: string; // "변경하기" | "연결하기"
+  calendarCtaLabel?: string;
 };
 
 export default function EditDraftFlowBottomSheet({
@@ -247,8 +242,8 @@ export default function EditDraftFlowBottomSheet({
     minute: 0,
   });
 
-  // 담당자 (UI용)
-  const [assignee, setAssignee] = useState<{ id: number; name: string; avatarUrl?: string | null } | null>(null);
+  // ✅ 담당자 (UI용) - store assignee 구조로만 관리
+  const [assignee, setAssignee] = useState<DraftAssignee | null>(null);
 
   const draft = useTaskDraftStore((s) => s.drafts.find((d) => d.draftId === draftId));
   const updateDraft = useTaskDraftStore((s) => s.updateDraft);
@@ -256,8 +251,6 @@ export default function EditDraftFlowBottomSheet({
   useEffect(() => {
     if (!open) return;
     setStep('FORM');
-
-    // ✅ draft 값으로 초기화
     if (!draft) return;
 
     // 날짜
@@ -278,20 +271,32 @@ export default function EditDraftFlowBottomSheet({
     if (draft.time) setPickedTime(parseTimeToPicked(draft.time));
     else setPickedTime({ ampm: '오전', hour: 11, minute: 0 });
 
-    // 담당자
-    setAssignee(
-      draft.assigneeName
-        ? { id: draft.assigneeId ?? -1, name: draft.assigneeName, avatarUrl: null }
-        : null
-    );
+    // ✅ 담당자: store.assignee를 그대로 UI에 세팅
+    setAssignee(draft.assignee ?? null);
   }, [open, draftId, draft, initialDate]);
 
   const STEP_HEIGHT: Record<Step, string> = {
-    FORM: 'calc(100dvh - 10px)', // 상단 10px 남기고 꽉 채우기
+    FORM: 'calc(100dvh - 10px)',
     CALENDAR: '423px',
     TIME: '360px',
     ASSIGNEE: '485px',
-    DONE: '345px',
+  };
+
+  type PickedTime = { ampm: '오전' | '오후'; hour: number; minute: number };
+
+  const buildTimeString = (v: PickedTime) => {
+    const hour24 =
+      v.ampm === '오후'
+        ? v.hour === 12
+          ? 12
+          : v.hour + 12
+        : v.hour === 12
+          ? 0
+          : v.hour;
+
+    const hh = String(hour24).padStart(2, '0');
+    const mm = String(v.minute).padStart(2, '0');
+    return `${hh}:${mm}`;
   };
 
   const height = STEP_HEIGHT[step];
@@ -313,7 +318,7 @@ export default function EditDraftFlowBottomSheet({
           onOpenCalendar={() => setStep('CALENDAR')}
           onOpenTime={() => setStep('TIME')}
           onOpenAssignee={() => setStep('ASSIGNEE')}
-          onSave={() => setStep('DONE')}
+          onSave={onClose}
         />
       )}
 
@@ -326,13 +331,11 @@ export default function EditDraftFlowBottomSheet({
           pickedDate={pickedDate}
           setPickedDate={setPickedDate}
           ctaLabel={calendarCtaLabel}
-          onConfirm={() => {
-            if (pickedDate) {
-              const yyyy = pickedDate.getFullYear();
-              const mm = String(pickedDate.getMonth() + 1).padStart(2, '0');
-              const dd = String(pickedDate.getDate()).padStart(2, '0');
-              updateDraft(draftId, { date: `${yyyy}-${mm}-${dd}` });
-            }
+          onConfirm={(date) => {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            updateDraft(draftId, { date: `${yyyy}-${mm}-${dd}` });
             setStep('FORM');
           }}
         />
@@ -352,16 +355,21 @@ export default function EditDraftFlowBottomSheet({
       {step === 'ASSIGNEE' && (
         <AssigneeStep
           members={MOCK_MEMBERS}
-          selectedId={assignee?.id ?? null}
+          // ✅ store.assignee.memberId 로 선택
+          selectedId={assignee?.memberId ?? null}
           onConfirm={(m) => {
-            setAssignee(m);
-            updateDraft(draftId, { assigneeId: m.id, assigneeName: m.name });
+            const next: DraftAssignee = {
+              memberId: m.id,
+              nickname: m.name,
+              profileImageUrl: m.avatarUrl ?? null,
+            };
+            setAssignee(next);
+            // ✅ 레거시 assigneeId/assigneeName 말고 assignee로 저장
+            updateDraft(draftId, { assignee: next });
             setStep('FORM');
           }}
         />
       )}
-
-      {step === 'DONE' && <DoneStep onClose={onClose} />}
     </BottomSheet>
   );
 }
@@ -380,8 +388,6 @@ function FormStep({
   onOpenAssignee: () => void;
   onSave: () => void;
 }) {
-  const [repeatOn, setRepeatOn] = useState(false);
-
   const draft = useTaskDraftStore((s) => s.drafts.find((d) => d.draftId === draftId));
   const updateDraft = useTaskDraftStore((s) => s.updateDraft);
 
@@ -389,29 +395,46 @@ function FormStep({
 
   const dateLabel = draft.date ? formatKoreanDate(draft.date) : '날짜를 선택해주세요';
   const timeLabel = draft.time ? formatKoreanTime(draft.time) : '시간을 선택해주세요';
-  const assigneeLabel = draft.assigneeName ?? '담당자를 선택해주세요';
+
+  // ✅ assignee label: 새 구조 우선
+  const assigneeLabel = draft.assignee?.nickname ?? '담당자를 선택해주세요';
+
+  // ✅ repeatOn: repeat.enabled 기반 (요구사항: enabled=false면 repeat 자체 undefined)
+  const repeatOn = !!draft.repeat?.enabled;
 
   const WEEKDAYS = [
-    { key: 'SUN', label: '일', idx: 0 },
-    { key: 'MON', label: '월', idx: 1 },
-    { key: 'TUE', label: '화', idx: 2 },
-    { key: 'WED', label: '수', idx: 3 },
-    { key: 'THU', label: '목', idx: 4 },
-    { key: 'FRI', label: '금', idx: 5 },
-    { key: 'SAT', label: '토', idx: 6 },
+    { key: 'SUN', label: '일' },
+    { key: 'MON', label: '월' },
+    { key: 'TUE', label: '화' },
+    { key: 'WED', label: '수' },
+    { key: 'THU', label: '목' },
+    { key: 'FRI', label: '금' },
+    { key: 'SAT', label: '토' },
   ] as const;
 
   type WeekdayKey = (typeof WEEKDAYS)[number]['key'];
 
-  const selectedKey: WeekdayKey | null =
-    draft.weekday === undefined ? null : WEEKDAYS.find((w) => w.idx === draft.weekday)?.key ?? null;
+  // ✅ 선택된 요일들: repeat.daysOfWeek (없으면 [])
+  const selectedDays: WeekdayKey[] = (draft.repeat?.daysOfWeek ?? []) as WeekdayKey[];
 
+  // ✅ 반복 스위치 토글: OFF면 repeat 제거(=undefined)
+  const handleToggleRepeat = () => {
+    if (repeatOn) {
+      updateDraft(draftId, { repeat: undefined }); // ✅ enabled=false일 때 repeat 자체 없음
+    } else {
+      updateDraft(draftId, { repeat: { enabled: true, daysOfWeek: [] } });
+    }
+  };
+
+  // ✅ 요일 토글: repeat.daysOfWeek 배열 add/remove
   const toggleDay = (day: WeekdayKey) => {
-    const w = WEEKDAYS.find((x) => x.key === day);
-    if (!w) return;
+    const prev = draft.repeat?.daysOfWeek ?? [];
+    const exists = prev.includes(day);
+    const nextDays = exists ? prev.filter((d) => d !== day) : [...prev, day];
 
-    if (selectedKey === day) updateDraft(draftId, { weekday: undefined });
-    else updateDraft(draftId, { weekday: w.idx });
+    updateDraft(draftId, {
+      repeat: { enabled: true, daysOfWeek: nextDays },
+    });
   };
 
   return (
@@ -481,7 +504,7 @@ function FormStep({
 
             <button
               type="button"
-              onClick={() => setRepeatOn((v) => !v)}
+              onClick={handleToggleRepeat}
               className={[
                 'relative w-12 h-7 rounded-full transition-colors',
                 repeatOn ? 'bg-primary' : 'bg-gray-200',
@@ -502,7 +525,7 @@ function FormStep({
             <div className="mt-4">
               <div className="grid grid-cols-7 gap-1">
                 {WEEKDAYS.map((w) => {
-                  const active = selectedKey === w.key;
+                  const active = selectedDays.includes(w.key);
                   return (
                     <button
                       key={w.key}
@@ -544,6 +567,7 @@ function FormStep({
   );
 }
 
+
 // ---------- Step 2: 캘린더 ----------
 function CalendarStep({
   viewYear,
@@ -562,7 +586,7 @@ function CalendarStep({
   pickedDate: Date | null;
   setPickedDate: (d: Date) => void;
   ctaLabel: string;
-  onConfirm: () => void;
+  onConfirm: (date: Date) => void;
 }) {
   const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
   const cells = useMemo(() => getCalendarCells(viewYear, viewMonth), [viewYear, viewMonth]);
@@ -651,41 +675,12 @@ function CalendarStep({
 
       <div className="px-6 pt-6">
         <BottomCTAWrapper fixed showTopBorder>
-          <BottomCTAButton label={ctaLabel} disabled={!pickedDate} onClick={onConfirm} />
+          <BottomCTAButton
+            label={ctaLabel}
+            disabled={!pickedDate}
+            onClick={() => pickedDate && onConfirm(pickedDate)}
+          />
         </BottomCTAWrapper>
-      </div>
-    </div>
-  );
-}
-
-// ---------- Step 3: 완료 ----------
-function DoneStep({ onClose }: { onClose: () => void }) {
-  const navigate = useNavigate();
-
-  return (
-    <div className="px-5 pt-10 pb-8">
-      <img src={ImgAlarm} className="-mx-3 w-[70px] h-[70px]" alt="" />
-      <h2 className="mt-3 text-display-s text-black">일정 변경 완료!</h2>
-      <p className="mt-3 text-body-l text-gray-800">
-        일정 변경한 이유를 알려주시면
-        <br />
-        앞으로 우리집 운영이 더 꼼꼼해져요!
-      </p>
-
-      <div className="mt-12 grid grid-cols-2 gap-2">
-        <button type="button" className="h-12 rounded-lg bg-gray-200 text-gray-600 text-body-m-bold" onClick={onClose}>
-          닫기
-        </button>
-        <button
-          type="button"
-          className="h-12 rounded-lg bg-primary text-white text-body-m-bold"
-          onClick={() => {
-            onClose();
-            navigate('/calendar/reason');
-          }}
-        >
-          이유 선택하기
-        </button>
       </div>
     </div>
   );
