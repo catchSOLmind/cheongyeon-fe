@@ -25,12 +25,12 @@ export default function EditBottomSheet({
 }: EditBottomSheetProps) {
 
   const handleStatusChange = () => {
-    console.log('상태 변경하기', task?.occurrenceId);
+    //console.log('상태 변경하기', task?.occurrenceId);
     onOpenStatusChange(); // 상태 변경 시트 열기
   };
 
   const handleDateChange = () => {
-    console.log('날짜 변경하기', task?.occurrenceId);
+    //console.log('날짜 변경하기', task?.occurrenceId);
     onOpenDateChange(); // 날짜 변경 시트 열기
   };
 

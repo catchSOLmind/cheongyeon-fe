@@ -34,7 +34,7 @@ export type UserProfile = {
   userId: number;
   groupId: number;
   nickname: string;
-  profileImageUrl: string;
+  profileImageUrl: string | null ;
   hasCompleted: boolean;
   houseworkType: ResultType;
   houseworkTypeLabel: string | null;

@@ -94,7 +94,7 @@ export default function BottomSheet({
         className={[
           'absolute inset-0 bg-black/20 z-[0]',
           // backdrop fade 애니메이션
-          'transition-opacity duration-25 ㄴ0 ease-out',
+          'transition-opacity duration-250 ease-out',
           open ? 'opacity-100' : 'opacity-0',
         ].join(' ')}
         onClick={closeOnBackdrop ? onClose : undefined}

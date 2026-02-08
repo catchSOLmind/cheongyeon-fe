@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { GroupTaskWeekItem } from '../types/groupTask.types'; 
 import GroupTaskTaskItem from './GroupTaskItem';
 import IconStar from '@/assets/calendar/icon-star.svg';
-import { CompleteMyTasks } from '../api/taskApi';
+import { completeMyTasks } from '../api/taskApi';
 // 완료는 그룹용 API 가 따로 없음 
 
 interface GroupTaskListProps {
@@ -44,13 +44,18 @@ function GroupTaskList({ task, isLoading, selectedDate }: GroupTaskListProps) {
     // 중복 요청 방지 - 이미 요청중이면 무시 
     if (pendingIds.has(occurrenceId)) return;
 
+
+    // 이미 서버에서 완료된 태스크는 재요청 방지
+    const targetTask = task.find(t => t.occurrenceId === occurrenceId);
+    if (targetTask?.status === 'COMPLETED' || localCompletedIds.has(occurrenceId)) return;
+
     // UI 먼저 반영
     toggleLocalComplete(occurrenceId);
     setPendingIds((prev)=> new Set(prev).add(occurrenceId));
 
     // 서버 반영
     try {
-      await CompleteMyTasks(occurrenceId);
+      await completeMyTasks(occurrenceId);
     }
     catch{
       // 서버 반영 실패시 UI 적용 취소

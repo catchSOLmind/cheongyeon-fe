@@ -16,7 +16,7 @@ export const getMyTasks = async (params: MyTaskRequest): Promise<MyTaskResponse>
 };
 
 // 내 할일 완료하기 ( only 완료만 )
-export const CompleteMyTasks = async(
+export const completeMyTasks = async(
   occurrenceId: number 
 ) : Promise<MyTaskCompleteReponse> => {
   const response = await authenticatedClient.post<MyTaskCompleteReponse>(`/my-tasks/${occurrenceId}/complete`);

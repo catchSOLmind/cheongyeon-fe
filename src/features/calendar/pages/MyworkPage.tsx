@@ -6,11 +6,11 @@ import TaskList from "../components/TaskList";
 import FloatingActionButton from "../components/Floatingactionbutton";
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 import { useMyTasks } from "../hooks/useMyTasks";
-import { formatDateKey } from "../utils/dateUtils";
+import { formatDateKey } from "../utils/dateUtils"; 
 import { useUserStore } from "@/features/auth/stores/useUserStore";
 import ImgDefault from '@/assets/common/img-default-profile.svg';
 
-import { CompleteMyTasks } from "../api/taskApi";
+import { completeMyTasks } from "../api/taskApi";
 
 function MyworkPage() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ function MyworkPage() {
 
   // ✅ 체크/상태변경-완료에서 호출되는 API: refetch는 여기서 하지 말자(깜빡임 원인)
   const handleCompleteTask = useCallback(async (occurrenceId: number) => {
-    await CompleteMyTasks(occurrenceId);
+    await completeMyTasks(occurrenceId);
   }, []);
 
   return (
@@ -82,8 +82,8 @@ function MyworkPage() {
         task={tasks}
         isLoading={isLoading}
         selectedDate={selectedDate}
-        onTaskUpdate={refetch}          // ✅ 확정 저장(바텀시트 confirm)에서만 사용
-        onCompleteTask={handleCompleteTask} // ✅ 체크/완료 API는 여기로
+        onTaskUpdate={refetch}          // 확정 저장(바텀시트 confirm)에서만 사용
+        onCompleteTask={handleCompleteTask} // 체크/완료 API는 여기로
       />
 
       <FloatingActionButton showFeedback={false} showEdit={true} showAddTask={true} />

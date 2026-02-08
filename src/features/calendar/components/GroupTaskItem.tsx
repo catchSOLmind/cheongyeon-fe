@@ -35,7 +35,7 @@ const getStatus = (status: TaskStatus) => {
     status === 'WAITING'
       ? 'bg-primary-50 text-primary-400'
       : status === 'IN_PROGRESS'
-        ? 'bbg-primary-500 text-primary-400'
+        ? 'bg-primary-500 text-primary-400'
         : status === 'COMPLETED'
           ? 'bg-primary text-white'
           : 'bg-primary-50 text-primary-400';

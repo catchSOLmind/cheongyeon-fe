@@ -67,9 +67,9 @@ fetchProfile: async () => {
     }
 
     // res.data.result가 없는 경우 처리
-    const responseData = res.data || res.data;
+    const responseData = res.data;
     
-    console.log('📦 Response data to use:', responseData);
+    //console.log('📦 Response data to use:', responseData);
 
     // profile과 personalityInfo가 있는지 확인
     if (!responseData.profile || !responseData.personalityInfo) {
@@ -103,12 +103,12 @@ fetchProfile: async () => {
     const axiosError = err as AxiosError;
     const isUnauthorized = axiosError.response?.status === 401;
 
-    console.log('🔍 Error details:', {
-      status: axiosError.response?.status,
-      data: axiosError.response?.data,
-      message: err instanceof Error ? err.message : 'Unknown error',
-      isUnauthorized
-    });
+    // console.log('🔍 Error details:', {
+    //   status: axiosError.response?.status,
+    //   data: axiosError.response?.data,
+    //   message: err instanceof Error ? err.message : 'Unknown error',
+    //   isUnauthorized
+    // });
 
     if (isUnauthorized) {
       // console.log('🚪 Unauthorized - logging out...');

@@ -9,7 +9,7 @@ interface AppHeaderProps {
 }
 
 // 헤더에 로고가 있는 버전 , 누르면 홈화면으로 이동한다
-export default function AppHeader({ title = '우리집', className = '' }: AppHeaderProps) {
+export default function LogoHeader({ title = '우리집', className = '' }: AppHeaderProps) {
   const navigate = useNavigate();
 
   return (
