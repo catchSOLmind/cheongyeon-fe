@@ -19,6 +19,8 @@ import TestPage from '@/features/test/pages/TestQuestionPage';
 import TestResultPage from '@/features/test/pages/TestResultPage';
 import TestStartPage from '@/features/test/pages/TestStartPage';
 import AgreementPage from '@/features/agreement/pages/AgreementPage';
+import ChoiceReasonPage from '@/features/calendar/pages/ChoiceReasonPage';
+
 
 export const appRouter = createBrowserRouter([
   // 로그인 
@@ -65,7 +67,8 @@ export const appRouter = createBrowserRouter([
       { path: '/calendar/feedback', element: <FeedbackPage /> },
       { path: '/calendar/feedback-finish', element: <FeedbackFinishPage /> },
       { path: '/calendar/edit', element: <FeedbackPage /> }, // 디자인 완료 후 수정
-      { path: '/agreement', element: <AgreementPage/>}
+      { path: '/agreement', element: <AgreementPage/>},
+      { path: '/calendar/reason', element: <ChoiceReasonPage/>},
     ],},
     {
       // 로그인  여부와 상관없이 테스트 페이지 접근 가능 

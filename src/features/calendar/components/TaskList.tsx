@@ -5,10 +5,10 @@ import TaskItem from './TaskItem';
 import IconStar from '@/assets/calendar/icon-star.svg';
 
 import EditBottomSheet from '@/features/calendar/components/EditBottomSheet';
-import CalendarBottomSheet from '@/shared/components/CalendarBottomSheet';
 import StatusChangeBottomSheet from '@/features/calendar/components/StatusChangeBottomSheet';
 import ReasonChangeBottomSheet from './ReasonChangeBottomSheet';
 import { updateMyTaskStatus } from '../api/taskApi';
+import RescheduleFlowBottomSheet from './RescheduleBottomSheet';
 
 type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | null;
 
@@ -31,9 +31,9 @@ export default function TaskList({
 
   const [sheet, setSheet] = useState<SheetType>(null);
   const [selectedTask, setSelectedTask] = useState<MyTaskWeekItem | null>(null);
-  const [pickedDate, setPickedDate] = useState<Date | null>(null);
+  const [pickedDate,] = useState<Date | null>(null);
 
-  // ✅ 깜빡임 제거용: 낙관적 완료 상태
+  // 깜빡임 제거용: 낙관적 완료 상태
   const [localCompletedIds, setLocalCompletedIds] = useState<Set<number>>(new Set());
 
   const formatDisplayDate = (date: Date): string => {
@@ -133,21 +133,10 @@ export default function TaskList({
       />
 
       {/* 📅 날짜 변경 바텀시트 (확정 시 refetch는 OK) */}
-      <CalendarBottomSheet
+      <RescheduleFlowBottomSheet
         open={sheet === 'calendar'}
         onClose={closeAllSheets}
-        value={pickedDate}
-        year={pickedDate?.getFullYear() ?? selectedDate.getFullYear()}
-        month={(pickedDate?.getMonth() ?? selectedDate.getMonth()) + 1}
-        ctaLabel="변경하기"
-        onConfirm={(date) => {
-          if (!selectedTask) return;
-          setPickedDate(date);
-          console.log('날짜 변경 API', selectedTask.occurrenceId, date);
-
-          onTaskUpdate?.(); // 확정 저장 느낌이라 refetch OK
-          closeAllSheets();
-        }}
+        initialDate={pickedDate}
       />
 
       {/* 🔄 상태 변경 바텀시트 (확인 시 1번만 API 호출, 완료 선택이면 complete 호출) */}
