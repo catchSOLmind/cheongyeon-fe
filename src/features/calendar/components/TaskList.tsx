@@ -139,12 +139,13 @@ export default function TaskList({
         value={pickedDate}
         year={pickedDate?.getFullYear() ?? selectedDate.getFullYear()}
         month={(pickedDate?.getMonth() ?? selectedDate.getMonth()) + 1}
+        ctaLabel="변경하기"
         onConfirm={(date) => {
           if (!selectedTask) return;
           setPickedDate(date);
           console.log('날짜 변경 API', selectedTask.occurrenceId, date);
 
-          onTaskUpdate?.(); // ✅ 확정 저장 느낌이라 refetch OK
+          onTaskUpdate?.(); // 확정 저장 느낌이라 refetch OK
           closeAllSheets();
         }}
       />

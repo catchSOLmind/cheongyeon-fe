@@ -31,13 +31,15 @@ function MyworkPage() {
     enabled: true,
   });
 
-  const tasksByDate = useMemo(() => {
-    const result: Record<string, number> = {};
-    weekDates.forEach((date) => {
-      result[date] = 1;
-    });
-    return result;
-  }, [weekDates]);
+const tasksByDate = useMemo(() => {
+  const result: Record<string, number> = {};
+  
+  (weekDates ?? []).forEach((date) => {
+    result[date] = 1;
+  });
+  
+  return result;
+}, [weekDates]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
