@@ -1,5 +1,5 @@
 // MyPage.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ResultType } from "@/features/test/types/test.types";
 import { getProfile } from "@/features/calendar/api/profileApi";
 import type { ProfileResponse } from "@/features/calendar/types/profile.types";
@@ -9,8 +9,9 @@ const TYPE_META = new Map<ResultType, { emoji: string }>([
   ["RELAXED", { emoji: "🛋️" }],
   ["EFFICIENT", { emoji: "⚡️" }],
   ["PROCRASTINATOR", { emoji: "⏳" }],
-  [null, { emoji: "🧩" }],
 ]);
+
+const DEFAULT_TYPE_EMOJI = "🧩";
 
 const formatMonthLabel = (ym?: string) => {
   if (!ym) return "";
@@ -114,10 +115,12 @@ export default function MyPage() {
 
           <div className="mt-3 flex items-center gap-3">
             <div className="h-10 w-10 rounded-2xl bg-amber-50 flex items-center justify-center">
-              {TYPE_META.get(personalityInfo.houseworkType)?.emoji}
+              {personalityInfo.houseworkType
+                ? (TYPE_META.get(personalityInfo.houseworkType)?.emoji ?? DEFAULT_TYPE_EMOJI)
+                : DEFAULT_TYPE_EMOJI}
             </div>
 
-            {personalityInfo.houseworkType === null ? (
+            {!personalityInfo.houseworkType ? (
               <button
                 type="button"
                 className="text-[14px] font-semibold text-primary underline"
@@ -133,6 +136,8 @@ export default function MyPage() {
               </span>
             )}
           </div>
+        </div>
+
         </div>
 
         {/* 이번 달 성과 */}
@@ -216,7 +221,6 @@ export default function MyPage() {
           )}
         </div>
       </div>
-    </div>
   );
 }
 

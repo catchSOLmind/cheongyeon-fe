@@ -1,7 +1,7 @@
 import ImgDefault from "@/assets/common/img-default-profile.svg";
 
 interface MemberChoiceItemProps {
-  groupMemberId: number; // string → number로 변경
+  groupMemberId: number;
   nickname: string;
   profileImageUrl?: string | null;
   testResultTypeLabel?: string | null; // FeedbackPage에서 전달하는 prop 이름과 일치

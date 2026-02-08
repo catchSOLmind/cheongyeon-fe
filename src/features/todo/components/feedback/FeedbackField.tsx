@@ -35,10 +35,12 @@ type Props = {
           >
             <div className="px-4 py-2">
               {categories.map((c) => (
-                <MemberChoiceItem
+              <MemberChoiceItem
                   key={c.id}
-                  id={c.id}
-                  name={c.name}
+                  groupMemberId={Number(c.id)}    
+                  nickname={c.name}              
+                  profileImageUrl={null}    // 수정
+                  testResultTypeLabel={null}     //수정 
                   isSelected={c.name === categoryName}
                   onClick={() => onSelectCategory(c.id)}
                 />
