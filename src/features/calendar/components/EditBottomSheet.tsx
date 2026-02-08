@@ -6,15 +6,18 @@ import IconDelete from "@/assets/calendar/toggle/icon-delete.svg";
 import IconGive from "@/assets/calendar/toggle/icon-give.svg";
 import IconPencil from "@/assets/calendar/toggle/icon-pencil.svg";
 import IconState from "@/assets/calendar/toggle/icon-state.svg";
+import { deleteMyTask } from '../api/myTaskEditApi';
+
 
 interface EditBottomSheetProps {
   open: boolean;
   onClose: () => void;
   task: MyTaskWeekItem | null;
-
   onOpenDateChange: () => void; // 날짜 변경 
   onOpenStatusChange: () => void; // 상태 변경 
   onOpenAllChange: () => void; // 상태 변경 
+  onDeleted: () => void;  // 할일 삭제 
+
 }
 
 export default function EditBottomSheet({
@@ -24,6 +27,7 @@ export default function EditBottomSheet({
   onOpenDateChange,
   onOpenStatusChange,
   onOpenAllChange,
+  onDeleted, 
 }: EditBottomSheetProps) {
 
   const handleStatusChange = () => {
@@ -39,6 +43,17 @@ export default function EditBottomSheet({
   const handleAllChange = () => {
     onOpenAllChange(); // 모든 요소 수정 페이지 열기
   }
+
+  const handleDeleteAll = async () => { 
+  if (!task) return; 
+    try {
+      await deleteMyTask(task.occurrenceId); //선택된 task 삭제 
+      onDeleted();
+      onClose();
+    } catch (e) {
+      console.error('삭제 실패:', e);
+    }
+  };
 
   return (
     <BottomSheet
@@ -81,7 +96,10 @@ export default function EditBottomSheet({
           <span className="text-body-l-bold">수정하기</span>
         </button>
 
-        <button className="flex gap-4 px-4 py-3">
+        <button 
+          className="flex gap-4 px-4 py-3"
+          onClick={handleDeleteAll}
+        >
           <img src={IconDelete} className="w-6 h-6" />
           <span className="text-body-l-bold text-red-500">삭제하기</span>
         </button>

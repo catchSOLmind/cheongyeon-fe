@@ -10,6 +10,7 @@ import Header from '@/shared/components/Header';
 import Imgcoin from '@/assets/todo/icon-coin.svg';
 import ImgStar from '@/assets/todo/icon-star.svg';
 import ImgStarFill from '@/assets/todo/icon-star-fill.svg';
+import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
 
 // ---------- Calendar UI utils ----------
 function getCalendarCells(year: number, month: number) {
@@ -171,6 +172,7 @@ type Step = 'FORM' | 'CALENDAR' | 'TIME' | 'ASSIGNEE' | 'DONE';
 type Props = {
   open: boolean;
   onClose: () => void;
+  task: MyTaskWeekItem | null;
   initialDate?: Date | null;
   calendarCtaLabel?: string; // "변경하기" | "연결하기"
 };

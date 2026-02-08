@@ -7,7 +7,7 @@ import IconStar from '@/assets/calendar/icon-star.svg';
 import EditBottomSheet from '@/features/calendar/components/EditBottomSheet';
 import StatusChangeBottomSheet from '@/features/calendar/components/StatusChangeBottomSheet';
 import ReasonChangeBottomSheet from './ReasonChangeBottomSheet';
-import { updateMyTaskStatus } from '../api/taskApi';
+import { updateMyTaskStatus } from '../api/myTaskEditApi';
 import RescheduleFlowBottomSheet from './RescheduleBottomSheet';
 import EditAllFlowBottomSheet from '@/shared/components/EditAllBottomsheet';
 
@@ -29,7 +29,6 @@ export default function TaskList({
   onCompleteTask,
 }: TaskListProps) {
   const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
-
   const [sheet, setSheet] = useState<SheetType>(null);
   const [selectedTask, setSelectedTask] = useState<MyTaskWeekItem | null>(null);
   const [pickedDate,] = useState<Date | null>(null);
@@ -116,7 +115,7 @@ export default function TaskList({
             <TaskItem
               key={taskItem.occurrenceId}
               task={taskItem}
-              isLocallyCompleted={localCompletedIds.has(taskItem.occurrenceId)} // ✅ 전달
+              isLocallyCompleted={localCompletedIds.has(taskItem.occurrenceId)}
               onToggleComplete={() => handleToggleComplete(taskItem.occurrenceId)}
               onOpenBottomSheet={openEditSheet}
             />
@@ -124,7 +123,7 @@ export default function TaskList({
         </div>
       )}
 
-      {/* ✏️ 편집 바텀시트 */}
+      {/* 편집 바텀시트 (부모 바텀시트) */}
       <EditBottomSheet
         open={sheet === 'edit'}
         onClose={closeAllSheets}
@@ -132,27 +131,16 @@ export default function TaskList({
         onOpenDateChange={() => setSheet('calendar')}
         onOpenStatusChange={() => setSheet('status')}
         onOpenAllChange={() => setSheet('allEdit') }
-      />
+        onDeleted={() => {
+            onTaskUpdate?.();   
+            closeAllSheets();
+          }}
+        />
 
-      {/* 날짜 변경 바텀시트 */}
-      <RescheduleFlowBottomSheet
-        open={sheet === 'calendar'}
-        onClose={closeAllSheets}
-        initialDate={pickedDate}
-      />
-
-     {/* 📅 전체 수정 바텀시트*/}
-      <EditAllFlowBottomSheet
-        open={sheet === 'allEdit'}
-        onClose={closeAllSheets}
-        initialDate={pickedDate}
-      />
-
-
-      {/* 상태 변경 바텀시트 */}
+        {/* 상태 변경 바텀시트 */}
         <StatusChangeBottomSheet
           open={sheet === 'status'}
-          onClose={closeAllSheets}
+          task={selectedTask}
           initialStatus={selectedTask?.status ?? 'WAITING'}
           onConfirmStatus={async (status) => {
             if (!selectedTask) return;
@@ -160,23 +148,45 @@ export default function TaskList({
             onTaskUpdate?.();
           }}
           onOpenIncompleteReason={() => setSheet('reason')}
-        />
-
-        <ReasonChangeBottomSheet
-          open={sheet === 'reason'}
           onClose={closeAllSheets}
-          onConfirm={async ({ reasonCode, reasonText }) => {
-            if (!selectedTask) return;
-            await updateMyTaskStatus(selectedTask.occurrenceId, {
-              status: 'INCOMPLETED',
-              reasonCode,
-              reasonText,
-            });
-            onTaskUpdate?.();
-            closeAllSheets();
-          }}
         />
 
-    </div>
+          {/* 날짜 변경 바텀시트 */}
+          <RescheduleFlowBottomSheet
+            open={sheet === 'calendar'}
+            initialDate={selectedDate}
+            task={selectedTask}
+            onUpdated={() => {
+              onTaskUpdate?.();
+              closeAllSheets();
+            }}
+            onClose={closeAllSheets}
+          />
+
+          <ReasonChangeBottomSheet
+            open={sheet === 'reason'}
+            onClose={closeAllSheets}
+            task={selectedTask}
+            onConfirm={async ({ reasonCode, reasonText }) => {
+              if (!selectedTask) return;
+              await updateMyTaskStatus(selectedTask.occurrenceId, {
+                status: 'INCOMPLETED',
+                reasonCode,
+                reasonText,
+              });
+              onTaskUpdate?.();
+              closeAllSheets();
+            }}
+          />
+
+          {/* 전체 수정 바텀시트*/}
+          <EditAllFlowBottomSheet
+            open={sheet === 'allEdit'}
+            onClose={closeAllSheets}
+            task={selectedTask}
+            initialDate={pickedDate}
+          />
+
+        </div>
   );
 }
