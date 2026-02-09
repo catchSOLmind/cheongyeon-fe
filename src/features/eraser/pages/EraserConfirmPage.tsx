@@ -241,7 +241,7 @@ export default function EraserConfirmPage() {
       const title = uiMap.get(r.suggestionTaskId)?.title ?? '업무';
       const hours = Math.ceil((r.estimatedMinutes ?? 0) / 60);
       return {
-        label: `${title} ${r.count ?? 0}개 (${hours}시간)`,
+        label: `${title} ${r.count ?? 0} (${hours}시간)`,
         price: r.price ?? 0,
       };
     });
