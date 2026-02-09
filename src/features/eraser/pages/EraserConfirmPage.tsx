@@ -3,11 +3,13 @@ import { useLocation } from 'react-router-dom';
 import Header from '@/shared/components/Header';
 import PlaceholderImg from '@/assets/common/img-default-profile.svg';
 import { useUserStore } from '@/features/auth/stores/useUserStore';
-
+import { useNavigate } from 'react-router-dom';
 import CalendarBottomSheet from '@/shared/components/CalendarBottomSheet';
 import TimeWheelBottomSheet from '@/shared/components/TimewheelBottomsheet';
 import type { TimeValue } from '@/shared/utils/Timeutils';
 import PaySelectBottomSheet from '@/features/eraser/components/PaySelectBottomSheet';
+import type { ReservationConfirmRequest } from '../types/payment.types';
+import { postEraserReservation } from '../api/eraserPaymentApi';
 
 
 // 결제 UI 계산을 위해 메타 포함 (앞 단계에서 반드시 넘겨줘야 값이 살아있음)
@@ -198,14 +200,14 @@ function ReservationCard({
 
 export default function EraserConfirmPage() {
   const { state } = useLocation() as { state: LocationState };
+  const navigate = useNavigate();
 
-  useEffect(() => {
-  console.log('✅ confirm state:', state);
-  console.log('✅ reservations:', state?.reservations);
-}, [state]);
+//   useEffect(() => {
+//   console.log('✅ confirm state:', state);
+//   console.log('✅ reservations:', state?.reservations);
+// }, [state]);
 
   // state 값들
-  const usedPoint = state?.usedPoint ?? 0;
   const items = state?.items ?? [];
   const initialReservations = state?.reservations ?? [];
 
@@ -315,7 +317,6 @@ export default function EraserConfirmPage() {
       </div>
     );
   }
-
   return (
     <div className="bg-white pb-[110px]">
       <Header showBackButton title="" />
@@ -398,8 +399,20 @@ export default function EraserConfirmPage() {
         open={openPaySheet}
         onClose={() => setOpenPaySheet(false)}
         plannedItems={plannedItems}
-        discountPoint={usedPoint}
-      />
+        onConfirm={(usedPoint) => {
+            const payload: ReservationConfirmRequest = {
+            usedPoint,
+            reservations: reservations.map((r) => ({
+                suggestionTaskId: r.suggestionTaskId,
+                optionId: r.optionId,
+                visitDate: r.visitDate,
+                visitTime: r.visitTime,
+            })),
+            };
+            postEraserReservation(payload).then(() => navigate('/calendar'));
+        }}
+        />
+
     </div>
   );
 }

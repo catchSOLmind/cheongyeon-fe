@@ -1,9 +1,10 @@
 // src/features/eraser/components/PaySelectBottomSheet.tsx
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import BottomSheet from '@/shared/components/BottomSheet';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
 import IconCoupon from '@/assets/eraser/icon-coupon.svg';
+import { getEraserPaymentInfo } from '@/features/eraser/api/eraserPaymentApi';
 
 type PayItem = {
   label: string;
@@ -14,13 +15,11 @@ type Props = {
   open: boolean;
   onClose: () => void;
 
-  // 하드코딩/임시값(원하면 나중에 실제 연결)
-  availablePoint?: number; // 사용 가능 포인트
-  ownedPoint?: number; // 보유 포인트(없으면 0)
-
-  // 실제 계산에 쓰는 값
   plannedItems?: PayItem[];
-  discountPoint?: number; // 할인(포인트 사용) 금액
+
+  // ✅ ConfirmPage에서 최종 POST 할 거면,
+  // 시트는 "확정" 이벤트만 올려주면 됨
+  onConfirm: (usedPoint: number) => void;
 };
 
 function formatWon(n: number) {
@@ -38,34 +37,78 @@ function CardIcon({ text }: { text: string }) {
 export default function PaySelectBottomSheet({
   open,
   onClose,
-  availablePoint = 10000,
-  ownedPoint = 0,
   plannedItems = [],
-  discountPoint = 0,
+  onConfirm,
 }: Props) {
   // 상세 토글
   const [detailOpen, setDetailOpen] = useState(true);
 
-  // 포인트 입력 UI(일단 하드코딩 영역 유지)
-  const [pointInput, setPointInput] = useState(
-    String((discountPoint ?? 0).toLocaleString())
-  );
+  // ✅ 포인트 응답값 저장
+  const [ownedPoint, setOwnedPoint] = useState(0); // currentPoint
+  const [availablePoint, setAvailablePoint] = useState(0); // maxUsablePoint
+  const [loadingPoint, setLoadingPoint] = useState(false);
+
+  // 포인트 입력 UI
+  const [pointInput, setPointInput] = useState('0');
+  const isUsingPoint = Number(pointInput || 0) > 0;
+
+  // ✅ 바텀시트 열릴 때 포인트 조회
+  useEffect(() => {
+    if (!open) return;
+
+    let alive = true;
+
+    const run = async () => {
+      try {
+        setLoadingPoint(true);
+        const res = await getEraserPaymentInfo();
+        if (!alive) return;
+        if (!res.isSuccess) return;
+
+        setOwnedPoint(res.result.currentPoint ?? 0);
+        setAvailablePoint(res.result.maxUsablePoint ?? 0);
+      } catch (e) {
+        console.error('포인트 조회 실패', e);
+      } finally {
+        if (alive) setLoadingPoint(false);
+      }
+    };
+
+    run();
+    return () => {
+      alive = false;
+    };
+  }, [open]);
 
   // 계산
   const subtotal = useMemo(() => {
     return plannedItems.reduce((sum, it) => sum + (it.price ?? 0), 0);
   }, [plannedItems]);
 
+  // ✅ 할인 = pointInput 기반 + subtotal/availablePoint 상한 처리
   const discount = useMemo(() => {
-    const req = Math.max(0, discountPoint ?? 0);
-    return Math.min(req, subtotal);
-  }, [discountPoint, subtotal]);
+    const req = Math.max(0, Number(pointInput || 0));
+    const cappedByAvailable = Math.min(req, availablePoint);
+    return Math.min(cappedByAvailable, subtotal);
+  }, [pointInput, availablePoint, subtotal]);
 
   const total = useMemo(() => {
     return Math.max(0, subtotal - discount);
   }, [subtotal, discount]);
 
   const hasItems = plannedItems.length > 0;
+
+  const handleTogglePoint = () => {
+    // 사용 중이면 → 사용 안함
+    if (isUsingPoint) {
+      setPointInput('0');
+      return;
+    }
+
+    // 모두 사용 → availablePoint 전부 입력 (단, 결제금액(subtotal) 초과하면 subtotal까지만)
+    const next = Math.min(availablePoint, subtotal);
+    setPointInput(String(next));
+  };
 
   return (
     <BottomSheet
@@ -90,8 +133,6 @@ export default function PaySelectBottomSheet({
           </button>
 
           <div className="flex-1" />
-
-          {/* 오른쪽은 비워둠(정렬 맞추기용) */}
           <div className="h-8 w-8" />
         </div>
 
@@ -103,18 +144,14 @@ export default function PaySelectBottomSheet({
 
       {/* 쿠폰 */}
       <div className="mt-6 px-5">
-        <div className="flex items-center justify-between">
-          <p className="text-display-xs text-black">쿠폰</p>
-        </div>
+        <p className="text-display-xs text-black">쿠폰</p>
 
-       <div className="mt-3 flex items-center gap-2">
-        <img src = {IconCoupon} className='w-7 h-10'/>
-        <p className="text-body-m text-gray-900">미적용</p>
-        <button
-            type="button"
-            className="ml-auto text-body-m-bold text-primary">
+        <div className="mt-3 flex items-center gap-2">
+          <img src={IconCoupon} className="w-7 h-10" />
+          <p className="text-body-m text-gray-900">미적용</p>
+          <button type="button" className="ml-auto text-body-m-bold text-primary">
             추가
-        </button>
+          </button>
         </div>
 
         <p className="mt-4 text-body-m text-gray-600">사용 가능한 쿠폰이 없습니다.</p>
@@ -122,7 +159,7 @@ export default function PaySelectBottomSheet({
 
       <div className="mt-4 h-3 bg-[#FAFAFA]" />
 
-      {/* 보유 포인트 사용 (하드코딩 UI 유지) */}
+      {/* 보유 포인트 사용 */}
       <div className="px-5 pt-5">
         <p className="text-display-xs text-black">보유 포인트 사용</p>
 
@@ -138,7 +175,12 @@ export default function PaySelectBottomSheet({
             <div className="flex-1 rounded-lg border border-gray-300 px-4 py-2 h-[44px]">
               <input
                 value={pointInput}
-                onChange={(e) => setPointInput(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^\d]/g, '');
+                  // ✅ 사용 가능 포인트/소계 상한을 넘겨도 입력은 허용,
+                  // 계산(discount)에서 clamp 처리됨
+                  setPointInput(v);
+                }}
                 inputMode="numeric"
                 className="w-full bg-transparent outline-none text-body-m text-gray-900"
               />
@@ -146,26 +188,29 @@ export default function PaySelectBottomSheet({
 
             <button
               type="button"
-              className="h-[44px] rounded-lg bg-primary px-4 text-body-m-bold text-white"
+              onClick={handleTogglePoint}
+              disabled={loadingPoint || !hasItems}
+              className={[
+                'h-[44px] rounded-lg px-4 text-body-m-bold text-white',
+                loadingPoint || !hasItems ? 'bg-gray-200 text-gray-400' : 'bg-primary',
+              ].join(' ')}
             >
-              사용 안함
+              {isUsingPoint ? '사용 안함' : '모두 사용'}
             </button>
           </div>
 
           <div className="mt-2 flex items-center gap-2">
             <p className="text-body-m-bold text-primary-800">
-                사용 가능 {availablePoint.toLocaleString()}P / 
+              사용 가능 {availablePoint.toLocaleString()}P /
             </p>
-            <p className="text-body-m text-gray-600">
-            보유 {ownedPoint.toLocaleString()}P
-            </p>
-            </div>
+            <p className="text-body-m text-gray-600">보유 {ownedPoint.toLocaleString()}P</p>
+          </div>
         </div>
       </div>
 
       <div className="mt-5 h-3 bg-[#FAFAFA]" />
 
-      {/* 결제수단 (하드코딩) */}
+      {/* 결제수단 */}
       <div className="px-6 pt-5">
         <div className="flex items-center justify-between">
           <p className="text-display-xs text-black">결제수단</p>
@@ -175,7 +220,7 @@ export default function PaySelectBottomSheet({
         </div>
 
         <div className="mt-8 flex items-center gap-2">
-          <CardIcon text="Pay"/>
+          <CardIcon text="Pay" />
           <p className="text-body-l-bold text-black">결제수단 없음</p>
         </div>
 
@@ -184,7 +229,7 @@ export default function PaySelectBottomSheet({
 
       <div className="mt-5 h-3 bg-[#FAFAFA]" />
 
-      {/* 결제 예정내역 ~ 할인금액 ~ 총 결제금액 */}
+      {/* 결제 예정내역 */}
       <div className="px-6 pt-5">
         <button
           type="button"
@@ -257,7 +302,13 @@ export default function PaySelectBottomSheet({
       </div>
 
       <BottomCTAWrapper showTopBorder sticky>
-        <BottomCTAButton label='예약 완료하기'/>
+        <BottomCTAButton
+          label="예약 완료하기"
+          disabled={!hasItems}
+          onClick={() => {
+            onConfirm(discount);
+          }}
+        />
       </BottomCTAWrapper>
 
       <div className="h-3" />

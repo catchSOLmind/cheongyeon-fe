@@ -18,7 +18,7 @@ function WheelPicker<T>({
   items,
   value,
   onChange,
-  itemHeight = 40,
+  itemHeight = 45,
   visibleCount = 5,
   renderItem,
 }: WheelPickerProps<T>) {
@@ -96,6 +96,7 @@ function WheelPicker<T>({
 
   return (
     <div className="relative" style={{ height: containerHeight }}>
+      
       <div
         ref={ref}
         className="overflow-y-scroll h-full scrollbar-hide"
@@ -109,10 +110,10 @@ function WheelPicker<T>({
           const dist = Math.abs(idx - activeIndex);
           const textClass =
             dist === 0
-              ? 'text-gray-900'
+              ? 'text-gray-900 text-[24px] font-semibold '
               : dist === 1
-                ? 'text-gray-500'
-                : 'text-gray-300';
+                ? 'text-gray-500 text-[18px] font-semibold'
+                : 'text-gray-300 text-[14px] font-semibold' ;
           return (
             <div
               key={idx}
@@ -149,30 +150,23 @@ export default function TimeWheelBottomSheet({
   initialValue = { ampm: '오전', hour: 12, minute: 0 },
   onConfirm,
   pending = false,
-  title = '시간 선택',
   confirmLabel = '확인',
 }: TimeWheelBottomSheetProps) {
   const [local, setLocal] = useState(initialValue);
 
   const hours = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
-  const minutes = useMemo(() => [0, 10, 20, 30, 40, 50], []);
+  const minutes = useMemo(() => {
+  return Array.from({ length: 60 }, (_, i) => i); 
+  }, []);
 
   // open이 변경될 때마다 initialValue로 리셋
   const resetKey = open ? JSON.stringify(initialValue) : 'closed';
 
   return (
     <BottomSheet open={open} onClose={onClose} height="399px">
-      <div className="pt-6 px-4 pb-4 flex flex-col h-full" key={resetKey}>
-        {/* Header */}
-        <div className="flex items-center mb-6">
-          <button onClick={onClose} className="text-gray-700 mr-3">
-            ←
-          </button>
-          <h2 className="text-title-l-bold">{title}</h2>
-        </div>
-
+      <div className="pt-6 pb-4 flex flex-col h-full" key={resetKey}>
         {/* Wheel Container */}
-        <div className="flex-1 flex items-center justify-center gap-2">
+        <div className="flex-1 px-4 flex items-center justify-center gap-2">
           {/* 오전/오후 */}
           <div className="flex-1">
             <WheelPicker
