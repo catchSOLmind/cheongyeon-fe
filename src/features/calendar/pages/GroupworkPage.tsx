@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Calendar from "../components/Calendar";
 import GroupTaskList from "../components/GroupTaskList";
@@ -9,11 +9,15 @@ import { formatDateKey } from "../utils/dateUtils";
 import { Dashboard } from "../components/Dashboard";
 import ImgDefault from '@/assets/common/img-default-profile.svg';
 import { useUserStore } from "@/features/auth/stores/useUserStore";
+import { getGroupTasksCalendar } from "../api/groupTaskApi";
 
 function GroupworkPage() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  // dot
+  const [taskDates, setTaskDates] = useState<string[]>([]);
+  const [, setCalendarLoading] = useState(false);
 
   const profile = useUserStore((s) => s.profile);
   const fetchProfile = useUserStore((s) => s.fetchProfile);
@@ -23,13 +27,13 @@ function GroupworkPage() {
   const groupId = profile?.groupId;
 
   // 디버깅: groupId 확인
-  console.log('🔍 GroupworkPage Debug:', {
-    profile,
-    groupId,
-    isProfileFetched,
-    isProfileLoading,
-    hasGroupId: typeof groupId === 'number' && groupId > 0
-  });
+  // console.log('🔍 GroupworkPage Debug:', {
+  //   profile,
+  //   groupId,
+  //   isProfileFetched,
+  //   isProfileLoading,
+  //   hasGroupId: typeof groupId === 'number' && groupId > 0
+  // });
   
   useEffect(() => {
     if (!isProfileFetched) {
@@ -45,26 +49,47 @@ function GroupworkPage() {
 
   const selectedDateStr = formatDateKey(selectedDate);
 
-  const { tasks, weekDates, isLoading, refetch } = useGroupTasks({
+  const { tasks, isLoading, refetch } = useGroupTasks({
     groupId: groupId ?? 0,
     date: selectedDateStr,
     enabled: typeof groupId === 'number' && groupId > 0,
   });
 
-const tasksByDate = useMemo(() => {
-  const result: Record<string, number> = {};
-  
-  // 방어 로직 추가
-  if (!weekDates || !Array.isArray(weekDates)) {
-    console.warn('weekDates is not available:', weekDates);
-    return result; // 빈 객체 반환
-  }
-  
-  weekDates.forEach((date) => {
-    result[date] = 1;
-  });
-  return result;
-}, [weekDates]);
+    useEffect(() => {
+    if (!groupId || groupId <= 0) return;
+
+    let alive = true;
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+
+    const run = async () => {
+      try {
+        setCalendarLoading(true);
+
+        const res = await getGroupTasksCalendar({
+          groupId,
+          year,
+          month,
+        });
+
+        if (!alive) return;
+        setTaskDates(res.taskDates?? []);
+      } catch (e) {
+        console.error('[getGroupTasksCalendar] error:', e);
+        if (alive) setTaskDates([]);
+      } finally {
+        if (alive) setCalendarLoading(false);
+      }
+    };
+
+    run();
+    return () => {
+      alive = false;
+    };
+  }, [currentDate, groupId]);
+
+
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -111,7 +136,7 @@ const tasksByDate = useMemo(() => {
         <Calendar
           currentDate={currentDate}
           onDateSelect={handleDateSelect}
-          tasksByDate={tasksByDate}
+          taskDates={taskDates}
         />
       </div>
 

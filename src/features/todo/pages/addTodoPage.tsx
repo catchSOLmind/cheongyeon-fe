@@ -52,7 +52,7 @@ function AddTodoPage() {
   const favoriteIds = useFavoriteStore((s) => s.favoriteIds);
   const fetchFavorites = useFavoriteStore((s) => s.fetchFavorites);
 
-  // ✅ 내 프로필
+  // 내 프로필
   const profile = useUserStore((s) => s.profile);
   const fetchProfile = useUserStore((s) => s.fetchProfile);
 
@@ -80,7 +80,7 @@ const todos: DraftTaskItemData[] = useMemo(() => {
         : undefined;
 
     return {
-      id: String(draft.draftId), // ✅ string 보장
+      id: String(draft.draftId), // string 보장
       taskTypeId: draft.taskTypeId,
       categoryType: draft.categoryType,
       title: draft.taskName,
@@ -88,9 +88,9 @@ const todos: DraftTaskItemData[] = useMemo(() => {
       time: draft.time ?? null,
       points: draft.point,
 
-      // ✅ DraftAssignee 타입에 정확히 맞춤
+      // DraftAssignee 타입에 정확히 맞춤
       assignee: {
-          memberId: draft.assignee?.memberId ?? 0, // ✅ profile은 관여 안 함
+          memberId: draft.assignee?.memberId ?? 0, // profile은 관여 안 함
           nickname: assigneeNickname,
           profileImageUrl: assigneeProfileImageUrl,
         },
@@ -120,7 +120,7 @@ const todos: DraftTaskItemData[] = useMemo(() => {
       const taskTypeIds = Array.from(new Set(drafts.map((d) => d.taskTypeId)));
 
       // ⚠️ 서버 요청 body는 "수정하면 안 된다"고 했으니 그대로 유지
-      await addMyTasks({ date, taskTypeIds });
+      await addMyTasks({ date, taskTypeIds ,  });
 
       clearDrafts();
       navigate('/calendar');
@@ -182,7 +182,7 @@ const todos: DraftTaskItemData[] = useMemo(() => {
         </div>
       </div>
 
-      {/* ✅ 편집 바텀시트 */}
+      {/* 편집 바텀시트 */}
       {editDraftId && (
         <EditDraftFlowBottomSheet
           open={!!editDraftId}

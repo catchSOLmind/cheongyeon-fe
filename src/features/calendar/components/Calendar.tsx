@@ -6,7 +6,7 @@ interface CalendarProps {
   currentDate?: Date;
   onDateSelect?: (date: Date) => void;
 
-  /** ✅ /my-tasks/calendar에서 받은 날짜 목록: ['2026-02-09', ...] */
+  /** /my-tasks/calendar에서 받은 날짜 목록: ['2026-02-09', ...] */
   taskDates?: string[];
 }
 
