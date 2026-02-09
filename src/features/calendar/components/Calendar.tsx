@@ -1,17 +1,19 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 
 const dayLabels = ['일', '월', '화', '수', '목', '금', '토'] as const;
 
 interface CalendarProps {
   currentDate?: Date;
   onDateSelect?: (date: Date) => void;
-  tasksByDate?: Record<string, number>; // 날짜별 할 일 개수
+
+  /** ✅ /my-tasks/calendar에서 받은 날짜 목록: ['2026-02-09', ...] */
+  taskDates?: string[];
 }
 
 function Calendar({
   currentDate = new Date(),
   onDateSelect,
-  tasksByDate = {},
+  taskDates = [],
 }: CalendarProps) {
   const [selectedDate, setSelectedDate] = useState(currentDate);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -21,6 +23,9 @@ function Calendar({
   useEffect(() => {
     setSelectedDate(currentDate);
   }, [currentDate]);
+
+  // ✅ 빠른 조회를 위해 Set으로 변환 (렌더링 최적화)
+  const taskDateSet = useMemo(() => new Set(taskDates), [taskDates]);
 
   // 오늘 기준 주간 날짜 (항상 이번 주)
   const getTodayWeekDates = () => {
@@ -81,11 +86,11 @@ function Calendar({
     const firstWeekStart = new Date(firstDayOfMonth);
     firstWeekStart.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
     firstWeekStart.setHours(0, 0, 0, 0);
-    
+
     const dateWeekStart = new Date(date);
     dateWeekStart.setDate(date.getDate() - date.getDay());
     dateWeekStart.setHours(0, 0, 0, 0);
-    
+
     return firstWeekStart.getTime() === dateWeekStart.getTime();
   };
 
@@ -100,31 +105,32 @@ function Calendar({
   const selectedIsInFirstWeek = isInFirstWeek(selectedDate);
   const selectedDayIndex = selectedDate.getDay();
 
+  // 할일이 있다면 닷 표시
+  const hasDot = (date: Date) => taskDateSet.has(formatDateKey(date));
+
   return (
     <div ref={containerRef} className="w-full relative px-3">
       {/* 요일 라벨 (항상 고정) */}
       <div className="grid grid-cols-7 gap-1">
         {dayLabels.map((day, index) => {
           // 주간 캘린더에서 선택된 날짜인지 확인
-          const isSelectedInWeekView = !isExpanded && todayWeekDates.some((date) => isSelected(date));
+          const isSelectedInWeekView =
+            !isExpanded && todayWeekDates.some((date) => isSelected(date));
           const selectedWeekDayIndex = isSelectedInWeekView ? selectedDate.getDay() : -1;
-          
+
           // 월간 캘린더에서 첫 번째 주 선택된 날짜인지 확인
-          const isSelectedInMonthView = isExpanded && selectedIsInFirstWeek && index === selectedDayIndex;
-          
-          const isSelectedDay = 
-            (isSelectedInWeekView && index === selectedWeekDayIndex) ||
-            isSelectedInMonthView;
-          
+          const isSelectedInMonthView =
+            isExpanded && selectedIsInFirstWeek && index === selectedDayIndex;
+
+          const isSelectedDay =
+            (isSelectedInWeekView && index === selectedWeekDayIndex) || isSelectedInMonthView;
+
           return (
             <div
               key={index}
               className={`
                 text-center text-label-l-regular py-1 pointer-events-none
-                ${isSelectedDay 
-                  ? 'bg-primary text-white rounded-t-lg text-label-l-regular' 
-                  : 'text-gray-600'
-                }
+                ${isSelectedDay ? 'bg-primary text-white rounded-t-lg text-label-l-regular' : 'text-gray-600'}
               `}
             >
               {day}
@@ -141,8 +147,6 @@ function Calendar({
       >
         <div className="grid grid-cols-7 gap-1 -mt-1">
           {todayWeekDates.map((date, index) => {
-            const dateKey = formatDateKey(date);
-            const hasTasks = (tasksByDate[dateKey] ?? 0) > 0;
             const selected = isSelected(date);
 
             return (
@@ -159,7 +163,14 @@ function Calendar({
                 `}
               >
                 {date.getDate()}
-                {hasTasks && <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-primary" />}
+                  {hasDot(date) && (
+                    <div
+                      className={[
+                        'absolute bottom-0.5 w-[6px] h-[6px] rounded-full',
+                        selected ? 'bg-white' : 'bg-primary',
+                      ].join(' ')}
+                    />
+                  )}
               </button>
             );
           })}
@@ -174,9 +185,6 @@ function Calendar({
       >
         <div className="grid grid-cols-7 gap-1 -mt-1">
           {monthDates.map((date, index) => {
-            const dateKey = formatDateKey(date);
-            const hasTasks = (tasksByDate[dateKey] ?? 0) > 0;
-
             const selected = isSelected(date);
             const inMonth = isCurrentMonth(date);
             const isFirstWeek = isInFirstWeek(date);
@@ -201,7 +209,14 @@ function Calendar({
                 `}
               >
                 {date.getDate()}
-                {hasTasks && <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-primary" />}
+                {hasDot(date) && (
+                  <div
+                    className={[
+                      'absolute bottom-0.5 w-[6px] h-[6px] rounded-full',
+                      selected ? 'bg-white' : 'bg-primary',
+                    ].join(' ')}
+                  />
+                )}
               </button>
             );
           })}

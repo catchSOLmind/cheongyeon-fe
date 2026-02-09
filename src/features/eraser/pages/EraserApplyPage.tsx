@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/shared/components/Header';
 
 import type { EraserSuggestionTaskWithOptions } from '@/features/eraser/types/eraserOptions.types';
-import { getEraserOptions } from '@/features/eraser/api/EraserApi';
+import { getEraserOptions } from '@/features/eraser/api/eraserApi';
 
 type LocationState = {
   suggestionTaskIds?: number[];
@@ -63,6 +63,7 @@ export default function EraserApplyPage() {
       return sum + (opt?.price ?? 0);
     }, 0);
   }, [tasks, selectedOptionByTaskId]);
+
 
   // 직접 진입 방지
   if (suggestionTaskIds.length === 0) {
@@ -192,20 +193,30 @@ export default function EraserApplyPage() {
           </div>
 
           <button
-            type="button"
-            className="h-14 px-10 rounded-lg bg-primary-500 text-white text-body-m-bold"
-            onClick={() => {
-              // 다음 단계로 넘길 payload
-              const payload = tasks.map((t) => ({
-                suggestionTaskId: t.suggestionTaskId,
-                optionId: selectedOptionByTaskId[t.suggestionTaskId],
-              }));
-              console.log('apply payload:', payload);
-              navigate('/');
-            }}
-          >
-            다음
-          </button>
+              type="button"
+              className="h-14 px-10 rounded-lg bg-primary-500 text-white text-body-m-bold"
+              onClick={() => {
+                // 큐로 쌓아서 최종 제출 
+                const queue = tasks.map((t) => ({
+                  suggestionTaskId: t.suggestionTaskId,
+                  optionId: selectedOptionByTaskId[t.suggestionTaskId],
+                  title: t.title,
+                  imgUrl: t.imgUrl ?? null,
+                }));
+
+                console.log('queue:', queue);
+
+                navigate('/eraser/date', {
+                  state: {
+                    queue,
+                    done: [],
+                    usedPoint: 0,
+                  },
+                });
+              }}
+            >
+              다음
+            </button>
         </div>
 
         {/* <p className="mt-2 text-body-s text-gray-500">
