@@ -4,6 +4,7 @@ import ImgEraserResult from '@/assets/eraser/img-magic-result.png';
 import ImgTime from '@/assets/eraser/img-total-time.png';
 import ImgPoint from '@/assets/eraser/img-total-point.png';
 import IconDown from '@/assets/eraser/icon-right-blue.svg';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -14,7 +15,7 @@ export default function EraserPage() {
   const [items, setItems] = useState<EraserRecommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     let alive = true;
@@ -24,8 +25,9 @@ export default function EraserPage() {
         setLoading(true);
         const res = await getEraserRecommendations();
         if (!alive) return;
-        setItems(res.result ?? []);
-        setSelectedIds(new Set()); // 목록이 바뀌면 선택 초기화
+        const list = res.result ?? [];
+        setItems(list);
+        setSelectedIds(new Set(list.map((it) => it.suggestionTaskId))); //디폴트는 전체 선택
       } finally {
         if (alive) setLoading(false);
       }
@@ -162,15 +164,24 @@ export default function EraserPage() {
           <button
             type="button"
             className="flex-1 h-14 rounded-xl bg-gray-200 text-body-l-bold text-gray-600"
+            onClick={() => navigate('/calendar')}
           >
             취소
           </button>
           <button
             type="button"
-            className="flex-1 h-14 rounded-xl bg-gray-800 text-white text-body-l-bold"
-          >
+            className="flex-1 h-14 rounded-xl bg-gray-800 text-white text-body-l-bold disabled:opacity-40"
+            disabled={selectedItems.length === 0}
+            onClick={() =>
+                navigate('/eraser/apply', {
+                state: {
+                    suggestionTaskIds: selectedItems.map((it) => it.suggestionTaskId),
+                },
+                })
+            }
+            >
             적용하기
-          </button>
+            </button>
         </div>
       </div>
     </div>

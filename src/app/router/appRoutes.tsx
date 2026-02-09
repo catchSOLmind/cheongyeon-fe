@@ -21,6 +21,7 @@ import TestStartPage from '@/features/test/pages/TestStartPage';
 import AgreementPage from '@/features/agreement/pages/AgreementPage';
 import ChoiceReasonPage from '@/features/calendar/pages/ChoiceReasonPage';
 import EraserPage from '@/features/eraser/pages/EraserPage';
+import EraserApplyPage from '@/features/eraser/pages/EraserApplyPage';
 
 
 export const appRouter = createBrowserRouter([
@@ -71,6 +72,7 @@ export const appRouter = createBrowserRouter([
       { path: '/agreement', element: <AgreementPage/>},
       { path: '/calendar/reason', element: <ChoiceReasonPage/>},
       { path: '/eraser/result', element:<EraserPage/> },
+      { path: '/eraser/apply', element:<EraserApplyPage/> },
     ],},
     {
       // 로그인  여부와 상관없이 테스트 페이지 접근 가능 
