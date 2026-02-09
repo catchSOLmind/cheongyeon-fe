@@ -13,7 +13,25 @@ export type AddedTask = {
   taskTypeId: number;
   taskName: string;
   point: number;
+
+  time: string | null;            
+  assignee: AddedAssignee | null;  
+  repeat: AddedRepeat;            
 };
+
+//할당
+export type AddedAssignee = {
+  memberId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+};
+
+//반복주기
+export type AddedRepeat = {
+  enabled: boolean;
+  daysOfWeek: string[];
+};
+
 
 // 200 OK 응답 바디
 export type AddTasksResponse = {
@@ -27,4 +45,4 @@ export type ApiErrorResponse = {
   code: string;
   message: string;
   result: unknown; 
-};
+}; 

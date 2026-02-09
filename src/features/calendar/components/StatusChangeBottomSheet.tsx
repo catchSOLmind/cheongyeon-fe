@@ -1,17 +1,18 @@
 // src/features/calendar/components/StatusChangeBottomSheet.tsx
 import { useEffect, useState } from 'react';
 import BottomSheet from '@/shared/components/BottomSheet';
-import type { TaskStatus } from '../types/task.types';
+import type { MyTaskWeekItem, TaskStatus } from '../types/task.types';
 
 interface StatusChangeBottomSheetProps {
   open: boolean;
   onClose: () => void;
   initialStatus: TaskStatus;
+  task: MyTaskWeekItem | null;
 
-  /** ✅ WAITING / IN_PROGRESS / COMPLETED 확정 */
+  /** WAITING / IN_PROGRESS / COMPLETED 선택 시 확정 */
   onConfirmStatus: (status: Exclude<TaskStatus, 'INCOMPLETED'>) => void;
 
-  /** ✅ INCOMPLETED 선택 시 다음 바텀시트로 */
+  /** INCOMPLETED 선택 시 다음 바텀시트로 */
   onOpenIncompleteReason: () => void;
 }
 

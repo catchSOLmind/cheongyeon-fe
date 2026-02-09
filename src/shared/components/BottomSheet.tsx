@@ -108,10 +108,10 @@ export default function BottomSheet({
         // slide 애니메이션 종료 감지
         onTransitionEnd={handleTransitionEnd}
         className={[
-          'absolute bottom-0 left-1/2 w-full max-w-[390px] -translate-x-1/2',
+          'absolute bottom-0 left-1/2 w-full w-full md:max-w-[385px] -translate-x-1/2',
           'rounded-t-2xl bg-white',
           'shadow-[0_-10px_30px_rgba(0,0,0,0.12)]',
-          'max-h-[80vh] overflow-hidden',
+          'overflow-hidden',
           // slide-up / slide-down 애니메이션
           'transition-transform duration-250 ease-out will-change-transform',
           open ? 'translate-y-0' : 'translate-y-full','z-[1]',
@@ -133,8 +133,7 @@ export default function BottomSheet({
                 {title}
               </div>
             )}
-            {showHeaderDivider && <div className="mt-3 h-px w-full bg-gray-200
-" />}
+            {showHeaderDivider && <div className="mt-3 h-px w-full bg-gray-200" />}
           </div>
         )}
 

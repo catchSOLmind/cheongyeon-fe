@@ -57,8 +57,8 @@ const tasksByDate = useMemo(() => {
   }, []);
 
   return (
-    <div>
-      <div className="flex items-center justify-between px-5 py-2">
+    <div className="h-screen flex flex-col"> 
+      <div className="flex items-center justify-between px-5 py- flex-shrink-0">
         <div className="flex items-center">
           <span className="px-2 text-display-s text-[#262626]">{formatMonthYear(currentDate)}</span>
           <img src={IconDropdown} alt="dropdown" className="w-5 h-5" />
@@ -75,7 +75,7 @@ const tasksByDate = useMemo(() => {
         </button>
       </div>
 
-      <div className="px-3 bg-white mt-4">
+      <div className="px-3 bg-white mt-4 flex-shrink-0">
         <Calendar
           currentDate={currentDate}
           onDateSelect={handleDateSelect}
@@ -83,6 +83,7 @@ const tasksByDate = useMemo(() => {
         />
       </div>
 
+    <div className="flex-1 overflow-hidden"> 
       <TaskList
         task={safeTasks}
         isLoading={isLoading}
@@ -90,8 +91,8 @@ const tasksByDate = useMemo(() => {
         onTaskUpdate={refetch}          // 확정 저장(바텀시트 confirm)에서만 사용
         onCompleteTask={handleCompleteTask} // 체크/완료 API는 여기로
       />
-
       <FloatingActionButton showFeedback={false} showEdit={true} showAddTask={true} />
+    </div>
     </div>
   );
 }

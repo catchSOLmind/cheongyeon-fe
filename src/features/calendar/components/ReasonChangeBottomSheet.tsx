@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import BottomSheet from '@/shared/components/BottomSheet';
-import type { IncompleteReasonCode } from '@/features/calendar/types/task.types';
+import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
+import type { IncompleteReasonCode } from '../types/myTaskEdit.types';
 
 interface ReasonChangeBottomSheetProps {
   open: boolean;
   onClose: () => void;
+  task: MyTaskWeekItem | null;
   onConfirm: (payload: {
     reasonCode: IncompleteReasonCode;
     reasonText?: string;
@@ -21,6 +23,7 @@ const REASON_OPTIONS: { label: string; value: IncompleteReasonCode }[] = [
 
 const MAX_LEN = 200;
 
+// 상태 변경하기 -> 일정을 변경을 선택할 시 열리는 바텀 시트
 export default function ReasonChangeBottomSheet({
   open,
   onClose,
@@ -159,7 +162,7 @@ export default function ReasonChangeBottomSheet({
           </div>
         </div>
 
-        <div className="mt-6 flex gap-3">
+        <div className="mt-6 flex gap-3 md:max-w-[385px]">
           <button
             type="button"
             onClick={() => setOpenEtcSheet(false)}
