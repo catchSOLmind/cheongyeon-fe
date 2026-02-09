@@ -197,12 +197,23 @@ export default function EraserApplyPage() {
               className="h-14 px-10 rounded-lg bg-primary-500 text-white text-body-m-bold"
               onClick={() => {
                 // 큐로 쌓아서 최종 제출 
-                const queue = tasks.map((t) => ({
-                  suggestionTaskId: t.suggestionTaskId,
-                  optionId: selectedOptionByTaskId[t.suggestionTaskId],
-                  title: t.title,
-                  imgUrl: t.imgUrl ?? null,
-                }));
+                const queue = tasks.map((t) => {
+                  const selectedOptionId = selectedOptionByTaskId[t.suggestionTaskId];
+                  const selectedOpt = t.options?.find((o) => o.optionId === selectedOptionId);
+
+                  return {
+                    suggestionTaskId: t.suggestionTaskId,
+                    optionId: selectedOptionId,
+                    title: t.title,
+                    imgUrl: t.imgUrl ?? null,
+
+                    // 결제/표시용 메타 for pay
+                    count: selectedOpt?.count ?? 0,
+                    estimatedMinutes: selectedOpt?.estimatedMinutes ?? 0,
+                    price: selectedOpt?.price ?? 0,
+                  };
+                });
+
 
                 console.log('queue:', queue);
 

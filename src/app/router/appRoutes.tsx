@@ -23,6 +23,7 @@ import ChoiceReasonPage from '@/features/calendar/pages/ChoiceReasonPage';
 import EraserPage from '@/features/eraser/pages/EraserPage';
 import EraserApplyPage from '@/features/eraser/pages/EraserApplyPage';
 import EraserDatePage from '@/features/eraser/pages/EraserDatePage';
+import EraserConfirmPage from '@/features/eraser/pages/EraserConfirmPage';
 
 
 export const appRouter = createBrowserRouter([
@@ -74,7 +75,8 @@ export const appRouter = createBrowserRouter([
       { path: '/calendar/reason', element: <ChoiceReasonPage/>},
       { path: '/eraser/result', element:<EraserPage/> },
       { path: '/eraser/apply', element:<EraserApplyPage/> },
-      { path : '/eraser/date', element:<EraserDatePage/>}
+      { path : '/eraser/date', element:<EraserDatePage/>},
+      { path : '/eraser/confirm', element:<EraserConfirmPage/>}
     ],},
     {
       // 로그인  여부와 상관없이 테스트 페이지 접근 가능 

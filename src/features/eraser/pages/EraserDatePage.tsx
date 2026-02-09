@@ -1,26 +1,45 @@
+
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/shared/components/Header';
 import PlaceholderImg from '@/assets/common/img-default-profile.svg';
+import IconRight from '@/assets/common/icon-right-lightgray.svg';
+import ManagerImg from '@/assets/eraser/img-cheongyeon-profile.png';
+
+import CalendarBottomSheet from '@/shared/components/CalendarBottomSheet';
+import TimeWheelBottomSheet from '@/shared/components/TimewheelBottomsheet';
+import type { TimeValue } from '@/shared/utils/Timeutils';
 
 type QueueItem = {
   suggestionTaskId: number;
   optionId: number;
   title: string;
   imgUrl: string | null;
+  count: number;
+  estimatedMinutes: number;
+  price: number;
 };
 
 type Reservation = {
   suggestionTaskId: number;
   optionId: number;
-  visitDate: string;
-  visitTime: string;
+  title: string;
+  imgUrl: string | null;
+  visitDate: string; // YYYY-MM-DD
+  visitTime: string; // HH:mm (24h)
+};
+
+type UiItem = {
+  suggestionTaskId: number;
+  title: string;
+  imgUrl: string | null;
 };
 
 type LocationState = {
-  queue?: QueueItem[];     // 앞으로 처리할 업무들
-  done?: Reservation[];    // 이미 확정된 예약들(누적)
-  usedPoint?: number;      // 나중에 최종 제출용
+  queue?: QueueItem[];
+  done?: Reservation[];
+  usedPoint?: number;
+  allItems?: UiItem[];
 };
 
 type SelectRowProps = {
@@ -33,24 +52,141 @@ function SelectRow({ label, value, onClick }: SelectRowProps) {
   return (
     <div className="px-6">
       <div className="flex items-center justify-between py-6">
-        <div className="text-body-m-bold text-gray-300">{label}</div>
-
+        <div
+          className={[
+            'text-dlsply-s',
+            value ? 'text-gray-900' : 'text-gray-600',
+          ].join(' ')}
+        >
+          {value ?? label}
+        </div>
         <button
           type="button"
           onClick={onClick}
-          className={[
-            'h-10 min-w-[64px] rounded-full border px-4 text-body-m',
-            value
-              ? 'border-gray-300 text-gray-800 bg-white'
-              : 'border-gray-200 text-gray-500 bg-white',
-          ].join(' ')}
+          className="h-10 min-w-[64px] rounded-full border border-gray-300 px-4 text-body-l text-black bg-white"
         >
-          {value ? value : '선택'}
+          선택
         </button>
       </div>
-
       <div className="h-px bg-gray-100" />
     </div>
+  );
+}
+
+function formatISODate(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function to24h(t: TimeValue) {
+  let hour = t.hour % 12;
+  if (t.ampm === '오후') hour += 12;
+  const hh = String(hour).padStart(2, '0');
+  const mm = String(t.minute).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+function formatTimeLabel(t: TimeValue) {
+  const hh = String(t.hour).padStart(2, '0');
+  const mm = String(t.minute).padStart(2, '0');
+  return `${t.ampm} ${hh}:${mm}`;
+}
+
+// 선택 UI 분리: key로 재마운트되면서 state 자동 초기화됨
+function ReservationPicker({
+  onSubmit,
+}: {
+  onSubmit: (payload: { visitDate: string; visitTime: string }) => void;
+}) {
+  const [openDateSheet, setOpenDateSheet] = useState(false);
+  const [openTimeSheet, setOpenTimeSheet] = useState(false);
+
+  const [visitDateValue, setVisitDateValue] = useState<Date | null>(null);
+  const [visitTimeValue, setVisitTimeValue] = useState<TimeValue | null>(null);
+
+  const visitDateText = useMemo(() => {
+    if (!visitDateValue) return null;
+    return formatISODate(visitDateValue);
+  }, [visitDateValue]);
+
+  const visitTimeText = useMemo(() => {
+    if (!visitTimeValue) return null;
+    return formatTimeLabel(visitTimeValue);
+  }, [visitTimeValue]);
+
+  const canNext = Boolean(visitDateValue && visitTimeValue);
+
+  return (
+    <>
+      <div className="mt-6">
+        <SelectRow
+          label="방문 일"
+          value={visitDateText}
+          onClick={() => setOpenDateSheet(true)}
+        />
+        <SelectRow
+          label="방문 시간"
+          value={visitTimeText}
+          onClick={() => setOpenTimeSheet(true)}
+        />
+      </div>
+
+      <CalendarBottomSheet
+        open={openDateSheet}
+        onClose={() => setOpenDateSheet(false)}
+        height="423px"
+        monthLabel="26년 2월"
+        year={2026}
+        month={2}
+        value={visitDateValue}
+        onChange={(d) => setVisitDateValue(d)}
+        onConfirm={(d) => {
+          setVisitDateValue(d);
+          setOpenDateSheet(false);
+        }}
+        ctaLabel="설정하기"
+      />
+
+      <TimeWheelBottomSheet
+        open={openTimeSheet}
+        onClose={() => setOpenTimeSheet(false)}
+        initialValue={visitTimeValue ?? { ampm: '오전', hour: 12, minute: 0 }}
+        onConfirm={(v) => {
+          setVisitTimeValue(v);
+          setOpenTimeSheet(false);
+        }}
+        title="방문 시간"
+        confirmLabel="설정하기"
+      />
+
+      <div
+        className="
+          fixed bottom-0 left-1/2 -translate-x-1/2
+          w-full max-w-[385px]
+          bg-white px-6 pb-6 pt-3
+        "
+      >
+        <button
+          type="button"
+          disabled={!canNext}
+          onClick={() => {
+            if (!visitDateValue || !visitTimeValue) return;
+            onSubmit({
+              visitDate: formatISODate(visitDateValue),
+              visitTime: to24h(visitTimeValue),
+            });
+          }}
+          className={[
+            'w-full h-14 rounded-xl text-body-l-bold',
+            canNext ? 'bg-[#44BBD0] text-white' : 'bg-gray-200 text-gray-400',
+          ].join(' ')}
+        >
+          다음
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -62,22 +198,20 @@ export default function EraserDatePage() {
   const done = state?.done ?? [];
   const usedPoint = state?.usedPoint ?? 0;
 
-  const current = queue[0];
-  const remainCount = Math.max(0, queue.length - 1);
+  // ✅ confirm 페이지에서 쓰는 items(UiItem[]) 형태로 끝까지 유지
+  const allItems: UiItem[] =
+    state?.allItems ??
+    [...done, ...queue].map((x) => ({
+      suggestionTaskId: x.suggestionTaskId,
+      title: x.title,
+      imgUrl: x.imgUrl ?? null,
+    }));
 
-  const titleText = useMemo(() => {
-    if (!current) return '청연지우개';
-    return remainCount > 0 ? `${current.title} 외 ${remainCount}건` : current.title;
-  }, [current, remainCount]);
+  const current = queue[0] ?? null;
 
-  const iconSrc = current?.imgUrl ? current.imgUrl : PlaceholderImg;
+  const totalCount = done.length + queue.length;
+  const currentIndex = done.length + 1;
 
-  const [visitDate, setVisitDate] = useState<string | null>(null);
-  const [visitTime, setVisitTime] = useState<string | null>(null);
-
-  const canNext = Boolean(visitDate && visitTime);
-
-  // 직접 진입 방지
   if (!current) {
     return (
       <div className="bg-white">
@@ -91,56 +225,57 @@ export default function EraserDatePage() {
     );
   }
 
-  const handleNext = () => {
-    if (!visitDate || !visitTime) return;
+  const iconSrc = current.imgUrl ? current.imgUrl : PlaceholderImg;
 
-    // 1) 현재 업무를 확정 예약으로 누적
+  // ConfirmPage(LocationState: { reservations, items, usedPoint })에 맞춰서 라우팅
+  const handleSubmit = ({
+    visitDate,
+    visitTime,
+  }: {
+    visitDate: string;
+    visitTime: string;
+  }) => {
     const newReservation: Reservation = {
-      suggestionTaskId: current.suggestionTaskId,
-      optionId: current.optionId,
+      ...current,
       visitDate,
       visitTime,
     };
 
     const nextDone = [...done, newReservation];
-
-    // 2) queue에서 현재 업무 제거
     const nextQueue = queue.slice(1);
 
-    // 3) 아직 남아있으면 다시 DatePage로 (다음 업무)
+    // 1) 다음 업무가 남아있으면 date에서 계속
     if (nextQueue.length > 0) {
       navigate('/eraser/date', {
-        replace: true, // ✅ 뒤로가기 히스토리 더럽히지 않게
+        replace: true,
         state: {
           queue: nextQueue,
           done: nextDone,
           usedPoint,
+          allItems,
         },
       });
-
-      // 다음 업무 넘어가면 날짜/시간 초기화
-      setVisitDate(null);
-      setVisitTime(null);
       return;
     }
 
-    // 4) 다 끝났으면 최종 페이지로
+    // 2) 다 선택했으면 confirm으로 이동 (confirm이 기대하는 shape로 전달)
     navigate('/eraser/confirm', {
-      state: {
-        usedPoint,
-        reservations: nextDone, // ✅ 최종 제출용 reservations 완성
-      },
-    });
+    replace: true,
+    state: {
+      usedPoint,
+      items: allItems,
+      reservations: nextDone,
+    },
+  });
   };
 
   return (
     <div className="bg-white pb-[110px]">
-      <Header showBackButton />
+      <Header showBackButton title={`예약하기 ${currentIndex}/${totalCount}`} />
 
-      {/* 상단 타이틀 */}
       <div className="px-6 pt-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 overflow-hidden rounded-xl bg-gray-100">
+          <div className="h-8 w-8 overflow-hidden rounded-lg bg-gray-100">
             <img
               src={iconSrc}
               alt=""
@@ -151,66 +286,36 @@ export default function EraserDatePage() {
               }}
             />
           </div>
-          <p className="text-body-l-bold text-gray-900">{titleText}</p>
+          <p className="text-body-m-bold text-black">{current.title}</p>
         </div>
-
-        {/* ✅ 진행 표시 (선택) */}
-        <p className="mt-2 text-body-s text-gray-500">
-          {done.length + 1} / {done.length + queue.length} 건
-        </p>
       </div>
 
-      <div className="mt-4 h-px bg-gray-100" />
+      <div className="mt-4 h-px bg-gray-300" />
 
-      {/* 헤드라인 */}
       <div className="px-6 pt-6">
-        <p className="text-display-s text-gray-900">날짜/시간을 선택해 주세요.</p>
-        <div className="mt-4">
-          <p className="text-body-m text-gray-600">교육받은 매니저님이 방문합니다.</p>
-          <button
-            type="button"
-            className="mt-2 inline-flex items-center gap-1 text-body-m text-gray-700"
-            onClick={() => {}}
-          >
-            어떤 교육을 받나요? <span className="text-gray-400">›</span>
-          </button>
+        <p className="text-price-l text-black">날짜/시간을 선택해 주세요.</p>
+
+        <div className="mt-6 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-body-l text-gray-700">교육받은 매니저님이 방문합니다.</p>
+            <button
+              type="button"
+              className="mt-1 inline-flex items-center gap-1 text-body-m text-gray-600"
+              onClick={() => {}}
+            >
+              어떤 교육을 받나요?
+              <img src={IconRight} className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="w-[60px] h-[60px] flex-shrink-0 overflow-hidden rounded-full bg-gray-100">
+            <img src={ManagerImg} alt="" className="w-full h-full object-cover" />
+          </div>
         </div>
       </div>
 
-      {/* 선택 */}
-      <div className="mt-6">
-        <SelectRow
-          label="방문 일"
-          value={visitDate}
-          onClick={() => setVisitDate((v) => (v ? null : '2026-02-14'))}
-        />
-        <SelectRow
-          label="방문 시간"
-          value={visitTime}
-          onClick={() => setVisitTime((v) => (v ? null : '14:00'))}
-        />
-      </div>
-
-      {/* CTA */}
-      <div
-        className="
-          fixed bottom-0 left-1/2 -translate-x-1/2
-          w-full max-w-[385px]
-          bg-white px-6 pb-6 pt-3
-        "
-      >
-        <button
-          type="button"
-          disabled={!canNext}
-          onClick={handleNext}
-          className={[
-            'w-full h-14 rounded-xl text-body-l-bold',
-            canNext ? 'bg-[#44BBD0] text-white' : 'bg-gray-200 text-gray-400',
-          ].join(' ')}
-        >
-          다음
-        </button>
-      </div>
+      {/* current 바뀌면 여기 컴포넌트가 새로 마운트 → 선택값 자동 초기화 */}
+      <ReservationPicker key={current.suggestionTaskId} onSubmit={handleSubmit} />
     </div>
   );
 }

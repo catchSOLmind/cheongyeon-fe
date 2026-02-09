@@ -19,7 +19,7 @@ interface TaskListProps {
   isLoading?: boolean;
   selectedDate: Date;
   onTaskUpdate?: () => void; // refetch
-  onCompleteTask: (occurrenceId: number) => Promise<void>; // ✅ 필수로 받자
+  onCompleteTask: (occurrenceId: number) => Promise<void>; 
 }
 
 export default function TaskList({
