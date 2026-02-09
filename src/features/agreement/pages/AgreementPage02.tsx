@@ -8,7 +8,7 @@ import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
 
 import { createAgreement } from '@/features/agreement/api/agreementApi';
-import type { CreateAgreementRequest } from '@/features/agreement/types/ageeement.types';
+import type { CreateAgreementRequest } from '@/features/agreement/types/ageement.types';
 
 export default function AgreementPage02() {
   const navigate = useNavigate();

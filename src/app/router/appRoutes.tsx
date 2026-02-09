@@ -21,6 +21,7 @@ import TestStartPage from '@/features/test/pages/TestStartPage';
 import AgreementPage from '@/features/agreement/pages/AgreementPage';
 import AgreementPage02 from '@/features/agreement/pages/AgreementPage02';
 import AgreementPage03 from '@/features/agreement/pages/AgreementPage03';
+import AgreementMemberPage from '@/features/agreement/pages/AggreementMemberPage';
 import ChoiceReasonPage from '@/features/calendar/pages/ChoiceReasonPage';
 import EraserPage from '@/features/eraser/pages/EraserPage';
 import EraserApplyPage from '@/features/eraser/pages/EraserApplyPage';
@@ -77,6 +78,7 @@ export const appRouter = createBrowserRouter([
       { path: '/agreement', element: <AgreementPage/>},
       { path: '/agreement/2',element:<AgreementPage02/>},
       { path: '/agreement/3',element:<AgreementPage03/>},
+      { path: '/agreement/member',element:<AgreementMemberPage/>},
       { path: '/calendar/reason', element: <ChoiceReasonPage/>},
       { path: '/eraser/result', element:<EraserPage/> },
       { path: '/eraser/apply', element:<EraserApplyPage/> },
