@@ -9,11 +9,13 @@ import Imgcoin from '@/assets/todo/icon-coin.svg';
 import ImgStar from '@/assets/todo/icon-star.svg';
 import ImgStarFill from '@/assets/todo/icon-star-fill.svg';
 import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
-
+import type { GroupMember } from '@/shared/group/groupMembers.types';
 import { useTaskDraftStore } from '@/features/todo/stores/useTaskDraftStore';
+import { useUserStore } from '@/features/auth/stores/useUserStore';
 
 // store 타입(assignee 구조 맞추기)
 import type { DraftAssignee } from '@/features/todo/types/draftTask.types';
+import { getGroupMembers } from '@/shared/group/groupMemberApi';
 
 // ---------- Calendar UI utils ----------
 function getCalendarCells(year: number, month: number) {
@@ -77,114 +79,110 @@ type WheelPickerProps<T extends string | number> = {
   renderItem?: (v: T) => React.ReactNode;
 };
 
-function WheelPicker<T extends string | number>({
+export function WheelPickerUI<T extends string | number>({
   items,
   value,
   onChange,
-  itemHeight = 20,
+  itemHeight = 40,
   visibleCount = 5,
   renderItem,
 }: WheelPickerProps<T>) {
   const ref = useRef<HTMLDivElement | null>(null);
-
   const half = Math.floor(visibleCount / 2);
   const containerHeight = itemHeight * visibleCount;
-
-  const [activeIndex, setActiveIndex] = useState<number>(() => {
-    const idx = items.findIndex((x) => x === value);
-    return Math.max(0, idx);
-  });
-
-  const programmaticRef = useRef(false);
 
   const valueIndex = useMemo(() => {
     const idx = items.findIndex((x) => x === value);
     return Math.max(0, idx);
   }, [items, value]);
 
+  const [activeIndex, setActiveIndex] = useState<number>(valueIndex);
+
+  // 외부 value 변경 시 스크롤 동기화
+  const isProgrammaticRef = useRef(false);
+  const scrollTimeoutRef = useRef<number | null>(null);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    programmaticRef.current = true;
+    isProgrammaticRef.current = true;
     el.scrollTo({ top: valueIndex * itemHeight, behavior: 'auto' });
-    setActiveIndex(valueIndex);
 
-    const t = window.setTimeout(() => {
-      programmaticRef.current = false;
-    }, 0);
-
-    return () => window.clearTimeout(t);
+    requestAnimationFrame(() => {
+      setActiveIndex(valueIndex);
+      // 다음 tick에 플래그 해제
+      requestAnimationFrame(() => {
+        isProgrammaticRef.current = false;
+      });
+    });
   }, [valueIndex, itemHeight]);
 
+  // 스크롤 스냅 + onChange 호출
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    let timer: number | null = null;
+    const handleScroll = () => {
+      if (isProgrammaticRef.current) return;
 
-    const settle = () => {
-      const idx = Math.round(el.scrollTop / itemHeight);
-      const clamped = Math.max(0, Math.min(items.length - 1, idx));
-
-      programmaticRef.current = true;
-      el.scrollTo({ top: clamped * itemHeight, behavior: 'smooth' });
+      const currentIndex = Math.round(el.scrollTop / itemHeight);
+      const clamped = Math.max(0, Math.min(items.length - 1, currentIndex));
       setActiveIndex(clamped);
 
-      onChange(items[clamped]);
+      if (scrollTimeoutRef.current) window.clearTimeout(scrollTimeoutRef.current);
 
-      window.setTimeout(() => {
-        programmaticRef.current = false;
-      }, 120);
+      scrollTimeoutRef.current = window.setTimeout(() => {
+        const finalIndex = Math.round(el.scrollTop / itemHeight);
+        const finalClamped = Math.max(0, Math.min(items.length - 1, finalIndex));
+
+        isProgrammaticRef.current = true;
+        el.scrollTo({ top: finalClamped * itemHeight, behavior: 'smooth' });
+        setActiveIndex(finalClamped);
+        onChange(items[finalClamped]);
+
+        window.setTimeout(() => {
+          isProgrammaticRef.current = false;
+        }, 150);
+      }, 100);
     };
 
-    const onScroll = () => {
-      if (programmaticRef.current) return;
-
-      const idx = Math.round(el.scrollTop / itemHeight);
-      setActiveIndex(Math.max(0, Math.min(items.length - 1, idx)));
-
-      if (timer) window.clearTimeout(timer);
-      timer = window.setTimeout(settle, 80);
-    };
-
-    el.addEventListener('scroll', onScroll, { passive: true });
+    el.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
-      el.removeEventListener('scroll', onScroll);
-      if (timer) window.clearTimeout(timer);
+      el.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) window.clearTimeout(scrollTimeoutRef.current);
     };
   }, [items, itemHeight, onChange]);
 
   const spacer = half * itemHeight;
 
   return (
-    <div className="relative w-20">
-      <div
-        className="pointer-events-none absolute left-0 right-0"
-        style={{ top: containerHeight / 2 - itemHeight / 2, height: itemHeight }}
-      />
-
+    <div className="relative" style={{ height: containerHeight }}>
+      {/* 중앙 하이라이트는 부모(TimeStep)에서 깔아도 되고 여기서도 가능 */}
       <div
         ref={ref}
-        className="overflow-y-scroll scrollbar-hide snap-y snap-mandatory overscroll-contain"
+        className="overflow-y-scroll h-full scrollbar-hide"
         style={{
-          height: containerHeight,
           scrollSnapType: 'y mandatory',
           WebkitOverflowScrolling: 'touch',
         }}
       >
         <div style={{ height: spacer }} />
-
         {items.map((it, idx) => {
           const dist = Math.abs(idx - activeIndex);
+
           const textClass =
-            dist === 0 ? 'text-gray-900' : dist === 1 ? 'text-gray-500' : 'text-gray-300';
+            dist === 0
+              ? 'text-gray-900 text-[20px] font-semibold'
+              : dist === 1
+                ? 'text-gray-500 text-[16px] font-semibold'
+                : 'text-gray-300 text-[14px] font-semibold';
 
           return (
             <div
               key={`${String(it)}-${idx}`}
-              className={`snap-center flex items-center justify-center text-body-m-bold ${textClass}`}
-              style={{ height: itemHeight }}
+              style={{ height: itemHeight, scrollSnapAlign: 'center' }}
+              className={`flex items-center justify-center cursor-pointer ${textClass}`}
               onClick={() => onChange(it)}
               role="button"
               tabIndex={0}
@@ -193,21 +191,11 @@ function WheelPicker<T extends string | number>({
             </div>
           );
         })}
-
         <div style={{ height: spacer }} />
       </div>
     </div>
   );
 }
-
-// ---------- Mock (UI용) ----------
-const MOCK_MEMBERS = [
-  { id: 1, name: '길동이', avatarUrl: null },
-  { id: 2, name: '길동이', avatarUrl: null },
-  { id: 3, name: '길동이', avatarUrl: null },
-  { id: 4, name: '길동이', avatarUrl: null },
-  { id: 5, name: '길동이', avatarUrl: null },
-];
 
 // ---------- Flow ----------
 type Step = 'FORM' | 'CALENDAR' | 'TIME' | 'ASSIGNEE';
@@ -242,8 +230,16 @@ export default function EditDraftFlowBottomSheet({
     minute: 0,
   });
 
-  // 담당자 (UI용) - store assignee 구조로만 관리
+
+  // 담당자 (UI용) 
   const [assignee, setAssignee] = useState<DraftAssignee | null>(null);
+  //  그룹 멤버 목록 
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+
+  // 그룹 아이디 
+  const groupId = useUserStore((s) => s.profile?.groupId ?? null);
+
 
   const draft = useTaskDraftStore((s) => s.drafts.find((d) => d.draftId === draftId));
   const updateDraft = useTaskDraftStore((s) => s.updateDraft);
@@ -274,6 +270,39 @@ export default function EditDraftFlowBottomSheet({
     // ✅ 담당자: store.assignee를 그대로 UI에 세팅
     setAssignee(draft.assignee ?? null);
   }, [open, draftId, draft, initialDate]);
+
+  useEffect(() => {
+  if (!open) return;
+  if (step !== 'ASSIGNEE') return;
+  if (!groupId) return;
+
+  let alive = true;
+
+  (async () => {
+    try {
+      setMembersLoading(true);
+      const data = await getGroupMembers(groupId);
+
+      if (!alive) return;
+
+      if (!data.isSuccess) {
+        setMembers([]);
+        return;
+      }
+
+      setMembers(data.result.members ?? []);
+    } finally {
+      if (alive) setMembersLoading(false);
+    }
+  })();
+
+  return () => {
+    alive = false;
+  };
+}, [open, step, groupId]);
+
+
+  
 
   const STEP_HEIGHT: Record<Step, string> = {
     FORM: 'calc(100dvh - 10px)',
@@ -354,13 +383,14 @@ export default function EditDraftFlowBottomSheet({
 
       {step === 'ASSIGNEE' && (
         <AssigneeStep
-          members={MOCK_MEMBERS}
+          members={members}
           selectedId={assignee?.memberId ?? null}
+          loading={membersLoading}
           onConfirm={(m) => {
             const next: DraftAssignee = {
-              memberId: m.id,
-              nickname: m.name,
-              profileImageUrl: m.avatarUrl ?? null,
+              memberId: m.memberId,
+              nickname: m.nickname,
+              profileImageUrl: m.profileImageUrl ?? null,
             };
             setAssignee(next);
             updateDraft(draftId, { assignee: next });
@@ -394,10 +424,11 @@ function FormStep({
   const dateLabel = draft.date ? formatKoreanDate(draft.date) : '날짜를 선택해주세요';
   const timeLabel = draft.time ? formatKoreanTime(draft.time) : '시간을 선택해주세요';
 
-  // ✅ assignee label: 새 구조 우선
+  // assignee label
   const assigneeLabel = draft.assignee?.nickname ?? '담당자를 선택해주세요';
+  const assigneeAvatar = draft.assignee?.profileImageUrl ?? null;
 
-  // ✅ repeatOn: repeat.enabled 기반 (요구사항: enabled=false면 repeat 자체 undefined)
+  // repeatOn: repeat.enabled 기반 (요구사항: enabled=false면 repeat 자체 undefine고 ui 안보여줌
   const repeatOn = !!draft.repeat?.enabled;
 
   const WEEKDAYS = [
@@ -553,7 +584,17 @@ function FormStep({
           className="w-full rounded-xl border border-gray-300 bg-white px-3 py-3 flex items-center gap-3"
           onClick={onOpenAssignee}
         >
-          <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">👤</div>
+        <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden shrink-0">
+            {assigneeAvatar ? (
+              <img
+                src={assigneeAvatar}
+                alt={assigneeLabel}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center">👤</div>
+            )}
+          </div>          
           <p className="text-body-m-bold text-gray-800">{assigneeLabel}</p>
         </button>
       </div>
@@ -698,18 +739,14 @@ export function TimeStep({
   const minutes = useMemo(() => [0, 10, 20, 30, 40, 50], []);
 
   return (
-    <div className="px-5 pt-4 pb-24">
-      <div className="relative flex items-center justify-center">
-        <h2 className="text-body-l-bold text-gray-900">시간 선택</h2>
-      </div>
-
-      <div className="-mt-8">
+    <div className="px-5 pt-4">
+      <div className="mt-4">
         <div className="relative rounded-2xl">
           <div className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 h-12 rounded-xl bg-gray-100" />
 
           <div className="grid grid-cols-3 text-center">
             <div className="flex items-center justify-center">
-              <WheelPicker
+              <WheelPickerUI
                 items={['오전', '오후'] as const}
                 value={local.ampm}
                 onChange={(v) => setLocal((p) => ({ ...p, ampm: v }))}
@@ -719,7 +756,7 @@ export function TimeStep({
             </div>
 
             <div className="flex items-center justify-center">
-              <WheelPicker
+              <WheelPickerUI
                 items={hours}
                 value={local.hour}
                 onChange={(v) => setLocal((p) => ({ ...p, hour: v }))}
@@ -730,7 +767,7 @@ export function TimeStep({
             </div>
 
             <div className="flex items-center justify-center">
-              <WheelPicker
+              <WheelPickerUI
                 items={minutes}
                 value={local.minute}
                 onChange={(v) => setLocal((p) => ({ ...p, minute: v }))}
@@ -751,44 +788,71 @@ export function TimeStep({
 }
 
 // ---------- Step 5: 담당자 고르기 (UI) ----------
+
 function AssigneeStep({
   members,
   selectedId,
+  loading,
   onConfirm,
 }: {
-  members: { id: number; name: string; avatarUrl?: string | null }[];
+  members: GroupMember[];
   selectedId: number | null;
-  onConfirm: (m: { id: number; name: string; avatarUrl?: string | null }) => void;
+  loading?: boolean;
+  onConfirm: (m: GroupMember) => void;
 }) {
   const [localId, setLocalId] = useState<number | null>(selectedId);
-  const picked = members.find((m) => m.id === localId) ?? null;
+
+  useEffect(() => {
+    setLocalId(selectedId);
+  }, [selectedId]);
+
+  const picked = members.find((m) => m.memberId === localId) ?? null;
 
   return (
     <div className="flex flex-col h-full">
       <Header title="담당자 선택" />
 
       <div className="mt-5 flex-1 overflow-y-auto px-1 space-y-[8px]">
-        {members.map((m) => {
-          const active = m.id === localId;
-          return (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setLocalId(m.id)}
-              className={[
-                'w-full flex items-center gap-3 rounded-xl px-3 py-3',
-                active ? 'border border-primary bg-primary-50' : 'bg-white',
-              ].join(' ')}
-            >
-              <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">👤</div>
-              <span className="text-body-m-bold text-gray-800">{m.name}</span>
-            </button>
-          );
-        })}
+        {loading ? (
+          <div className="text-body-m text-gray-500 px-3 py-2">불러오는 중…</div>
+        ) : (
+          members.map((m) => {
+            const active = m.memberId === localId;
+            return (
+              <button
+                key={m.memberId}
+                type="button"
+                onClick={() => setLocalId(m.memberId)}
+                className={[
+                  'w-full flex items-center gap-3 rounded-xl px-3 py-3',
+                  active ? 'border border-primary bg-primary-50' : 'bg-white',
+                ].join(' ')}
+              >
+                <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
+                  {m.profileImageUrl ? (
+                    <img
+                      src={m.profileImageUrl}
+                      alt={m.nickname}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center">👤</div>
+                  )}
+                </div>
+
+                <span className="text-body-m-bold text-gray-800">{m.nickname}</span>
+              </button>
+            );
+          })
+        )}
       </div>
 
       <BottomCTAWrapper fixed showTopBorder>
-        <BottomCTAButton label="지정하기" disabled={!picked} onClick={() => picked && onConfirm(picked)} />
+        <BottomCTAButton
+          label="지정하기"
+          disabled={!picked}
+          onClick={() => picked && onConfirm(picked)}
+        />
       </BottomCTAWrapper>
     </div>
   );

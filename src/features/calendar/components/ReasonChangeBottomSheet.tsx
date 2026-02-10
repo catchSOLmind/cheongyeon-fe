@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import BottomSheet from '@/shared/components/BottomSheet';
 import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
 import type { IncompleteReasonCode } from '../types/myTaskEdit.types';
+import type { GroupTaskWeekItem } from '../types/groupTask.types';
 
 interface ReasonChangeBottomSheetProps {
   open: boolean;
   onClose: () => void;
-  task: MyTaskWeekItem | null;
+  task: MyTaskWeekItem | GroupTaskWeekItem | null;
   onConfirm: (payload: {
     reasonCode: IncompleteReasonCode;
     reasonText?: string;

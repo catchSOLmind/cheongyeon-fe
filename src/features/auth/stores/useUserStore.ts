@@ -30,7 +30,7 @@ interface UserState {
   isLoading: boolean;
   isProfileFetched: boolean;
 
-  /** ✅ 성공/실패 상관없이 1회라도 /profile 시도했는지 */
+  /** 성공/실패 상관없이 1회라도 /profile 시도했는지 */
   hasAttemptedFetch: boolean;
 
   error: string | null;

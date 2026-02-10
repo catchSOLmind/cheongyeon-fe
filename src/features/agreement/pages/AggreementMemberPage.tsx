@@ -95,7 +95,7 @@ export default function AgreementMemberPage() {
         {/* Loading */}
         {loading && (
           <div className="mt-6 rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-[14px] leading-[20px] text-gray-500">
-            불러오는 중...
+            협약서를 불러오는 중이에요…
           </div>
         )}
 
@@ -241,7 +241,7 @@ export default function AgreementMemberPage() {
         type="button"
         onClick={() => setFeedbackOpen(true)}
         className="fixed right-5 bottom-28 w-14 h-14 rounded-full bg-primary-500 text-white shadow-lg flex items-center justify-center"
-        aria-label="협약서에 피드백 남기기"
+        aria-label="협약서 피드백"
       >
         <img src={ImgFeedback} alt="피드백" />
       </button>

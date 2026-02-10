@@ -1,6 +1,8 @@
 // src/features/agreement/components/AgreementFeedbackBottomSheet.tsx
 import { useMemo, useState } from 'react';
 import BottomSheet from '@/shared/components/BottomSheet';
+import ImgCheongyeon from '@/assets/common/img-default-profile.svg'
+import ImgHeart from '@/assets/agreement/icon-heart.png';
 
 type FeedbackItem = {
   id: number;
@@ -27,12 +29,12 @@ export default function AgreementFeedbackBottomSheet({
   const [feedbackList, setFeedbackList] = useState<FeedbackItem[]>([
     {
       id: 1,
-      authorName: '안중원',
+      authorName: '김청연',
       authorRole: '멤버',
-      avatarUrl: null,
+      avatarUrl: ImgCheongyeon,
       createdAtLabel: '2시간 전',
       content:
-        '규칙 1번에 "빨래 뒤집어서 놓지 않기"는 다같이 노력해보자! 화이팅!',
+        '예시) 규칙 1번에 "빨래 뒤집어서 놓지 않기"는 다같이 노력해보자! 화이팅!',
       liked: false,
     },
   ]);
@@ -46,10 +48,10 @@ export default function AgreementFeedbackBottomSheet({
   const handleSend = () => {
     if (!canSend) return;
 
-    // ✅ 하드코딩 추가 (나중에 API로 교체)
+    // 하드코딩 추가
     const newItem: FeedbackItem = {
       id: Date.now(),
-      authorName: '심지영',
+      authorName: '익명의 멤버',
       authorRole: '멤버',
       avatarUrl: null,
       createdAtLabel: '방금 전',
@@ -59,14 +61,6 @@ export default function AgreementFeedbackBottomSheet({
 
     setFeedbackList((prev) => [newItem, ...prev]);
     setText('');
-  };
-
-  const toggleLike = (id: number) => {
-    setFeedbackList((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, liked: !item.liked } : item
-      )
-    );
   };
 
   return (
@@ -79,9 +73,9 @@ export default function AgreementFeedbackBottomSheet({
     >
       {/* 작성 */}
       <section>
-        <h3 className="text-body-m-bold text-gray-800">피드백 작성하기</h3>
+        <h3 className="mt-6 text-body-l-bold text-black">피드백 작성하기</h3>
 
-        <div className="mt-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
+        <div className="mt-3 rounded-xl border border-gray-300 bg-white px-3 py-3">
           <textarea
             value={text}
             onChange={(e) => {
@@ -123,7 +117,7 @@ export default function AgreementFeedbackBottomSheet({
 
       {/* 목록 */}
       <section className="mt-8">
-        <h3 className="text-body-m-bold text-gray-800">피드백 목록</h3>
+        <h3 className="mt-6 text-body-l-bold text-black">피드백 목록</h3>
 
         {/* 빈 상태 */}
         {feedbackList.length === 0 ? (
@@ -135,7 +129,7 @@ export default function AgreementFeedbackBottomSheet({
             {feedbackList.map((item) => (
               <div
                 key={item.id}
-                className="rounded-xl border border-gray-200 bg-white px-4 py-4"
+                className="rounded-xl bg-gray-50 px-4 py-4"
               >
                 {/* 상단 */}
                 <div className="flex items-center justify-between">
@@ -148,7 +142,7 @@ export default function AgreementFeedbackBottomSheet({
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-[12px] text-gray-500">🙂</span>
+                        <img src={ImgCheongyeon} className='w-6 h-6'/>
                       )}
                     </div>
 
@@ -165,12 +159,10 @@ export default function AgreementFeedbackBottomSheet({
                       </div>
                     </div>
                   </div>
-
                   <span className="text-body-s text-gray-400">
                     {item.createdAtLabel}
                   </span>
                 </div>
-
                 {/* 본문 */}
                 <p className="mt-3 text-body-m text-gray-700 whitespace-pre-wrap">
                   {item.content}
@@ -178,28 +170,7 @@ export default function AgreementFeedbackBottomSheet({
 
                 {/* 좋아요 */}
                 <div className="mt-3">
-                  <button
-                    type="button"
-                    onClick={() => toggleLike(item.id)}
-                    className={[
-                      'w-9 h-9 rounded-full flex items-center justify-center',
-                      item.liked ? 'bg-primary-50' : 'bg-gray-100',
-                    ].join(' ')}
-                    aria-label="좋아요"
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill={item.liked ? 'currentColor' : 'none'}
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={item.liked ? 'text-primary-500' : 'text-gray-500'}
-                    >
-                      <path d="M20.8 4.6c-1.5-1.4-3.9-1.4-5.4 0l-.8.8-.8-.8c-1.5-1.4-3.9-1.4-5.4 0-1.7 1.6-1.7 4.2 0 5.8l6.2 6.1 6.2-6.1c1.7-1.6 1.7-4.2 0-5.8z" />
-                    </svg>
-                  </button>
+                  <img src={ImgHeart} className='w-9 h-7'/>
                 </div>
               </div>
             ))}

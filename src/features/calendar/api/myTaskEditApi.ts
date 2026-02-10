@@ -1,5 +1,5 @@
 import { authenticatedClient } from "@/features/auth/api/client";
-import type { DeleteMyTaskResponse, PostponeMyTaskRequest, PostponeMyTaskResponse, UpdateMyTaskStatusRequest, UpdateMyTaskStatusResponse } from "../types/myTaskEdit.types";
+import type { DeleteMyTaskResponse, PostponeMyTaskRequest, PostponeMyTaskResponse, UpdateMyTaskStatusRequest, UpdateMyTaskStatusResponse, UpdateTaskAssigneeRequest, UpdateTaskAssigneeResult } from "../types/myTaskEdit.types";
 
 // 내 할일 상태 변경하기
 export const updateMyTaskStatus = async (
@@ -32,5 +32,18 @@ export const postponeMyTask = async (
     `/my-tasks/${occurrenceId}/schedule`,
     body
   );
+  return res.data;
+};
+
+// 내 할일 부탁하기 
+export const requestMyTaskAssignee = async (
+  occurrenceId: number,
+  payload: UpdateTaskAssigneeRequest
+): Promise<UpdateTaskAssigneeResult> => {
+  const res = await authenticatedClient.post<UpdateTaskAssigneeResult>(
+    `/my-tasks/${occurrenceId}/request`,
+    payload
+  );
+
   return res.data;
 };

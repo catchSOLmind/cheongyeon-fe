@@ -1,4 +1,6 @@
 import type { TaskStatus } from "./task.types";
+import type { ApiResponse } from '@/shared/types/ApiResponse';
+
 
 // 내 할일 상태 변경하기 
 export type IncompleteReasonCode =
@@ -79,3 +81,23 @@ export interface PostponeMyTaskResponse {
   updatedAt: string;
 }
 
+//내 할일 다른 사람에게 부탁하기 
+
+
+// 담당자 변경 요청
+export interface UpdateTaskAssigneeRequest {
+  toMemberId: number;
+  message?: string; // 선택값이면 optional로
+}
+
+// 담당자 변경 성공 결과
+export interface UpdateTaskAssigneeResult {
+  occurrenceId: number;
+  fromMemberId: number;
+  toMemberId: number;
+  updatedAssigneeMemberId: number;
+  updatedAt: string; // ISO 8601
+}
+
+export type UpdateTaskAssigneeResponse =
+  ApiResponse<UpdateTaskAssigneeResult>;

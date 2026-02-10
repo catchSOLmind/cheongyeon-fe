@@ -63,7 +63,16 @@ function KakaoCallbackPage() {
           };
         setProfileFromLogin(profile);
 
-        // 4) 홈으로 이동
+        // 4) 이동 분기 (초대 수락 플로우 우선)
+        const postLoginAction = sessionStorage.getItem('postLoginAction');
+        const pendingInvitationId = sessionStorage.getItem('pendingInvitationId');
+
+        if (postLoginAction === 'ACCEPT_INVITE' && pendingInvitationId) {
+          navigate('/invite/accept', { replace: true });
+          return;
+        }
+
+        // 기본 이동
         navigate('/calendar', { replace: true });
       })
       .catch((error) => {
