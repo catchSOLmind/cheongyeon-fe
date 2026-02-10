@@ -18,8 +18,7 @@ import FeedbackFinishPage from '@/features/todo/pages/feedbackFinPage';
 import TestPage from '@/features/test/pages/TestQuestionPage';
 import TestResultPage from '@/features/test/pages/TestResultPage';
 import TestStartPage from '@/features/test/pages/TestStartPage';
-import AgreementPage from '@/features/agreement/pages/AgreementPage';
-import AgreementPage02 from '@/features/agreement/pages/AgreementPage02';
+import AgreementPage01 from '@/features/agreement/pages/AgreementPage01';
 import AgreementPage03 from '@/features/agreement/pages/AgreementPage03';
 import AgreementMemberPage from '@/features/agreement/pages/AggreementMemberPage';
 import ChoiceReasonPage from '@/features/calendar/pages/ChoiceReasonPage';
@@ -29,6 +28,9 @@ import EraserDatePage from '@/features/eraser/pages/EraserDatePage';
 import EraserConfirmPage from '@/features/eraser/pages/EraserConfirmPage';
 import InviteEntryPage from '@/features/agreement/pages/InviteEntryPage';
 import InviteAcceptPage from '@/features/agreement/pages/InviteAcceptPage';
+import AgreementPage02 from '@/features/agreement/pages/AgreementPage02';
+import AgreementResultPage from '@/features/agreement/pages/AgreementResultPasge';
+import AgreementMainPage from '@/features/agreement/pages/AgreementMainPage';
 
 
 export const appRouter = createBrowserRouter([
@@ -76,10 +78,12 @@ export const appRouter = createBrowserRouter([
       { path: '/calendar/feedback', element: <FeedbackPage /> },
       { path: '/calendar/feedback-finish', element: <FeedbackFinishPage /> },
       { path: '/calendar/edit', element: <FeedbackPage /> }, // 디자인 완료 후 수정
-      { path: '/agreement', element: <AgreementPage/>},
+      { path: '/agreement', element: <AgreementPage01/>},
       { path: '/agreement/2',element:<AgreementPage02/>},
       { path: '/agreement/3',element:<AgreementPage03/>},
       { path: '/agreement/member',element:<AgreementMemberPage/>},
+      { path:'/agreement/result', element:<AgreementResultPage/>},
+      {path: '/agreement/main', element:<AgreementMainPage/>},
       { path: '/calendar/reason', element: <ChoiceReasonPage/>},
       { path: '/eraser/result', element:<EraserPage/> },
       { path: '/eraser/apply', element:<EraserApplyPage/> },
