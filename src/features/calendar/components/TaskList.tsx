@@ -1,5 +1,5 @@
 // src/features/calendar/components/TaskList.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { MyTaskWeekItem } from '../types/task.types';
 import TaskItem from './TaskItem';
 import IconStar from '@/assets/calendar/icon-star.svg';
@@ -7,12 +7,16 @@ import IconStar from '@/assets/calendar/icon-star.svg';
 import EditBottomSheet from '@/features/calendar/components/EditBottomSheet';
 import StatusChangeBottomSheet from '@/features/calendar/components/StatusChangeBottomSheet';
 import ReasonChangeBottomSheet from './ReasonChangeBottomSheet';
-import { updateMyTaskStatus } from '../api/myTaskEditApi';
+import { requestMyTaskAssignee, updateMyTaskStatus } from '../api/myTaskEditApi';
 import RescheduleFlowBottomSheet from './RescheduleBottomSheet';
 import EditAllFlowBottomSheet from '@/shared/components/EditAllBottomsheet';
 import EraserAnalyzePopup from '@/features/eraser/components/EraserAnalyzePopup';
+import AssigneeBottomSheet from '@/shared/group/AssigneeBottomSheet';
+import type { GroupMember } from '@/shared/group/groupMembers.types';
+import { useUserStore } from '@/features/auth/stores/useUserStore';
+import { getGroupMembers } from '@/shared/group/groupMemberApi';
 
-type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | 'allEdit' | null;
+type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | 'allEdit' | 'member'| null;
 
 interface TaskListProps {
   task: MyTaskWeekItem[];
@@ -34,6 +38,29 @@ export default function TaskList({
   const [selectedTask, setSelectedTask] = useState<MyTaskWeekItem | null>(null);
   const [pickedDate,] = useState<Date | null>(null);
   const [openEraserPopup, setOpenEraserPopup] = useState(false);
+  //멤버 
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [, setMembersLoading] = useState(false);
+
+  const groupId = useUserStore((s) => s.profile?.groupId ?? null);
+
+  useEffect(() => {
+    if (sheet !== 'member') return;
+
+    const run = async () => {
+      try {
+        setMembersLoading(true);
+
+        if (!groupId) return; // store에서 가져온 groupId
+        const res = await getGroupMembers(groupId);
+        setMembers(res.result.members);
+      } finally {
+        setMembersLoading(false);
+      }
+    };
+
+    run();
+  }, [sheet, groupId]);
 
 
   // 깜빡임 제거용: 낙관적 완료 상태
@@ -141,6 +168,7 @@ export default function TaskList({
         onOpenDateChange={() => setSheet('calendar')}
         onOpenStatusChange={() => setSheet('status')}
         onOpenAllChange={() => setSheet('allEdit') }
+        onOpenAssignChange={() => setSheet('member')}
         onDeleted={() => {
             onTaskUpdate?.();   
             closeAllSheets();
@@ -197,6 +225,22 @@ export default function TaskList({
             initialDate={pickedDate}
           />
 
+          <AssigneeBottomSheet
+          open={sheet === 'member'}
+          onClose={closeAllSheets}
+          members={members}
+          selectedId={selectedTask?.primaryAssignedMemberId ?? null}
+          onConfirm={async (member) => {
+            if (!selectedTask) return;
+
+            await requestMyTaskAssignee(selectedTask.occurrenceId, {
+              toMemberId: member.memberId,
+            });
+
+            onTaskUpdate?.();   // refetch
+            closeAllSheets();   // 시트 닫기
+          }}
+        />
         </div>
   );
 }

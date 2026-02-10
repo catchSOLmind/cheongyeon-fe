@@ -79,114 +79,110 @@ type WheelPickerProps<T extends string | number> = {
   renderItem?: (v: T) => React.ReactNode;
 };
 
-function WheelPicker<T extends string | number>({
+export function WheelPickerUI<T extends string | number>({
   items,
   value,
   onChange,
-  itemHeight = 20,
+  itemHeight = 40,
   visibleCount = 5,
   renderItem,
 }: WheelPickerProps<T>) {
   const ref = useRef<HTMLDivElement | null>(null);
-
   const half = Math.floor(visibleCount / 2);
   const containerHeight = itemHeight * visibleCount;
-
-  const [activeIndex, setActiveIndex] = useState<number>(() => {
-    const idx = items.findIndex((x) => x === value);
-    return Math.max(0, idx);
-  });
-
-  const programmaticRef = useRef(false);
 
   const valueIndex = useMemo(() => {
     const idx = items.findIndex((x) => x === value);
     return Math.max(0, idx);
   }, [items, value]);
 
+  const [activeIndex, setActiveIndex] = useState<number>(valueIndex);
+
+  // 외부 value 변경 시 스크롤 동기화
+  const isProgrammaticRef = useRef(false);
+  const scrollTimeoutRef = useRef<number | null>(null);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    programmaticRef.current = true;
+    isProgrammaticRef.current = true;
     el.scrollTo({ top: valueIndex * itemHeight, behavior: 'auto' });
-    setActiveIndex(valueIndex);
 
-    const t = window.setTimeout(() => {
-      programmaticRef.current = false;
-    }, 0);
-
-    return () => window.clearTimeout(t);
+    requestAnimationFrame(() => {
+      setActiveIndex(valueIndex);
+      // 다음 tick에 플래그 해제
+      requestAnimationFrame(() => {
+        isProgrammaticRef.current = false;
+      });
+    });
   }, [valueIndex, itemHeight]);
 
+  // 스크롤 스냅 + onChange 호출
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    let timer: number | null = null;
+    const handleScroll = () => {
+      if (isProgrammaticRef.current) return;
 
-    const settle = () => {
-      const idx = Math.round(el.scrollTop / itemHeight);
-      const clamped = Math.max(0, Math.min(items.length - 1, idx));
-
-      programmaticRef.current = true;
-      el.scrollTo({ top: clamped * itemHeight, behavior: 'smooth' });
+      const currentIndex = Math.round(el.scrollTop / itemHeight);
+      const clamped = Math.max(0, Math.min(items.length - 1, currentIndex));
       setActiveIndex(clamped);
 
-      onChange(items[clamped]);
+      if (scrollTimeoutRef.current) window.clearTimeout(scrollTimeoutRef.current);
 
-      window.setTimeout(() => {
-        programmaticRef.current = false;
-      }, 120);
+      scrollTimeoutRef.current = window.setTimeout(() => {
+        const finalIndex = Math.round(el.scrollTop / itemHeight);
+        const finalClamped = Math.max(0, Math.min(items.length - 1, finalIndex));
+
+        isProgrammaticRef.current = true;
+        el.scrollTo({ top: finalClamped * itemHeight, behavior: 'smooth' });
+        setActiveIndex(finalClamped);
+        onChange(items[finalClamped]);
+
+        window.setTimeout(() => {
+          isProgrammaticRef.current = false;
+        }, 150);
+      }, 100);
     };
 
-    const onScroll = () => {
-      if (programmaticRef.current) return;
-
-      const idx = Math.round(el.scrollTop / itemHeight);
-      setActiveIndex(Math.max(0, Math.min(items.length - 1, idx)));
-
-      if (timer) window.clearTimeout(timer);
-      timer = window.setTimeout(settle, 80);
-    };
-
-    el.addEventListener('scroll', onScroll, { passive: true });
+    el.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
-      el.removeEventListener('scroll', onScroll);
-      if (timer) window.clearTimeout(timer);
+      el.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) window.clearTimeout(scrollTimeoutRef.current);
     };
   }, [items, itemHeight, onChange]);
 
   const spacer = half * itemHeight;
 
   return (
-    <div className="relative w-20">
-      <div
-        className="pointer-events-none absolute left-0 right-0"
-        style={{ top: containerHeight / 2 - itemHeight / 2, height: itemHeight }}
-      />
-
+    <div className="relative" style={{ height: containerHeight }}>
+      {/* 중앙 하이라이트는 부모(TimeStep)에서 깔아도 되고 여기서도 가능 */}
       <div
         ref={ref}
-        className="overflow-y-scroll scrollbar-hide snap-y snap-mandatory overscroll-contain"
+        className="overflow-y-scroll h-full scrollbar-hide"
         style={{
-          height: containerHeight,
           scrollSnapType: 'y mandatory',
           WebkitOverflowScrolling: 'touch',
         }}
       >
         <div style={{ height: spacer }} />
-
         {items.map((it, idx) => {
           const dist = Math.abs(idx - activeIndex);
+
           const textClass =
-            dist === 0 ? 'text-gray-900' : dist === 1 ? 'text-gray-500' : 'text-gray-300';
+            dist === 0
+              ? 'text-gray-900 text-[20px] font-semibold'
+              : dist === 1
+                ? 'text-gray-500 text-[16px] font-semibold'
+                : 'text-gray-300 text-[14px] font-semibold';
 
           return (
             <div
               key={`${String(it)}-${idx}`}
-              className={`snap-center flex items-center justify-center text-body-m-bold ${textClass}`}
-              style={{ height: itemHeight }}
+              style={{ height: itemHeight, scrollSnapAlign: 'center' }}
+              className={`flex items-center justify-center cursor-pointer ${textClass}`}
               onClick={() => onChange(it)}
               role="button"
               tabIndex={0}
@@ -195,7 +191,6 @@ function WheelPicker<T extends string | number>({
             </div>
           );
         })}
-
         <div style={{ height: spacer }} />
       </div>
     </div>
@@ -744,18 +739,14 @@ export function TimeStep({
   const minutes = useMemo(() => [0, 10, 20, 30, 40, 50], []);
 
   return (
-    <div className="px-5 pt-4 pb-24">
-      <div className="relative flex items-center justify-center">
-        <h2 className="text-body-l-bold text-gray-900">시간 선택</h2>
-      </div>
-
-      <div className="-mt-8">
+    <div className="px-5 pt-4">
+      <div className="mt-4">
         <div className="relative rounded-2xl">
           <div className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 h-12 rounded-xl bg-gray-100" />
 
           <div className="grid grid-cols-3 text-center">
             <div className="flex items-center justify-center">
-              <WheelPicker
+              <WheelPickerUI
                 items={['오전', '오후'] as const}
                 value={local.ampm}
                 onChange={(v) => setLocal((p) => ({ ...p, ampm: v }))}
@@ -765,7 +756,7 @@ export function TimeStep({
             </div>
 
             <div className="flex items-center justify-center">
-              <WheelPicker
+              <WheelPickerUI
                 items={hours}
                 value={local.hour}
                 onChange={(v) => setLocal((p) => ({ ...p, hour: v }))}
@@ -776,7 +767,7 @@ export function TimeStep({
             </div>
 
             <div className="flex items-center justify-center">
-              <WheelPicker
+              <WheelPickerUI
                 items={minutes}
                 value={local.minute}
                 onChange={(v) => setLocal((p) => ({ ...p, minute: v }))}
