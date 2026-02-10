@@ -8,6 +8,7 @@ import { useGroupTasks } from "../hooks/useGroupTasks";
 import { formatDateKey } from "../utils/dateUtils";
 import { Dashboard } from "../components/Dashboard";
 import ImgDefault from '@/assets/common/img-default-profile.svg';
+import ImgNodata from '@/assets/calendar/img-no-data.png';
 import { useUserStore } from "@/features/auth/stores/useUserStore";
 import { getGroupTasksCalendar } from "../api/groupTaskApi";
 
@@ -49,13 +50,13 @@ function GroupworkPage() {
 
   const selectedDateStr = formatDateKey(selectedDate);
 
-  const { tasks, isLoading, refetch } = useGroupTasks({
+  const { tasks, isLoading, refetch, isSoloGroup } = useGroupTasks({
     groupId: groupId ?? 0,
     date: selectedDateStr,
     enabled: typeof groupId === 'number' && groupId > 0,
   });
 
-    useEffect(() => {
+  useEffect(() => {
     if (!groupId || groupId <= 0) return;
 
     let alive = true;
@@ -74,7 +75,7 @@ function GroupworkPage() {
         });
 
         if (!alive) return;
-        setTaskDates(res.taskDates?? []);
+        setTaskDates(res.taskDates ?? []);
       } catch (e) {
         console.error('[getGroupTasksCalendar] error:', e);
         if (alive) setTaskDates([]);
@@ -88,7 +89,6 @@ function GroupworkPage() {
       alive = false;
     };
   }, [currentDate, groupId]);
-
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -104,6 +104,34 @@ function GroupworkPage() {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-body-m text-gray-500">프로필 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  // 만약 그룹이 없으면 그룹이 없다는 이미지를 띄우고, 하단 버튼을 누르면 협약서 페이지로 이동한다
+  if (!isSoloGroup) {
+    return (
+      <div className="h-[calc(100vh-200px)] bg-[#fafafa] flex items-center justify-center">
+        <div className="-mt-10 flex flex-col items-center text-center">
+          <img
+            src={ImgNodata}
+            className="w-[246px] h-[150px]"
+            alt="no group"
+          />
+          <span className="-mt-3 text-display-xs text-black">
+            캘린더를 공유중인 멤버가 없어요.
+          </span>
+          <span className="mt-2 text-body-m text-gray-500">
+            멤버를 등록하고 가사 업무를 분담해보세요
+          </span>
+          <button
+            type="button"
+            className="mt-10 w-[120px] h-9 rounded-full bg-primary-50 text-primary text-body-m flex items-center justify-center"
+            onClick={() => navigate('/agreement')}
+          >
+            멤버 초대
+          </button>
+        </div>
       </div>
     );
   }

@@ -23,7 +23,7 @@ interface GroupTaskListProps {
   onTaskUpdate?: () => void;
 }
 
-function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate }: GroupTaskListProps) {
+function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTaskListProps) {
   const [sheet, setSheet] = useState<SheetType>(null);
   const [selectedTask, setSelectedTask] = useState<GroupTaskWeekItem | null>(null);
   const [pickedDate,] = useState<Date | null>(null);
@@ -79,6 +79,7 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate }: GroupTas
       </div>
     );
   }
+
 
   return (
     <div className="px-5 py-4 bg-[#fafafa]">
