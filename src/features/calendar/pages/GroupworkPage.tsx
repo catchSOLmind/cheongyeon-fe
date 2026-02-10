@@ -90,7 +90,6 @@ function GroupworkPage() {
   }, [currentDate, groupId]);
 
 
-
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
     if (
@@ -152,7 +151,6 @@ function GroupworkPage() {
       <div className="px-3 bg-white mt-4">
         <Dashboard />
       </div>
-
       <FloatingActionButton showFeedback showEdit showAddTask />
     </div>
   );

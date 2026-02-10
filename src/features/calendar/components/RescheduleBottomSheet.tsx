@@ -8,6 +8,7 @@ import ImgAlarm from '@/assets/calendar/img-alram.png';
 import { useNavigate } from 'react-router-dom';
 import type { MyTaskWeekItem } from '../types/task.types';
 import { postponeMyTask } from '../api/myTaskEditApi';
+import type { GroupTaskWeekItem } from '../types/groupTask.types';
 
 // ---------- Calendar UI utils ----------
 type CalendarCell = { day: number; isCurrentMonth: boolean };
@@ -218,7 +219,7 @@ type Step = 'FORM' | 'CALENDAR' | 'TIME' | 'DONE';
 type Props = {
   open: boolean;
   onClose: () => void;
-  task: MyTaskWeekItem | null;
+  task: MyTaskWeekItem | GroupTaskWeekItem | null;
   initialDate?: Date | null;
   calendarCtaLabel?: string;
   onUpdated?: () => void;

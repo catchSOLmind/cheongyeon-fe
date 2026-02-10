@@ -7,12 +7,13 @@ import IconGive from "@/assets/calendar/toggle/icon-give.svg";
 import IconPencil from "@/assets/calendar/toggle/icon-pencil.svg";
 import IconState from "@/assets/calendar/toggle/icon-state.svg";
 import { deleteMyTask } from '../api/myTaskEditApi';
+import type { GroupTaskWeekItem } from '../types/groupTask.types';
 
 
 interface EditBottomSheetProps {
   open: boolean;
   onClose: () => void;
-  task: MyTaskWeekItem | null;
+  task: MyTaskWeekItem | GroupTaskWeekItem | null;
   onOpenDateChange: () => void; // 날짜 변경 
   onOpenStatusChange: () => void; // 상태 변경 
   onOpenAllChange: () => void; // 상태 변경 

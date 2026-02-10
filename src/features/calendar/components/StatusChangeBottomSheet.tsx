@@ -2,12 +2,13 @@
 import { useEffect, useState } from 'react';
 import BottomSheet from '@/shared/components/BottomSheet';
 import type { MyTaskWeekItem, TaskStatus } from '../types/task.types';
+import type { GroupTaskWeekItem } from '../types/groupTask.types';
 
 interface StatusChangeBottomSheetProps {
   open: boolean;
   onClose: () => void;
   initialStatus: TaskStatus;
-  task: MyTaskWeekItem | null;
+  task: MyTaskWeekItem | GroupTaskWeekItem| null;
 
   /** WAITING / IN_PROGRESS / COMPLETED 선택 시 확정 */
   onConfirmStatus: (status: Exclude<TaskStatus, 'INCOMPLETED'>) => void;
@@ -32,7 +33,7 @@ export default function StatusChangeBottomSheet({
 }: StatusChangeBottomSheetProps) {
   const [selectedStatus, setSelectedStatus] = useState<TaskStatus>(initialStatus);
 
-  // ✅ 열릴 때마다 초기화 (이게 제일 안전 + 에러 안남)
+  // 열릴 때마다 초기화 (이게 제일 안전 + 에러 안남)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (open) setSelectedStatus(initialStatus);
