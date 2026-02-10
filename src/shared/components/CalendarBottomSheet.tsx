@@ -5,6 +5,7 @@ import { BottomCTAButton } from './BottomCTAButton';
 import { BottomCTAWrapper } from './BottomCTAWrapper';
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 
+
 type CalendarCell = {
   day: number;
   isCurrentMonth: boolean;

@@ -19,7 +19,15 @@ import TestPage from '@/features/test/pages/TestQuestionPage';
 import TestResultPage from '@/features/test/pages/TestResultPage';
 import TestStartPage from '@/features/test/pages/TestStartPage';
 import AgreementPage from '@/features/agreement/pages/AgreementPage';
+import AgreementPage02 from '@/features/agreement/pages/AgreementPage02';
+import AgreementPage03 from '@/features/agreement/pages/AgreementPage03';
+import AgreementMemberPage from '@/features/agreement/pages/AggreementMemberPage';
 import ChoiceReasonPage from '@/features/calendar/pages/ChoiceReasonPage';
+import EraserPage from '@/features/eraser/pages/EraserPage';
+import EraserApplyPage from '@/features/eraser/pages/EraserApplyPage';
+import EraserDatePage from '@/features/eraser/pages/EraserDatePage';
+import EraserConfirmPage from '@/features/eraser/pages/EraserConfirmPage';
+
 
 
 export const appRouter = createBrowserRouter([
@@ -68,7 +76,14 @@ export const appRouter = createBrowserRouter([
       { path: '/calendar/feedback-finish', element: <FeedbackFinishPage /> },
       { path: '/calendar/edit', element: <FeedbackPage /> }, // 디자인 완료 후 수정
       { path: '/agreement', element: <AgreementPage/>},
+      { path: '/agreement/2',element:<AgreementPage02/>},
+      { path: '/agreement/3',element:<AgreementPage03/>},
+      { path: '/agreement/member',element:<AgreementMemberPage/>},
       { path: '/calendar/reason', element: <ChoiceReasonPage/>},
+      { path: '/eraser/result', element:<EraserPage/> },
+      { path: '/eraser/apply', element:<EraserApplyPage/> },
+      { path : '/eraser/date', element:<EraserDatePage/>},
+      { path : '/eraser/confirm', element:<EraserConfirmPage/>}
     ],},
     {
       // 로그인  여부와 상관없이 테스트 페이지 접근 가능 

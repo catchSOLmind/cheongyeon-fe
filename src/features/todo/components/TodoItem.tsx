@@ -21,13 +21,13 @@ interface TodoItemProps {
   time: string | null;
   points: number;
 
-  // ✅ 이제 여기 값이 "실제 담당자(기본=나 / 바텀시트에서 변경 시 덮어쓰기)"가 됨
+  // 이제 여기 값이 "실제 담당자(기본=나 / 바텀시트에서 변경 시 덮어쓰기)"가 됨
   assignee: {
-    name: string;
+    nickname: string;
     avatar?: string | null;
   };
 
-  // ✅ repeat는 enabled=false면 undefined로 둘 거라 했으니 optional
+  // repeat는 enabled=false면 undefined로 둘 거라 했으니 optional
   repeat?: {
     enabled: boolean;
     daysOfWeek: DaysOfWeek[];
@@ -195,7 +195,7 @@ export function TodoItem({
                 {/* 담당자 프로필 */}
                 <img
                   src={assignee.avatar || ImgDefault}
-                  alt={assignee.name}
+                   alt={assignee.nickname}
                   className="w-6 h-6 rounded-full object-cover flex-shrink-0"
                 />
 

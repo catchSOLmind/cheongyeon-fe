@@ -114,7 +114,7 @@ export default function BottomSheet({
           'overflow-hidden',
           // slide-up / slide-down 애니메이션
           'transition-transform duration-250 ease-out will-change-transform',
-          open ? 'translate-y-0' : 'translate-y-full','z-[1]',
+          open ? 'translate-y-0' : 'translate-y-full','z-[1]', 'flex flex-col', 
           className,
         ].join(' ')}
       >
@@ -141,6 +141,7 @@ export default function BottomSheet({
         <div
           className={[
             'px-4 pb-6 pt-3 overflow-y-auto',
+            'flex-1 min-h-0',   
             contentClassName,
           ].join(' ')}
         >

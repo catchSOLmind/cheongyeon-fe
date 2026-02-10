@@ -52,7 +52,7 @@ function AddTodoPage() {
   const favoriteIds = useFavoriteStore((s) => s.favoriteIds);
   const fetchFavorites = useFavoriteStore((s) => s.fetchFavorites);
 
-  // ✅ 내 프로필
+  // 내 프로필
   const profile = useUserStore((s) => s.profile);
   const fetchProfile = useUserStore((s) => s.fetchProfile);
 
@@ -64,19 +64,23 @@ function AddTodoPage() {
     fetchProfile();
   }, [fetchProfile]);
 
-  const todos: DraftTaskItemData[] = useMemo(() => {
-  
-    return drafts.map((draft) => {
-    const assigneeName = draft.assignee?.nickname ?? profile?.nickname ?? '미지정';
-    const assigneeAvatar = draft.assignee?.profileImageUrl ?? profile?.profileImageUrl ?? null;
+const todos: DraftTaskItemData[] = useMemo(() => {
+  return drafts.map((draft) => {
+    const assigneeNickname =
+      draft.assignee?.nickname ?? profile?.nickname ?? '미지정';
+
+    const assigneeProfileImageUrl =
+      draft.assignee?.profileImageUrl ??
+      profile?.profileImageUrl ??
+      null;
 
     const repeat =
       draft.repeat && draft.repeat.enabled
         ? draft.repeat
-        : undefined; // enabled=false면 undefined
+        : undefined;
 
     return {
-      id: draft.draftId,
+      id: String(draft.draftId), // string 보장
       taskTypeId: draft.taskTypeId,
       categoryType: draft.categoryType,
       title: draft.taskName,
@@ -84,14 +88,26 @@ function AddTodoPage() {
       time: draft.time ?? null,
       points: draft.point,
 
-      assignee: { name: assigneeName, avatar: assigneeAvatar },
+      // DraftAssignee 타입에 정확히 맞춤
+      assignee: {
+          memberId: draft.assignee?.memberId ?? 0, // profile은 관여 안 함
+          nickname: assigneeNickname,
+          profileImageUrl: assigneeProfileImageUrl,
+        },
+
       repeat,
 
       isFavorite: favoriteIds.has(draft.taskTypeId),
       isCompleted: false,
     };
   });
-}, [drafts, favoriteIds, profile?.nickname, profile?.profileImageUrl]);
+}, [
+  drafts,
+  favoriteIds,
+  profile?.nickname,
+  profile?.profileImageUrl,
+]);
+
 
 
   const handleSubmitToCalendar = async () => {
@@ -104,7 +120,7 @@ function AddTodoPage() {
       const taskTypeIds = Array.from(new Set(drafts.map((d) => d.taskTypeId)));
 
       // ⚠️ 서버 요청 body는 "수정하면 안 된다"고 했으니 그대로 유지
-      await addMyTasks({ date, taskTypeIds });
+      await addMyTasks({ date, taskTypeIds ,  });
 
       clearDrafts();
       navigate('/calendar');
@@ -166,7 +182,7 @@ function AddTodoPage() {
         </div>
       </div>
 
-      {/* ✅ 편집 바텀시트 */}
+      {/* 편집 바텀시트 */}
       {editDraftId && (
         <EditDraftFlowBottomSheet
           open={!!editDraftId}

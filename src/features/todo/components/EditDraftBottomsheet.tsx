@@ -12,7 +12,7 @@ import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
 
 import { useTaskDraftStore } from '@/features/todo/stores/useTaskDraftStore';
 
-// ✅ store 타입(assignee 구조 맞추기)
+// store 타입(assignee 구조 맞추기)
 import type { DraftAssignee } from '@/features/todo/types/draftTask.types';
 
 // ---------- Calendar UI utils ----------
@@ -242,7 +242,7 @@ export default function EditDraftFlowBottomSheet({
     minute: 0,
   });
 
-  // ✅ 담당자 (UI용) - store assignee 구조로만 관리
+  // 담당자 (UI용) - store assignee 구조로만 관리
   const [assignee, setAssignee] = useState<DraftAssignee | null>(null);
 
   const draft = useTaskDraftStore((s) => s.drafts.find((d) => d.draftId === draftId));
@@ -355,7 +355,6 @@ export default function EditDraftFlowBottomSheet({
       {step === 'ASSIGNEE' && (
         <AssigneeStep
           members={MOCK_MEMBERS}
-          // ✅ store.assignee.memberId 로 선택
           selectedId={assignee?.memberId ?? null}
           onConfirm={(m) => {
             const next: DraftAssignee = {
@@ -364,7 +363,6 @@ export default function EditDraftFlowBottomSheet({
               profileImageUrl: m.avatarUrl ?? null,
             };
             setAssignee(next);
-            // ✅ 레거시 assigneeId/assigneeName 말고 assignee로 저장
             updateDraft(draftId, { assignee: next });
             setStep('FORM');
           }}
@@ -414,19 +412,19 @@ function FormStep({
 
   type WeekdayKey = (typeof WEEKDAYS)[number]['key'];
 
-  // ✅ 선택된 요일들: repeat.daysOfWeek (없으면 [])
+  // 선택된 요일들: repeat.daysOfWeek (없으면 [])
   const selectedDays: WeekdayKey[] = (draft.repeat?.daysOfWeek ?? []) as WeekdayKey[];
 
-  // ✅ 반복 스위치 토글: OFF면 repeat 제거(=undefined)
+  // 반복 스위치 토글: OFF면 repeat 제거(=undefined)
   const handleToggleRepeat = () => {
     if (repeatOn) {
-      updateDraft(draftId, { repeat: undefined }); // ✅ enabled=false일 때 repeat 자체 없음
+      updateDraft(draftId, { repeat: undefined }); // enabled=false일 때 repeat 자체 없음
     } else {
       updateDraft(draftId, { repeat: { enabled: true, daysOfWeek: [] } });
     }
   };
 
-  // ✅ 요일 토글: repeat.daysOfWeek 배열 add/remove
+  // 요일 토글: repeat.daysOfWeek 배열 add/remove
   const toggleDay = (day: WeekdayKey) => {
     const prev = draft.repeat?.daysOfWeek ?? [];
     const exists = prev.includes(day);

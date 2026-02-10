@@ -10,6 +10,7 @@ import ReasonChangeBottomSheet from './ReasonChangeBottomSheet';
 import { updateMyTaskStatus } from '../api/myTaskEditApi';
 import RescheduleFlowBottomSheet from './RescheduleBottomSheet';
 import EditAllFlowBottomSheet from '@/shared/components/EditAllBottomsheet';
+import EraserAnalyzePopup from '@/features/eraser/components/EraserAnalyzePopup';
 
 type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | 'allEdit' | null;
 
@@ -18,7 +19,7 @@ interface TaskListProps {
   isLoading?: boolean;
   selectedDate: Date;
   onTaskUpdate?: () => void; // refetch
-  onCompleteTask: (occurrenceId: number) => Promise<void>; // ✅ 필수로 받자
+  onCompleteTask: (occurrenceId: number) => Promise<void>; 
 }
 
 export default function TaskList({
@@ -32,6 +33,8 @@ export default function TaskList({
   const [sheet, setSheet] = useState<SheetType>(null);
   const [selectedTask, setSelectedTask] = useState<MyTaskWeekItem | null>(null);
   const [pickedDate,] = useState<Date | null>(null);
+  const [openEraserPopup, setOpenEraserPopup] = useState(false);
+
 
   // 깜빡임 제거용: 낙관적 완료 상태
   const [localCompletedIds, setLocalCompletedIds] = useState<Set<number>>(new Set());
@@ -100,10 +103,17 @@ export default function TaskList({
       {/* 날짜 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-cta-m text-gray-900 px-2">{formatDisplayDate(selectedDate)}</h2>
-        <button className="flex items-center gap-1 px-2 py-1 bg-primary-50 rounded-lg text-body-m-bold">
-          <img src={IconStar} alt="청연 지우개" className="w-5 h-5" />
-          <span>청연 지우개</span>
-        </button>
+        <button
+            onClick={() => setOpenEraserPopup(true)}
+            className="flex items-center gap-1 px-2 py-1 bg-primary-50 rounded-lg text-body-m-bold"
+          >
+            <img src={IconStar} alt="청연 지우개" className="w-5 h-5" />
+            <span>청연 지우개</span>
+          </button>
+
+          <EraserAnalyzePopup
+            open={openEraserPopup}
+            onClose={() => setOpenEraserPopup(false)}/>
       </div>
 
       {/* 할 일 리스트 */}

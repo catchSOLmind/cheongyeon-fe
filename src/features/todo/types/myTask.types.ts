@@ -13,7 +13,6 @@ export type AddedTask = {
   taskTypeId: number;
   taskName: string;
   point: number;
-
   time: string | null;            
   assignee: AddedAssignee | null;  
   repeat: AddedRepeat;            
