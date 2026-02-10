@@ -12,6 +12,9 @@ import ImgStar from '@/assets/todo/icon-star.svg';
 import ImgStarFill from '@/assets/todo/icon-star-fill.svg';
 import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
 import type { GroupTaskWeekItem } from '@/features/calendar/types/groupTask.types';
+import { getMyTaskDetail } from '@/features/calendar/api/taskDetailApi';
+import type { MyTaskDetailResponse } from '@/features/calendar/types/taskDetail.types';
+
 
 // ---------- Calendar UI utils ----------
 function getCalendarCells(year: number, month: number) {
@@ -201,13 +204,18 @@ type Props = {
 export default function EditAllFlowBottomSheet({
   open,
   onClose,
+  task,
   initialDate = null,
   calendarCtaLabel = '변경하기',
 }: Props) {
   const [step, setStep] = useState<Step>('FORM');
 
-  const [viewYear, setViewYear] = useState((initialDate ?? new Date()).getFullYear());
-  const [viewMonth, setViewMonth] = useState((initialDate ?? new Date()).getMonth() + 1);
+  const [viewYear, setViewYear] = useState(
+    (initialDate ?? new Date()).getFullYear()
+  );
+  const [viewMonth, setViewMonth] = useState(
+    (initialDate ?? new Date()).getMonth() + 1
+  );
 
   const [pickedDate, setPickedDate] = useState<Date | null>(initialDate);
 
@@ -219,17 +227,88 @@ export default function EditAllFlowBottomSheet({
   });
 
   // 담당자 (UI용)
-  const [assignee, setAssignee] = useState<{ id: number; name: string; avatarUrl?: string | null } | null>(null);
+  const [assignee, setAssignee] = useState<{
+    id: number;
+    name: string;
+    avatarUrl?: string | null;
+  } | null>(null);
+
+  // 상세 (나중에 FormStep에 내려서 표시할 거면 detail 필요)
+  const [, setDetail] = useState<MyTaskDetailResponse | null>(null);
+  const [, setDetailLoading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-    setStep('FORM');
-    setPickedDate(initialDate);
 
+    // open될 때 기본 초기화
+    setStep('FORM');
+    setDetail(null);
+    setAssignee(null);
+
+    // initialDate 기반 UI 초기화는 유지
+    setPickedDate(initialDate);
     const base = initialDate ?? new Date();
     setViewYear(base.getFullYear());
     setViewMonth(base.getMonth() + 1);
-  }, [open, initialDate]);
+
+    // task 없으면 끝
+    const occurrenceId = task?.occurrenceId;
+    if (!occurrenceId) return;
+
+    let alive = true;
+
+    (async () => {
+      try {
+        setDetailLoading(true);
+        const res = await getMyTaskDetail(occurrenceId);
+        if (!alive) return;
+
+        setDetail(res);
+
+        // 1) 날짜: "YYYY-MM-DD" → 안전 파싱
+        if (res.date) {
+          const [y, m, d] = res.date.split('-').map(Number);
+          const next = new Date(y, m - 1, d); 
+          setPickedDate(next);
+          setViewYear(next.getFullYear());
+          setViewMonth(next.getMonth() + 1);
+        }
+
+        // 2) 시간: "HH:mm" | null
+        if (res.time) {
+          const [hhStr, mmStr] = res.time.split(':');
+          const hh = Number(hhStr);
+          const mm = Number(mmStr ?? '0');
+
+          const ampm: '오전' | '오후' = hh < 12 ? '오전' : '오후';
+          const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+
+          setPickedTime({ ampm, hour: hour12, minute: mm });
+        }
+
+        // 3) 담당자: res.assignee (너 타입 기준)
+        if (res.assignee) {
+          setAssignee({
+            id: res.assignee.memberId,
+            name: res.assignee.nickname,
+            avatarUrl: res.assignee.profileImageUrl ?? null,
+          });
+        } else {
+          setAssignee(null);
+        }
+
+      } catch (e) {
+        console.error('[getMyTaskDetail] error:', e);
+      } finally {
+        if (alive) setDetailLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [open, task?.occurrenceId, initialDate]);
+
 
   const STEP_HEIGHT: Record<Step, string> = {
     FORM: 'calc(100dvh - 10px)', // 상단 10px 남기고 꽉 채우기
