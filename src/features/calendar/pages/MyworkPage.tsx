@@ -94,7 +94,7 @@ function MyworkPage() {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="flex items-center justify-between px-5 py- flex-shrink-0">
+      <div className="flex items-center justify-between px-5 py-2 flex-shrink-0">
         <div className="flex items-center">
           <span className="px-2 text-display-s text-[#262626]">
             {formatMonthYear(currentDate)}
