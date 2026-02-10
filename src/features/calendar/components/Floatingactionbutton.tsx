@@ -50,7 +50,7 @@ function FloatingActionButton({
       />
 
       {/* 플로팅 버튼 컨테이너 */}
-      <div className="fixed bottom-20 right-5 z-[70] pointer-events-none">
+      <div className="fixed bottom-20 right-5 z-[70] pointer-events-none md:max-w-[385px]">
         <div className="flex flex-col items-end gap-3">
           {/* 확장 메뉴: 열렸을 때만 pointer-events 활성화 */}
           <div

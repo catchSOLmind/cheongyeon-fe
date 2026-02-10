@@ -34,7 +34,7 @@ export type GroupTasksRequest = {
   date: string; // YYYY-MM-DD
 };
 
-// (너희 공통 에러 응답이 있는 걸로 보여서 같이 둠)
+
 export type ApiErrorResponse = {
   isSuccess: boolean;
   code: string;

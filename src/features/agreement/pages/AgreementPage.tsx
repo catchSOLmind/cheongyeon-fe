@@ -24,12 +24,11 @@ export default function AgreementPage() {
 
   const handleInvite = async () => {
       await createAndShare({
-        title: '🎉 그룹에 초대합니다!',
+        title: '청연-우리집 그룹에 초대합니다!',
         description: '함께 활동해요!',
         imageUrl: 'https://your-image-url.com/group-thumbnail.jpg',
       });
     };
-
 
 
   return (
