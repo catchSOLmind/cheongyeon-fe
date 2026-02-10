@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { GroupTaskWeekItem } from '../types/groupTask.types'; 
+import type { GroupTaskWeekItem } from '../types/groupTask.types';
 import GroupTaskTaskItem from './GroupTaskItem';
 import IconStar from '@/assets/calendar/icon-star.svg';
 import EditBottomSheet from './EditBottomSheet';
@@ -21,14 +21,28 @@ interface GroupTaskListProps {
   isLoading?: boolean;
   selectedDate: Date;
   onTaskUpdate?: () => void;
+
+  /** ✅ 편집모드만 추가 */
+  isEditMode?: boolean;
+  onExitEditMode?: () => void;
+  onDeleteTask?: (occurrenceId: number) => Promise<void> | void;
 }
 
-function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTaskListProps) {
+function GroupTaskList({
+  task,
+  isLoading,
+  selectedDate,
+  onTaskUpdate,
+
+  isEditMode = false,
+  onExitEditMode,
+  onDeleteTask,
+}: GroupTaskListProps) {
   const [sheet, setSheet] = useState<SheetType>(null);
   const [selectedTask, setSelectedTask] = useState<GroupTaskWeekItem | null>(null);
-  const [pickedDate,] = useState<Date | null>(null);
+  const [pickedDate] = useState<Date | null>(null);
   const [openEraserPopup, setOpenEraserPopup] = useState(false);
-  
+
   // 멤버
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [, setMembersLoading] = useState(false);
@@ -52,6 +66,7 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
 
     run();
   }, [sheet, groupId]);
+
   // 날짜 포맷팅
   const formatDisplayDate = (date: Date): string => {
     const today = new Date();
@@ -66,6 +81,9 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
   };
 
   const openEditSheet = (item: GroupTaskWeekItem) => {
+    // ✅ 편집모드일 땐 바텀시트 열지 않기
+    if (isEditMode) return;
+
     setSelectedTask(item);
     setSheet('edit');
   };
@@ -80,9 +98,18 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
     );
   }
 
-
   return (
-    <div className="px-5 py-4 bg-[#fafafa]">
+    <div className="px-5 py-4 bg-[#fafafa] relative">
+      {/* ✅ 편집모드 종료용 오버레이 */}
+      {isEditMode ? (
+        <button
+          type="button"
+          aria-label="exit edit mode"
+          onClick={() => onExitEditMode?.()}
+          className="absolute inset-0 z-[5] bg-transparent"
+        />
+      ) : null}
+
       {/* 날짜 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-cta-m text-gray-900 px-2">
@@ -115,11 +142,27 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
       ) : (
         <div className="space-y-3">
           {task.map((taskItem) => (
-            <GroupTaskTaskItem 
-              key={taskItem.occurrenceId}
-              task={taskItem}
-              onClick={() => openEditSheet(taskItem)}
-            />
+            <div key={taskItem.occurrenceId} className="relative">
+              {/* ✅ 편집모드일 때만 빨간 삭제 버튼 */}
+              {isEditMode ? (
+                <button
+                  type="button"
+                  aria-label="delete task"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteTask?.(taskItem.occurrenceId);
+                  }}
+                  className="absolute -top-2 -left-2 z-10 w-6 h-6 rounded-full bg-red-500 shadow flex items-center justify-center"
+                >
+                  <span className="text-white text-[16px] leading-none">−</span>
+                </button>
+              ) : null}
+
+              <GroupTaskTaskItem
+                task={taskItem}
+                onClick={() => openEditSheet(taskItem)}
+              />
+            </div>
           ))}
         </div>
       )}

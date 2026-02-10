@@ -44,6 +44,5 @@ export const requestMyTaskAssignee = async (
     `/my-tasks/${occurrenceId}/request`,
     payload
   );
-
   return res.data;
 };
