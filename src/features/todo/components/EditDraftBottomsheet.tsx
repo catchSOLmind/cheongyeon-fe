@@ -9,11 +9,13 @@ import Imgcoin from '@/assets/todo/icon-coin.svg';
 import ImgStar from '@/assets/todo/icon-star.svg';
 import ImgStarFill from '@/assets/todo/icon-star-fill.svg';
 import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
-
+import type { GroupMember } from '@/shared/group/groupMembers.types';
 import { useTaskDraftStore } from '@/features/todo/stores/useTaskDraftStore';
+import { useUserStore } from '@/features/auth/stores/useUserStore';
 
 // store 타입(assignee 구조 맞추기)
 import type { DraftAssignee } from '@/features/todo/types/draftTask.types';
+import { getGroupMembers } from '@/shared/group/groupMemberApi';
 
 // ---------- Calendar UI utils ----------
 function getCalendarCells(year: number, month: number) {
@@ -200,15 +202,6 @@ function WheelPicker<T extends string | number>({
   );
 }
 
-// ---------- Mock (UI용) ----------
-const MOCK_MEMBERS = [
-  { id: 1, name: '길동이', avatarUrl: null },
-  { id: 2, name: '길동이', avatarUrl: null },
-  { id: 3, name: '길동이', avatarUrl: null },
-  { id: 4, name: '길동이', avatarUrl: null },
-  { id: 5, name: '길동이', avatarUrl: null },
-];
-
 // ---------- Flow ----------
 type Step = 'FORM' | 'CALENDAR' | 'TIME' | 'ASSIGNEE';
 
@@ -242,8 +235,16 @@ export default function EditDraftFlowBottomSheet({
     minute: 0,
   });
 
-  // 담당자 (UI용) - store assignee 구조로만 관리
+
+  // 담당자 (UI용) 
   const [assignee, setAssignee] = useState<DraftAssignee | null>(null);
+  //  그룹 멤버 목록 
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+
+  // 그룹 아이디 
+  const groupId = useUserStore((s) => s.profile?.groupId ?? null);
+
 
   const draft = useTaskDraftStore((s) => s.drafts.find((d) => d.draftId === draftId));
   const updateDraft = useTaskDraftStore((s) => s.updateDraft);
@@ -274,6 +275,39 @@ export default function EditDraftFlowBottomSheet({
     // ✅ 담당자: store.assignee를 그대로 UI에 세팅
     setAssignee(draft.assignee ?? null);
   }, [open, draftId, draft, initialDate]);
+
+  useEffect(() => {
+  if (!open) return;
+  if (step !== 'ASSIGNEE') return;
+  if (!groupId) return;
+
+  let alive = true;
+
+  (async () => {
+    try {
+      setMembersLoading(true);
+      const data = await getGroupMembers(groupId);
+
+      if (!alive) return;
+
+      if (!data.isSuccess) {
+        setMembers([]);
+        return;
+      }
+
+      setMembers(data.result.members ?? []);
+    } finally {
+      if (alive) setMembersLoading(false);
+    }
+  })();
+
+  return () => {
+    alive = false;
+  };
+}, [open, step, groupId]);
+
+
+  
 
   const STEP_HEIGHT: Record<Step, string> = {
     FORM: 'calc(100dvh - 10px)',
@@ -354,13 +388,14 @@ export default function EditDraftFlowBottomSheet({
 
       {step === 'ASSIGNEE' && (
         <AssigneeStep
-          members={MOCK_MEMBERS}
+          members={members}
           selectedId={assignee?.memberId ?? null}
+          loading={membersLoading}
           onConfirm={(m) => {
             const next: DraftAssignee = {
-              memberId: m.id,
-              nickname: m.name,
-              profileImageUrl: m.avatarUrl ?? null,
+              memberId: m.memberId,
+              nickname: m.nickname,
+              profileImageUrl: m.profileImageUrl ?? null,
             };
             setAssignee(next);
             updateDraft(draftId, { assignee: next });
@@ -394,10 +429,11 @@ function FormStep({
   const dateLabel = draft.date ? formatKoreanDate(draft.date) : '날짜를 선택해주세요';
   const timeLabel = draft.time ? formatKoreanTime(draft.time) : '시간을 선택해주세요';
 
-  // ✅ assignee label: 새 구조 우선
+  // assignee label
   const assigneeLabel = draft.assignee?.nickname ?? '담당자를 선택해주세요';
+  const assigneeAvatar = draft.assignee?.profileImageUrl ?? null;
 
-  // ✅ repeatOn: repeat.enabled 기반 (요구사항: enabled=false면 repeat 자체 undefined)
+  // repeatOn: repeat.enabled 기반 (요구사항: enabled=false면 repeat 자체 undefine고 ui 안보여줌
   const repeatOn = !!draft.repeat?.enabled;
 
   const WEEKDAYS = [
@@ -553,7 +589,17 @@ function FormStep({
           className="w-full rounded-xl border border-gray-300 bg-white px-3 py-3 flex items-center gap-3"
           onClick={onOpenAssignee}
         >
-          <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">👤</div>
+        <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden shrink-0">
+            {assigneeAvatar ? (
+              <img
+                src={assigneeAvatar}
+                alt={assigneeLabel}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center">👤</div>
+            )}
+          </div>          
           <p className="text-body-m-bold text-gray-800">{assigneeLabel}</p>
         </button>
       </div>
@@ -751,44 +797,71 @@ export function TimeStep({
 }
 
 // ---------- Step 5: 담당자 고르기 (UI) ----------
+
 function AssigneeStep({
   members,
   selectedId,
+  loading,
   onConfirm,
 }: {
-  members: { id: number; name: string; avatarUrl?: string | null }[];
+  members: GroupMember[];
   selectedId: number | null;
-  onConfirm: (m: { id: number; name: string; avatarUrl?: string | null }) => void;
+  loading?: boolean;
+  onConfirm: (m: GroupMember) => void;
 }) {
   const [localId, setLocalId] = useState<number | null>(selectedId);
-  const picked = members.find((m) => m.id === localId) ?? null;
+
+  useEffect(() => {
+    setLocalId(selectedId);
+  }, [selectedId]);
+
+  const picked = members.find((m) => m.memberId === localId) ?? null;
 
   return (
     <div className="flex flex-col h-full">
       <Header title="담당자 선택" />
 
       <div className="mt-5 flex-1 overflow-y-auto px-1 space-y-[8px]">
-        {members.map((m) => {
-          const active = m.id === localId;
-          return (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setLocalId(m.id)}
-              className={[
-                'w-full flex items-center gap-3 rounded-xl px-3 py-3',
-                active ? 'border border-primary bg-primary-50' : 'bg-white',
-              ].join(' ')}
-            >
-              <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">👤</div>
-              <span className="text-body-m-bold text-gray-800">{m.name}</span>
-            </button>
-          );
-        })}
+        {loading ? (
+          <div className="text-body-m text-gray-500 px-3 py-2">불러오는 중…</div>
+        ) : (
+          members.map((m) => {
+            const active = m.memberId === localId;
+            return (
+              <button
+                key={m.memberId}
+                type="button"
+                onClick={() => setLocalId(m.memberId)}
+                className={[
+                  'w-full flex items-center gap-3 rounded-xl px-3 py-3',
+                  active ? 'border border-primary bg-primary-50' : 'bg-white',
+                ].join(' ')}
+              >
+                <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
+                  {m.profileImageUrl ? (
+                    <img
+                      src={m.profileImageUrl}
+                      alt={m.nickname}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center">👤</div>
+                  )}
+                </div>
+
+                <span className="text-body-m-bold text-gray-800">{m.nickname}</span>
+              </button>
+            );
+          })
+        )}
       </div>
 
       <BottomCTAWrapper fixed showTopBorder>
-        <BottomCTAButton label="지정하기" disabled={!picked} onClick={() => picked && onConfirm(picked)} />
+        <BottomCTAButton
+          label="지정하기"
+          disabled={!picked}
+          onClick={() => picked && onConfirm(picked)}
+        />
       </BottomCTAWrapper>
     </div>
   );
