@@ -109,7 +109,7 @@ function GroupTaskList({
 
   return (
     <div className="px-5 py-4 bg-[#fafafa] relative">
-      {/* ✅ 편집모드 종료용 오버레이 */}
+      {/* 편집모드 종료용 오버레이 */}
       {isEditMode ? (
         <button
           type="button"

@@ -54,7 +54,7 @@ export interface TestResult {
   mainQuote: string;
   tags: string[];
   description: string;
-  representativeLines: string[];
+  scores: number[];
   cautionPoint: string;
 }
 

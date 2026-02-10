@@ -67,8 +67,8 @@ export function TopResultCard(props: TopResultCardProps) {
                     {/* title / subtitle */}
                     {/* 산돌 폰트 적용되어야 하는 부분 */}
                     <div className="flex flex-col items-center py-6 pb-2">
-                        <p className="text-[24px] font-bold text-gray-800 text-center">{title}</p>
-                        <p className="text-body-l text-gray-800 text-center">{subTitle}</p>
+                        <p className="font-sandoll font-normal text-[24px] font-bold text-gray-800 text-center">{title}</p>
+                        <p className="font-sandoll font-normal text-body-l text-gray-800 text-center">{subTitle}</p>
                     </div>
 
                     {/* character image */}
@@ -88,7 +88,7 @@ export function TopResultCard(props: TopResultCardProps) {
                             draggable={false}
                             />
                          {/* quote text */}
-                        <div className="absolute inset-0 flex justify-center text-center text-[16px] text-gray-900">
+                        <div className="absolute inset-0 flex justify-center font-sandoll font-normal text-center text-[16px] text-gray-900">
                             <div className="flex h-full w-full items-center justify-center mt-1.5">
                             “{mainQuote}”
                             </div>

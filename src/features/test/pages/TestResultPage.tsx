@@ -17,16 +17,28 @@ export default function TestResultPage() {
   const navigate = useNavigate();
   const { title, tags, description, cautionPoint } = result || {};
 
+  const scoreLabels = ['꼼꼼함', '착실함', '유지력', '대충력'] as const;
+
+  // 줄바꿈 
+  const descLines =
+    (description ?? '')
+      .split('.')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
 
   if (!result) {
     return <div>결과가 없습니다. 다시 테스트를 진행해주세요.</div>;
   }
+  
+  // scores 안전 처리
+  const scores = result.scores ?? [];
 
   return (
-    <div className="pb-24"  >
+    <div className="pb-24 bg-gray-50">
       <LogoHeader title="우리집" />
       {/* page container */}
-      <div className="mx-auto w-full max-w-[420px] px-5 pb-28 pt-4 bg-gray-50]">
+      <div className="mx-auto w-full max-w-[420px] px-5 pt-4 bg-gray-50]">
         <TopResultCard
           title={result.title}
           subTitle={result.subTitle}
@@ -34,7 +46,7 @@ export default function TestResultPage() {
           resultType={result.resultType}
         />
           {/* tags */}
-          <div className="mt-3 grid grid-cols-3 gap-3">
+          <div className="mt-4 grid grid-cols-3 gap-3">
             {tags?.map((b) => (
               <span
                 key={b}
@@ -44,17 +56,54 @@ export default function TestResultPage() {
               </span>
             ))}
           </div>
-          </div>
+        </div>
 
-          {/* 2) Type score section */}
-          <div className="mt-6">
-            <h2 className="text-base font-semibold text-gray-900">{title} 유형은?</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              {description}
+    {/* 2) Type score section */}
+    <div className="px-5 mt-6">
+      <div className="bg-white rounded-2xl px-5 py-6">
+        <h2 className="text-display-xs text-primary-900 text-center">
+          {title} 유형은?
+        </h2>
+
+        {/* 설명(문장 줄바꿈) */}
+        <p className="mt-4 text-body-l text-gray-800 text-center whitespace-pre-line">
+          {descLines.map((line, i) => (
+            <span key={i}>
+              {line}.
               <br />
-              한 번 시작한 청소는 끝을 보는 타입!
-            </p>
-          </div>
+            </span>
+          ))}
+        </p>
+
+        {/* 점수 바 4개 */}
+        <div className="mt-9 space-y-6">
+          {scoreLabels.map((label, idx) => {
+            const value = Math.max(0, Math.min(100, Number(scores[idx] ?? 0)));
+
+            return (
+              <div key={label} className="flex items-center gap-4">
+                <span className="w-[50px] text-body-l text-semantic-badge">
+                  {label}
+                </span>
+
+                <div className="flex-1 h-[10px] rounded-full bg-primary-50 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${value}%` }}
+                  />
+                </div>
+
+                <span className="w-10 text-right text-body-l text-semantic-badge">
+                  {value}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+
+                    
 
           {/* 3) Recommended tasks */}
           <div className="px-5">
