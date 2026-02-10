@@ -8,3 +8,24 @@ export interface AgreementConfirmResult {
   confirmedAt: string; // ISO datetime
   houseName: string;
 }
+
+// 멤버가 협약서에 동의한다 
+
+export type AgreementSignStatus = 'PENDING' | 'SIGNED';
+
+export interface AgreementSignResult {
+  agreementId: number;
+  memberId: number;
+  signStatus: AgreementSignStatus;
+  signedAt: string | null; // ISO string
+  allSigned: boolean;
+  signedCount: number;
+  totalCount: number;
+}
+
+export interface AgreementSignResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: AgreementSignResult;
+}

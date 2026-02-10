@@ -9,13 +9,15 @@ import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
 import AgreementFeedbackBottomSheet from '../components/AgreementFeedbackBottomSheet';
 import ImgFeedback from '@/assets/agreement/icon-feedback-chat.svg';
 
-import { getAgreement } from '@/features/agreement/api/agreementApi';
+import { getAgreement, signAgreement } from '@/features/agreement/api/agreementApi';
 import type { AgreementDetail } from '@/features/agreement/types/agreementDetail.types';
 
 export default function AgreementMemberPage() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [signing, setSigning] = useState(false);
+
   const [agreement, setAgreement] = useState<AgreementDetail | null>(null);
 
   // 날짜 표시 (yy년 m월 d일)
@@ -34,6 +36,21 @@ export default function AgreementMemberPage() {
     return `${yy}년 ${mm}월 ${dd}일`;
   };
 
+  const fetchAgreement = async () => {
+    try {
+      setLoading(true);
+
+      const res = await getAgreement();
+      if (!res.isSuccess) return;
+
+      setAgreement(res.result);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let alive = true;
 
@@ -48,7 +65,6 @@ export default function AgreementMemberPage() {
 
         setAgreement(res.result);
       } catch (e) {
-        // TODO: 토스트/에러 UI
         console.error(e);
       } finally {
         if (alive) setLoading(false);
@@ -70,7 +86,32 @@ export default function AgreementMemberPage() {
   const rules = agreement?.rules ?? [];
   const members = agreement?.members ?? [];
 
-  const canSubmit = true;
+  // ✅ 동의 버튼 활성 조건 (예시: agreement 있고, 서명 중 아니고, 로딩 중 아니고)
+  const canSubmit = Boolean(agreement?.agreementId) && !loading && !signing;
+
+  // ✅ 버튼 클릭 시 서명 API 호출
+  const handleClickSign = async () => {
+    const agreementId = agreement?.agreementId;
+    if (!agreementId) return;
+    if (signing) return;
+
+    try {
+      setSigning(true);
+
+      const res = await signAgreement(agreementId);
+      if (!res.isSuccess) return;
+
+      // ✅ 필요하면 여기서 res.result.allSigned 보고 다음 화면 이동도 가능
+      // if (res.result.allSigned) navigate('/agreement/complete')
+
+      // ✅ UI 최신화: 다시 불러오기
+      await fetchAgreement();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSigning(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -253,7 +294,11 @@ export default function AgreementMemberPage() {
 
       {/* Bottom button */}
       <BottomCTAWrapper fixed>
-        <BottomCTAButton label="검토 완료 및 동의" disabled={!canSubmit} onClick={() => {}} />
+        <BottomCTAButton
+          label={signing ? '동의 처리중…' : '검토 완료 및 동의'}
+          disabled={!canSubmit}
+          onClick={handleClickSign}
+        />
       </BottomCTAWrapper>
     </div>
   );

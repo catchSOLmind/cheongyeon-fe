@@ -8,6 +8,7 @@ import type {
 import type { GetAgreementResponse } from '../types/agreementDetail.types';
 import type { AgreementConfirmResult } from '@/features/agreement/types/agreementSign.types';
 import type { ApiResponse } from '@/shared/types/ApiResponse';
+import type { AgreementSignResponse } from '../types/agreementSign.types';
 
 
 //협약서 초안 작성하기
@@ -45,3 +46,16 @@ export const confirmAgreement = async (
 
   return response.data;
 };
+
+
+// 협약서에 서명합니다
+// POST /api/agreements/{agreementId}/sign
+export const signAgreement = async (
+  agreementId: number
+): Promise<AgreementSignResponse> => {
+  const response = await authenticatedClient.post<AgreementSignResponse>(
+    `/api/agreements/${agreementId}/sign`
+  );
+  return response.data;
+};
+
