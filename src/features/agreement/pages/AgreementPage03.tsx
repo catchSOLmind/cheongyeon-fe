@@ -118,11 +118,11 @@ export default function AgreementPage03() {
         </div>
 
         {/* Title */}
-        <div className="mt-5">
-          <h1 className="text-[20px] leading-[28px] font-semibold text-gray-900">
+        <div className="mt-4">
+          <h1 className="text-display-m text-black">
             협약서를 최종 확인해주세요
           </h1>
-          <p className="mt-1 text-[12px] leading-[16px] text-gray-500">
+          <p className="mt-2 text-body-m text-gray-700">
             필요한 경우 멤버들이 피드백을 남겨요
           </p>
         </div>
@@ -139,11 +139,11 @@ export default function AgreementPage03() {
           <div className="mt-6 space-y-5">
             {/* 우리집 이름 */}
             <section>
-              <label className="text-[12px] font-medium text-gray-700">
+              <label className="text-body-l text-black">
                 우리집 이름
               </label>
-              <div className="mt-2">
-                <div className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 text-[14px]">
+              <div>
+                <div className="t-5 w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 text-[14px]">
                   {agreement.houseName}
                 </div>
               </div>
@@ -151,11 +151,11 @@ export default function AgreementPage03() {
 
             {/* 한 달 목표 */}
             <section>
-              <label className="text-[12px] font-medium text-gray-700">
+              <label className="text-body-l text-black">
                 우리집 한 달 목표
               </label>
-              <div className="mt-2">
-                <div className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 text-[14px]">
+              <div>
+                <div className="mt-5 w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 text-[14px]">
                   {agreement.monthlyGoal}
                 </div>
               </div>
@@ -164,20 +164,20 @@ export default function AgreementPage03() {
             {/* 우리집 규칙 (추가 가능) */}
             <section>
               <div className="flex items-center justify-between">
-                <label className="text-[12px] font-medium text-gray-700">
+                <label className="text-body-l text-black">
                   우리집 규칙
                 </label>
-                <span className="text-[11px] text-gray-400">
+              <span className="text-[12px] leading-[16px] text-gray-700">
                   필수 1개, 최대 {maxRules}개
                 </span>
               </div>
 
               {/* rules */}
-              <div className="mt-2 space-y-2">
+              <div className="space-y-[14px]">
                 {mergedRules.map((r) => (
                   <div
                     key={r.itemId}
-                    className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 text-[14px]"
+                    className="mt-5 w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 text-[14px]"
                   >
                     {r.itemText}
                   </div>
