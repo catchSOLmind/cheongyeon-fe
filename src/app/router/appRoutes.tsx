@@ -15,6 +15,7 @@ import CalendarPage from '@/features/calendar/pages/CalendarPage';
 import AddTodoPage from '@/features/todo/pages/addTodoPage';
 import FeedbackPage from '@/features/todo/pages/feedbackPage';
 import FeedbackFinishPage from '@/features/todo/pages/feedbackFinPage';
+import FeedbackReportPage from '@/features/todo/pages/FeedbackReportPage';
 import TestPage from '@/features/test/pages/TestQuestionPage';
 import TestResultPage from '@/features/test/pages/TestResultPage';
 import TestStartPage from '@/features/test/pages/TestStartPage';
@@ -77,6 +78,7 @@ export const appRouter = createBrowserRouter([
       { path: '/calendar/task', element: <AddTodoPage /> },
       { path: '/calendar/feedback', element: <FeedbackPage /> },
       { path: '/calendar/feedback-finish', element: <FeedbackFinishPage /> },
+      { path: '/calendar/feedback-report', element: <FeedbackReportPage /> },
       { path: '/calendar/edit', element: <FeedbackPage /> }, // 디자인 완료 후 수정
       { path: '/agreement', element: <AgreementPage01/>},
       { path: '/agreement/2',element:<AgreementPage02/>},
