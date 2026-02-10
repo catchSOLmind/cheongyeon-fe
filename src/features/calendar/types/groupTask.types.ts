@@ -27,13 +27,13 @@ export type GroupTasksResult = {
   weekDates: string[];   // ["YYYY-MM-DD", ...]
   selectedDate: string;  // YYYY-MM-DD
   items: GroupTaskWeekItem[];
+  isSoloGroup: boolean;  // 추가 - 얘가 그룹인지 아닌지 판단 
 };
 
 export type GroupTasksRequest = {
   groupId: number;
   date: string; // YYYY-MM-DD
 };
-
 
 export type ApiErrorResponse = {
   isSuccess: boolean;

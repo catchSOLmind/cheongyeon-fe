@@ -1,14 +1,10 @@
 import type { GroupTaskWeekItem, TaskStatus } from '../types/groupTask.types';
 import { categories } from '@/features/todo/data/categoryTypeImages'; 
 import IconCoin from '@/assets/todo/icon-coin.svg';
-import IconCheckFill from '@/assets/calendar/img-check-fill.svg';
-import IconCheck from '@/assets/calendar/img-check.svg';
-
 
 interface TaskItemProps {
   task: GroupTaskWeekItem;
-  isLocallyCompleted?: boolean;
-  onToggleComplete?: () => void;
+  onClick?: () => void;
 }
 
 const formatTime = (time?: string | null): string => {
@@ -43,19 +39,18 @@ const getStatus = (status: TaskStatus) => {
   return { label, className };
 };
 
-export default function TaskItem({ task, isLocallyCompleted, onToggleComplete }: TaskItemProps) {
-  const isCompleted = (isLocallyCompleted ?? false) || task.status === 'COMPLETED';
-
+export default function TaskItem({ task, onClick }: TaskItemProps) {
   // 카테고리
   const category = categories.find((c) => c.categoryType === task.category);
   const categoryIcon = category?.image;
 
-  // 로컬 완료면 칩도 완료로 보이게
-  const effectiveStatus: TaskStatus = isCompleted ? 'COMPLETED' : task.status;
-  const { label: statusLabel, className: statusClassName } = getStatus(effectiveStatus);
+  const { label: statusLabel, className: statusClassName } = getStatus(task.status);
 
   return (
-    <div className="w-full rounded-xl bg-white p-4 ">
+    <div 
+      className="w-full rounded-xl bg-white p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+      onClick={onClick}
+    >
       <div className="flex items-center gap-3">
         {/* 카테고리 아이콘 */}
         <div className="w-8 h-8 rounded-lg bg-[#FAE0F8] flex items-center justify-center">
@@ -68,8 +63,7 @@ export default function TaskItem({ task, isLocallyCompleted, onToggleComplete }:
 
         {/* 제목 + 서브라인(시간 | 포인트) */}
         <div className="flex-1 min-w-0">
-          <div
-            className={'text-body-m-bold text-black'}>
+          <div className="text-body-m-bold text-black">
             {task.taskName}
           </div>
 
@@ -84,23 +78,29 @@ export default function TaskItem({ task, isLocallyCompleted, onToggleComplete }:
 
             <div className="flex items-center gap-1">
               <img src={IconCoin} alt="포인트" className="w-4 h-4" />
-              <span className='text-body-s text-black'>{task.point} 포인트</span>
+              <span className="text-body-s text-black">{task.point} 포인트</span>
             </div>
           </div>
         </div>
 
-        {/* 상태 + 체크 */}
+        {/* 상태 + 담당자 프로필 */}
         <div className="flex items-center gap-3 shrink-0">
           <div className={['px-3 py-1 rounded-lg text-body-m-bold', statusClassName].join(' ')}>
             {statusLabel}
           </div>
 
-          <img
-              src={isCompleted ? IconCheckFill : IconCheck}
-              alt={isCompleted ? '완료' : '미완료'}
-              onClick={onToggleComplete}
-              className="w-8 h-8"
-            />
+          {/* 담당자 프로필 이미지 */}
+          <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+            {task.assignee.profileImageUrl ? (
+              <img
+                src={task.assignee.profileImageUrl}
+                alt={task.assignee.nickname}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-xs text-gray-500">👤</span>
+            )}
+          </div>
         </div>
       </div>
     </div>

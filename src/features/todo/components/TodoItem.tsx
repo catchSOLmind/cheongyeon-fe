@@ -21,10 +21,9 @@ interface TodoItemProps {
   time: string | null;
   points: number;
 
-  // 이제 여기 값이 "실제 담당자(기본=나 / 바텀시트에서 변경 시 덮어쓰기)"가 됨
   assignee: {
     nickname: string;
-    avatar?: string | null;
+    profileImageUrl?: string | null;
   };
 
   // repeat는 enabled=false면 undefined로 둘 거라 했으니 optional
@@ -194,8 +193,8 @@ export function TodoItem({
               <div className="flex items-center gap-2 min-w-0">
                 {/* 담당자 프로필 */}
                 <img
-                  src={assignee.avatar || ImgDefault}
-                   alt={assignee.nickname}
+                  src={assignee.profileImageUrl ?? ImgDefault}
+                  alt={assignee.nickname}
                   className="w-6 h-6 rounded-full object-cover flex-shrink-0"
                 />
 

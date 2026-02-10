@@ -11,7 +11,7 @@ import HomePage03 from '@/features/home/homePage03';
 import HomePage04 from '@/features/home/homePage04';
 import MyPage from '@/features/calendar/pages/MyPage';
 import CalendarPage from '@/features/calendar/pages/CalendarPage';
-import InvitePage from '@/features/invite/pages/InvitePage';
+// import InvitePage from '@/features/invite/pages/InvitePage';
 import AddTodoPage from '@/features/todo/pages/addTodoPage';
 import FeedbackPage from '@/features/todo/pages/feedbackPage';
 import FeedbackFinishPage from '@/features/todo/pages/feedbackFinPage';
@@ -27,7 +27,8 @@ import EraserPage from '@/features/eraser/pages/EraserPage';
 import EraserApplyPage from '@/features/eraser/pages/EraserApplyPage';
 import EraserDatePage from '@/features/eraser/pages/EraserDatePage';
 import EraserConfirmPage from '@/features/eraser/pages/EraserConfirmPage';
-
+import InviteEntryPage from '@/features/agreement/pages/InviteEntryPage';
+import InviteAcceptPage from '@/features/agreement/pages/InviteAcceptPage';
 
 
 export const appRouter = createBrowserRouter([
@@ -70,7 +71,7 @@ export const appRouter = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: '/invite/:houseId', element: <InvitePage /> },
+      // { path: '/invite/:houseId', element: <InvitePage /> }, // 미사용 페이지 
       { path: '/calendar/task', element: <AddTodoPage /> },
       { path: '/calendar/feedback', element: <FeedbackPage /> },
       { path: '/calendar/feedback-finish', element: <FeedbackFinishPage /> },
@@ -94,6 +95,9 @@ export const appRouter = createBrowserRouter([
         { path: '/test-start', element: <TestStartPage /> },
         { path: '/test', element: <TestPage /> },
         { path: '/test-result', element: <TestResultPage /> },
+        { path: '/invite/:invitationId', element: <InviteEntryPage /> },
+        { path: '/invite/accept', element: <InviteAcceptPage /> },
+
       ],
     },
   // 404

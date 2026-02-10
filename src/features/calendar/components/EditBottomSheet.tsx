@@ -7,15 +7,17 @@ import IconGive from "@/assets/calendar/toggle/icon-give.svg";
 import IconPencil from "@/assets/calendar/toggle/icon-pencil.svg";
 import IconState from "@/assets/calendar/toggle/icon-state.svg";
 import { deleteMyTask } from '../api/myTaskEditApi';
+import type { GroupTaskWeekItem } from '../types/groupTask.types';
 
 
 interface EditBottomSheetProps {
   open: boolean;
   onClose: () => void;
-  task: MyTaskWeekItem | null;
+  task: MyTaskWeekItem | GroupTaskWeekItem | null;
   onOpenDateChange: () => void; // 날짜 변경 
   onOpenStatusChange: () => void; // 상태 변경 
   onOpenAllChange: () => void; // 상태 변경 
+  onOpenAssignChange : () => void; // 멤버 주기 
   onDeleted: () => void;  // 할일 삭제 
 
 }
@@ -27,6 +29,7 @@ export default function EditBottomSheet({
   onOpenDateChange,
   onOpenStatusChange,
   onOpenAllChange,
+  onOpenAssignChange,
   onDeleted, 
 }: EditBottomSheetProps) {
 
@@ -44,6 +47,10 @@ export default function EditBottomSheet({
     onOpenAllChange(); // 모든 요소 수정 페이지 열기
   }
 
+  const handleAssignChange = () => {
+    onOpenAssignChange(); // 멤버에게 부탁하기 열기 
+
+  }
   const handleDeleteAll = async () => { 
   if (!task) return; 
     try {
@@ -83,7 +90,9 @@ export default function EditBottomSheet({
           <span className="text-body-l-bold">날짜 변경하기</span>
         </button>
 
-        <button className="flex gap-4 px-4 py-3">
+        <button 
+          className="flex gap-4 px-4 py-3"
+          onClick={handleAssignChange}>
           <img src={IconGive} className="w-6 h-6" />
           <span className="text-body-l-bold">멤버에게 부탁하기</span>
         </button>

@@ -120,7 +120,7 @@ function AddTodoBottomSheet({
       isFavorite: favoriteIds.has(item.taskTypeId),
     }));
 
-    // ⭐ 즐겨찾기 모드면 즐겨찾기만
+    // 즐겨찾기 모드면 즐겨찾기만
     if (isFavoriteMode) {
       return items.filter((item) => item.isFavorite);
     }

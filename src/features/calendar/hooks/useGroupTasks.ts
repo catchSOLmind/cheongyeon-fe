@@ -12,6 +12,7 @@ interface UseGroupTasksOptions extends GroupTasksRequest {
 interface UseGroupTasksReturn {
   tasks: GroupTaskWeekItem[];
   weekDates: string[];
+  isSoloGroup: boolean; // ✅ 추가
   isLoading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
@@ -21,15 +22,15 @@ interface UseGroupTasksReturn {
 export const useGroupTasks = (
   options: UseGroupTasksOptions
 ): UseGroupTasksReturn => {
-  const { enabled = true, groupId, date } = options; // 구조 분해 할당
+  const { enabled = true, groupId, date } = options;
 
   const [tasks, setTasks] = useState<GroupTaskWeekItem[]>([]);
   const [weekDates, setWeekDates] = useState<string[]>([]);
+  const [isSoloGroup, setIsSoloGroup] = useState(false); // ✅ 추가
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchTasks = useCallback(async () => {
-    // groupId 유효성 검사 추가
     if (!groupId || groupId <= 0) {
       console.log('Invalid groupId:', groupId);
       return;
@@ -40,15 +41,17 @@ export const useGroupTasks = (
 
     try {
       const data = await getGroupTasks({ groupId, date });
-      setTasks(data.items); 
+
+      setTasks(data.items);
       setWeekDates(data.weekDates);
+      setIsSoloGroup(data.isSoloGroup); 
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch tasks'));
       console.error('Failed to fetch group tasks:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [groupId, date]); // 원시값으로 의존성 설정
+  }, [groupId, date]);
 
   useEffect(() => {
     if (enabled) {
@@ -59,6 +62,7 @@ export const useGroupTasks = (
   return {
     tasks,
     weekDates,
+    isSoloGroup, 
     isLoading,
     error,
     refetch: fetchTasks,

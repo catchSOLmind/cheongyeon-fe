@@ -109,25 +109,30 @@ const todos: DraftTaskItemData[] = useMemo(() => {
 ]);
 
 
+const handleSubmitToCalendar = async () => {
+  if (drafts.length === 0) return;
 
-  const handleSubmitToCalendar = async () => {
-    if (drafts.length === 0) return;
+  try {
+    const tasks = drafts.map((d) => ({
+      date: d.date,                 // draft별 날짜
+      taskTypeId: d.taskTypeId,     // 단건
+      time: d.time ?? null,
+      assigneeMemberId: d.assignee?.memberId ?? 0, // 미지정 처리 정책에 맞게(0 or null)
+      repeat: {
+        enabled: !!d.repeat?.enabled,
+        daysOfWeek: d.repeat?.enabled ? d.repeat.daysOfWeek : [],
+      },
+    }));
 
-    try {
-      const date = drafts[0]?.date;
-      if (!date) return;
+    await addMyTasks({ tasks });
 
-      const taskTypeIds = Array.from(new Set(drafts.map((d) => d.taskTypeId)));
+    clearDrafts();
+    navigate('/calendar');
+  } catch {
+    alert('캘린더 추가에 실패했어요. 다시 시도해주세요.');
+  }
+};
 
-      // ⚠️ 서버 요청 body는 "수정하면 안 된다"고 했으니 그대로 유지
-      await addMyTasks({ date, taskTypeIds ,  });
-
-      clearDrafts();
-      navigate('/calendar');
-    } catch {
-      alert('캘린더 추가에 실패했어요. 다시 시도해주세요.');
-    }
-  };
 
   return (
     <div className="h-screen flex flex-col">
