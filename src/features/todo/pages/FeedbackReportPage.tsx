@@ -10,8 +10,18 @@ import type {
 } from '@/features/todo/types/weeklyFeedback.types';
 
 import { getFeedbackReport } from '@/features/todo/api/feedbackApi';
+import Header from '@/shared/components/Header';
 
-function CategoryBadge({ category }: { category: WeeklyFeedbackResult['myImprovements'][number]['category'] }) {
+import ImgBanner from '@/assets/calendar/img-topbanner.svg';
+
+import type { PraiseTypeCode } from '@/features/todo/types/feedback.types';
+import { complimentStickers } from '../data/feedbackStamps';
+
+function CategoryBadge({
+  category,
+}: {
+  category: WeeklyFeedbackResult['myImprovements'][number]['category'];
+}) {
   const found = useMemo(() => {
     const byType = categories.find((c) => c.categoryType === category);
     return {
@@ -34,10 +44,23 @@ function CategoryBadge({ category }: { category: WeeklyFeedbackResult['myImprove
   );
 }
 
-function StampChip({ title }: { title: string }) {
+/** 칭찬 스티커: code로 아이콘 매핑해서 렌더 */
+function StampChip({ code, title }: { code: PraiseTypeCode; title: string }) {
+  const sticker = useMemo(
+    () => complimentStickers.find((s) => s.id === code),
+    [code]
+  );
+
   return (
-    <div className="px-3 py-2 rounded-full bg-primary-50 text-primary-700 text-body-s-bold">
-      {title}
+    <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-primary-50">
+      {sticker ? (
+        <img
+          src={sticker.iconFill}
+          alt={title}
+          className="w-4 h-4 object-contain"
+        />
+      ) : null}
+      <span className="text-primary-700 text-body-s-bold">{title}</span>
     </div>
   );
 }
@@ -96,59 +119,57 @@ export default function FeedbackReportPage() {
     return (
       <div className="min-h-dvh bg-white flex flex-col items-center justify-center gap-3">
         <p className="text-gray-600">리포트를 불러오지 못했어요.</p>
-        <button className="px-4 py-2 rounded-lg bg-gray-100" onClick={() => navigate(-1)}>
+        <button
+          className="px-4 py-2 rounded-lg bg-gray-100"
+          onClick={() => navigate(-1)}
+        >
           뒤로가기
         </button>
       </div>
     );
   }
 
-  const { period, groupTitle, summaries, myPraiseStamp, myImprovements, memberFeedbacks } = data;
+  const {
+    period,
+    groupTitle,
+    summaries,
+    myPraiseStamp,
+    myImprovements,
+    memberFeedbacks,
+  } = data;
 
   return (
     <div className="min-h-dvh bg-white">
       {/* 상단바 */}
-      <div className="sticky top-0 z-10 bg-white">
-        <div className="h-12 flex items-center justify-center relative border-b border-gray-100">
-          <button
-            type="button"
-            className="absolute left-2 h-10 w-10 flex items-center justify-center"
-            onClick={() => navigate(-1)}
-            aria-label="뒤로가기"
-          >
-            ←
-          </button>
-          <h1 className="text-body-m-bold text-gray-900">우리집 리포트</h1>
-        </div>
-      </div>
+      <Header title="우리 집 리포프" />
 
       {/* 상단 히어로 */}
-      <div className="bg-[#DFF6F8] px-5 pt-6 pb-8">
-        <p className="text-center text-body-m text-gray-800">{period}</p>
-        <p className="mt-1 text-center text-body-m text-gray-800">우리는..</p>
+      <div className="bg-primary-50 px-5 pt-6 pb-8">
+        <p className="text-center text-display-xs text-gray-800">{period}</p>
+        <p className="mt-6 text-center text-display-xs text-gray-800">우리는..</p>
 
         <div className="mt-3 flex justify-center">
-          <span className="px-3 py-2 bg-[#FFF1CC] rounded-lg text-body-l-bold text-gray-900">
+          <span className="px-3 py-2 bg-[#FFF1CC] rounded-lg font-sandoll font-normal text-body-l-bold text-primary-900">
             “{groupTitle}”
           </span>
         </div>
 
         {/* 캐릭터 자리 (원하면 이미지로 교체) */}
         <div className="mt-5 flex justify-center">
-          <div className="w-24 h-24 rounded-full bg-white/60 flex items-center justify-center">
-            <span className="text-2xl">😴</span>
-          </div>
+          <img src={ImgBanner} className="w-[190px] h-[84px]" alt="" />
         </div>
 
         {/* 요약 카드 */}
-        <div className="mt-4 rounded-2xl bg-white px-4 py-4">
+        <div className="-mt-4 rounded-2xl bg-white px-4 py-4">
           <div className="space-y-2">
-            {(summaries ?? []).slice(0, 3).map((s, idx) => (
-              <div key={`${idx}-${s}`} className="flex items-start gap-2">
-                <span className="mt-[2px] text-yellow-400">★</span>
-                <p className="text-body-m text-gray-800">{s}</p>
-              </div>
-            ))}
+            {(summaries ?? [])
+              .slice(0, 3)
+              .map((s, idx) => (
+                <div key={`${idx}-${s}`} className="flex items-start gap-2">
+                  <span className="mt-[2px] text-yellow-400">★</span>
+                  <p className="text-body-m text-gray-800">{s}</p>
+                </div>
+              ))}
           </div>
         </div>
       </div>
@@ -156,33 +177,46 @@ export default function FeedbackReportPage() {
       {/* 본문 */}
       <div className="px-5 py-6">
         {/* 나의 피드백 */}
-        <h2 className="text-body-l-bold text-gray-900">나의 피드백</h2>
+        <h2 className="font-sandoll text-body-l-bold text-gray-900">나의 피드백</h2>
 
         {/* 칭찬 스티커 */}
         <div className="mt-3">
           <p className="text-label-m text-gray-600">칭찬 스티커</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {(myPraiseStamp ?? []).length === 0 ? (
-              <span className="text-body-s text-gray-400">이번 주 칭찬 스티커가 없어요.</span>
+              <span className="text-body-s text-gray-400">
+                이번 주 칭찬 스티커가 없어요.
+              </span>
             ) : (
-              myPraiseStamp.map((s) => <StampChip key={`${s.code}-${s.title}`} title={s.title} />)
+              myPraiseStamp.map((s) => (
+                <StampChip
+                  key={`${s.code}-${s.title}`}
+                  code={s.code as PraiseTypeCode}
+                  title={s.title}
+                />
+              ))
             )}
           </div>
         </div>
 
         {/* 개선 피드백 */}
         <div className="mt-6">
-          <p className="text-label-m text-gray-600">개선 피드백</p>
+          <p className="tont-sandoll text-body-l-bold text-gray-900">개선 피드백</p>
 
           {(myImprovements ?? []).length === 0 ? (
-            <div className="mt-3 text-body-s text-gray-400">개선 피드백이 없어요.</div>
+            <div className="mt-3 text-body-s text-gray-400">
+              개선 피드백이 없어요.
+            </div>
           ) : (
             <div className="mt-3 space-y-3">
               {myImprovements.map((item, idx) => {
                 const isOpen = openSet.has(idx);
 
                 return (
-                  <div key={`${idx}-${item.authorName}`} className="rounded-2xl bg-white border border-gray-100">
+                  <div
+                    key={`${idx}-${item.authorName}`}
+                    className="rounded-2xl bg-white border border-gray-100"
+                  >
                     <button
                       type="button"
                       onClick={() => toggleOpen(idx)}
@@ -215,7 +249,9 @@ export default function FeedbackReportPage() {
 
                     {isOpen ? (
                       <div className="px-4 pb-4">
-                        <p className="text-body-m text-gray-800 whitespace-pre-line">{item.content}</p>
+                        <p className="text-body-m text-gray-800 whitespace-pre-line">
+                          {item.content}
+                        </p>
 
                         <div className="mt-3 flex justify-end">
                           <div className="text-body-s text-gray-500 inline-flex items-center gap-1">
@@ -242,14 +278,18 @@ export default function FeedbackReportPage() {
           <h2 className="text-body-l-bold text-gray-900">멤버 피드백</h2>
 
           {(memberFeedbacks ?? []).length === 0 ? (
-            <div className="mt-3 text-body-s text-gray-400">멤버 피드백이 없어요.</div>
+            <div className="mt-3 text-body-s text-gray-400">
+              멤버 피드백이 없어요.
+            </div>
           ) : (
             <div className="mt-3 space-y-5">
               {memberFeedbacks.map((m) => (
                 <div key={m.memberId} className="space-y-2">
                   <p className="text-body-m-bold text-gray-900">{m.nickname}</p>
                   <div className="rounded-2xl bg-gray-50 px-4 py-3">
-                    <p className="text-body-m text-gray-800">{m.latestFeedbackContent}</p>
+                    <p className="text-body-m text-gray-800">
+                      {m.latestFeedbackContent}
+                    </p>
                   </div>
                 </div>
               ))}
