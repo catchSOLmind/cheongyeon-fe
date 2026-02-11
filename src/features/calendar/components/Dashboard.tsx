@@ -116,6 +116,7 @@ export function Dashboard() {
 
             <button
               type="button"
+              onClick={() => navigate('/agreement/main')}
               className="mt-4 w-full h-[42px] rounded-lg border border-gray-200 bg-gray-50 text-body-m text-gray-800"
             >
               우리집 협약서 확인

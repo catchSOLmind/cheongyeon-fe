@@ -1,10 +1,11 @@
 import type { GroupTaskWeekItem, TaskStatus } from '../types/groupTask.types';
-import { categories } from '@/features/todo/data/categoryTypeImages'; 
+import { categories } from '@/features/todo/data/categoryTypeImages';
 import IconCoin from '@/assets/todo/icon-coin.svg';
 
 interface TaskItemProps {
   task: GroupTaskWeekItem;
   onClick?: () => void;
+  isEditMode?: boolean;
 }
 
 const formatTime = (time?: string | null): string => {
@@ -26,7 +27,6 @@ const getStatus = (status: TaskStatus) => {
           ? '완료'
           : '대기중';
 
-  // 완료 , 대기중
   const className =
     status === 'WAITING'
       ? 'bg-primary-50 text-primary-400'
@@ -39,20 +39,23 @@ const getStatus = (status: TaskStatus) => {
   return { label, className };
 };
 
-export default function TaskItem({ task, onClick }: TaskItemProps) {
-  // 카테고리
+export default function TaskItem({ task, onClick, isEditMode = false }: TaskItemProps) {
   const category = categories.find((c) => c.categoryType === task.category);
   const categoryIcon = category?.image;
 
   const { label: statusLabel, className: statusClassName } = getStatus(task.status);
 
+  const handleClick = () => {
+    if (isEditMode) return;   // ✅ 편집모드면 클릭 막기
+    onClick?.();
+  };
+
   return (
-    <div 
+    <div
       className="w-full rounded-xl bg-white p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-      onClick={onClick}
+      onClick={handleClick}
     >
       <div className="flex items-center gap-3">
-        {/* 카테고리 아이콘 */}
         <div className="w-8 h-8 rounded-lg bg-[#FAE0F8] flex items-center justify-center">
           {categoryIcon ? (
             <img src={categoryIcon} alt={category?.name ?? '카테고리'} className="w-8 h-8" />
@@ -61,11 +64,8 @@ export default function TaskItem({ task, onClick }: TaskItemProps) {
           )}
         </div>
 
-        {/* 제목 + 서브라인(시간 | 포인트) */}
         <div className="flex-1 min-w-0">
-          <div className="text-body-m-bold text-black">
-            {task.taskName}
-          </div>
+          <div className="text-body-m-bold text-black">{task.taskName}</div>
 
           <div className="mt-1 flex items-center gap-2 text-body-m text-gray-700">
             {!!task.time && <span>{formatTime(task.time)}</span>}
@@ -83,13 +83,11 @@ export default function TaskItem({ task, onClick }: TaskItemProps) {
           </div>
         </div>
 
-        {/* 상태 + 담당자 프로필 */}
         <div className="flex items-center gap-3 shrink-0">
           <div className={['px-3 py-1 rounded-lg text-body-m-bold', statusClassName].join(' ')}>
             {statusLabel}
           </div>
 
-          {/* 담당자 프로필 이미지 */}
           <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
             {task.assignee.profileImageUrl ? (
               <img

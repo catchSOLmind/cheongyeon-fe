@@ -1,69 +1,73 @@
-// src/features/agreement/pages/AgreementPage02.tsx
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import Header from '@/shared/components/Header';
-import Steppers from '@/features/agreement/components/Steppers';
+import Steppers from '../components/Steppers';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
+import CalendarBottomSheet from '@/shared/components/CalendarBottomSheet';
 
+import { useUserStore } from '@/features/auth/stores/useUserStore';
+import ImageDefault from '@/assets/common/img-default-profile.svg';
+
+import { useGroupInvite } from '../hooks/useGroupInvite';
 import { createAgreement } from '@/features/agreement/api/agreementApi';
-import type { CreateAgreementRequest } from '@/features/agreement/types/ageement.types';
+import type { CreateAgreementRequest } from '../types/ageement.types';
+
+type LocationState = {
+  houseName?: string;
+  monthlyGoal?: string;
+  rules?: string[];
+};
+
+const formatYMD = (d: Date) => {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
 
 export default function AgreementPage02() {
   const navigate = useNavigate();
+  const { state } = useLocation() as { state: LocationState };
 
-  const [houseName, setHouseName] = useState('');
-  const [monthlyGoal, setMonthlyGoal] = useState('');
+  // Page01에서 넘어온 초안 값
+  const houseName = state?.houseName ?? '';
+  const monthlyGoal = state?.monthlyGoal ?? '';
+  const rules = state?.rules ?? [];
 
-  const [ruleInput, setRuleInput] = useState('');
-  const [rules, setRules] = useState<string[]>([]);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [deadline, setDeadline] = useState<Date | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
 
-  const maxRules = 5;
+  const avatarUrl = useUserStore((s) => s.profile?.profileImageUrl);
 
-  const getToday = () => {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`; // yyyy-mm-dd
+  const { createAndShare, isLoading } = useGroupInvite();
+
+  const handleInvite = async () => {
+    await createAndShare({
+      title: '청연-우리집 그룹에 초대합니다!',
+      description: '함께 활동해요!',
+      imageUrl: 'https://your-image-url.com/group-thumbnail.jpg',
+    });
   };
-
-  const canAddRule = useMemo(() => {
-    const v = ruleInput.trim();
-    if (!v) return false;
-    if (rules.length >= maxRules) return false;
-    if (rules.some((r) => r === v)) return false;
-    return true;
-  }, [ruleInput, rules]);
 
   const canSubmit = useMemo(() => {
     return (
       houseName.trim().length > 0 &&
       monthlyGoal.trim().length > 0 &&
       rules.length >= 1 &&
+      !!deadline &&
       !submitting
     );
-  }, [houseName, monthlyGoal, rules.length, submitting]);
-
-  const handleAddRule = () => {
-    if (!canAddRule) return;
-    const v = ruleInput.trim();
-    setRules((prev) => [...prev, v]);
-    setRuleInput('');
-  };
-
-  const handleRemoveRule = (idx: number) => {
-    setRules((prev) => prev.filter((_, i) => i !== idx));
-  };
+  }, [houseName, monthlyGoal, rules.length, deadline, submitting]);
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    if (!canSubmit || !deadline) return;
 
     const payload: CreateAgreementRequest = {
-      deadline: getToday(), // 협약 체결일 = 오늘
+      deadline: formatYMD(deadline), // 캘린더에서 선택한 마감일
       houseName: houseName.trim(),
       monthlyGoal: monthlyGoal.trim(),
       rules,
@@ -81,20 +85,25 @@ export default function AgreementPage02() {
 
       const agreementId = res.result.agreementId;
 
-      // 다음 단계: 멤버 초대 페이지
-      navigate('/agreement/3', {
-        state: { agreementId },
-      });
+      // 다음 단계(예: 초대 완료/동의 흐름 페이지)
+      navigate('/agreement/3', { state: { agreementId } });
     } catch {
-        console.error('다시시도');
+      console.error('다시시도');
     } finally {
       setSubmitting(false);
     }
-    };
+  };
+
+  // Page01 state 없이 들어오면 튕기기(원하면 유지/수정 가능)
+  if (!houseName || !monthlyGoal || rules.length === 0) {
+    // replace로 되돌리기
+    navigate('/agreement/1', { replace: true });
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-white">
-      <Header title="우리집 협약서" showBackButton />
+      <Header title="협약서 멤버 초대하기" showBackButton />
 
       <div className="mx-auto w-full max-w-[390px] px-5 pb-28">
         {/* Stepper */}
@@ -103,137 +112,110 @@ export default function AgreementPage02() {
         </div>
 
         {/* Title */}
-        <div className="mt-4">
-          <h1 className="text-display-m text-black">
-            협약서 초안을 작성해주세요
+        <div className="mt-3">
+          <h1 className="text-display-m text-black whitespace-pre-line">
+            멤버를 초대하고{'\n'}협약서를 작성해보세요
           </h1>
           <p className="mt-2 text-body-m text-gray-700">
-            대표자가 초안 작성 후 멤버와 합의할 수 있어요
+            멤버와 협약서 확인과 동의가 가능해요
           </p>
         </div>
 
-        {/* Form */}
-        <div className="mt-10 space-y-6">
-          {/* 우리집 이름 */}
-          <section>
-            <label className="text-body-l text-black">
-              우리집 이름
-            </label>
-            <div>
-              <input
-                value={houseName}
-                onChange={(e) => setHouseName(e.target.value)}
-                placeholder="ex) 보송보송 우리집"
-                className="mt-5 w-full h-11 px-3 rounded-lg bg-gray-100 text-body-m placeholder:text-gray-400"
-              />
-            </div>
-          </section>
-
-          {/* 한 달 목표 */}
-          <section>
-            <label className="text-body-l text-black">
-              우리집 한 달 목표
-            </label>
-            <div>
-              <input
-                value={monthlyGoal}
-                onChange={(e) => setMonthlyGoal(e.target.value)}
-                placeholder="ex) 청소율 100% 달성 시 뷔페 가기"
-                className="mt-5 w-full h-11 px-3 rounded-lg bg-gray-100 text-body-m placeholder:text-gray-400"
-              />
-            </div>
-          </section>
-
-          {/* 규칙 */}
-          <section>
-            <div className="flex items-center justify-between">
-              <label className="text-body-l text-black">
-                우리집 규칙
-              </label>
-              <span className="text-[12px] leading-[16px] text-gray-700">
-                필수 1개, 최대 {maxRules}개
-              </span>
-            </div>
-
-            {/* rules list (chip) */}
-            {rules.length > 0 && (
-              <div className="mt-5 flex flex-col  gap-2">
-                {rules.map((r, idx) => (
-                  <div
-                    key={`${r}-${idx}`}
-                    className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2"
-                  >
-                    <span className="text-[13px] leading-[18px] text-gray-800">
-                      {r}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveRule(idx)}
-                      className="text-gray-500 hover:text-gray-700"
-                      aria-label="규칙 삭제"
-                    >
-                      ×
-                    </button>
+        {/* Invite area */}
+        <div className="mt-12">
+          <div className="flex items-start gap-3">
+            {/* Invite (plus) */}
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={handleInvite}
+                disabled={isLoading}
+                className="w-16 h-16 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center hover:shadow-md transition-shadow disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M12 5v14M5 12h14"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* rule input */}
-            <div>
-              <input
-                value={ruleInput}
-                onChange={(e) => setRuleInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddRule();
-                  }
-                }}
-                placeholder="규칙을 입력해주세요"
-                className="mt-5 w-full h-11 px-3 rounded-lg bg-gray-100 text-body-m placeholder:text-gray-400"
-                disabled={rules.length >= maxRules}
-              />
+                )}
+              </button>
+              <div className="text-body-m text-gray-900">초대(1/5)</div>
             </div>
 
-            {/* add button */}
+            {/* Me avatar */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="내 프로필"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img src={ImageDefault} alt="기본 프로필" />
+                )}
+              </div>
+              <span className="text-primary text-body-m-bold">나</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Deadline */}
+        <div className="mt-12">
+          <h2 className="text-base font-semibold text-gray-900">협약서 작성 마감일</h2>
+
+          <div className="mt-5">
             <button
               type="button"
-              onClick={handleAddRule}
-              disabled={!canAddRule}
-              className={[
-                'mt-[14px] w-full h-12 rounded-lg border text-[14px] leading-[20px] font-medium',
-                'flex items-center justify-center gap-2',
-                canAddRule
-                  ? 'bg-white border-gray-200 text-gray-800 active:bg-gray-50'
-                  : 'bg-gray-50 border-gray-200 text-gray-400',
-              ].join(' ')}
+              onClick={() => setIsCalendarOpen(true)}
+              className="w-full rounded-[12px] border border-gray-300 bg-[#FAFAFA] px-4 py-4 flex items-center justify-between"
             >
-              <span className="text-[14px] leading-none">+</span>
-              규칙 추가하기
+              <span
+                className={`text-body-m-bold ${
+                  deadline ? 'text-gray-900' : 'text-gray-500'
+                }`}
+              >
+                {deadline
+                  ? `${deadline.getFullYear()}.${deadline.getMonth() + 1}.${deadline.getDate()}`
+                  : '날짜 선택'}
+              </span>
             </button>
+            <p className="mt-[10px] text-body-s text-gray-600">
+              마감일 이후에는 협약서를 다시 작성해야 해요.
+            </p>
+          </div>
 
-            {/* helper */}
-            <div className="mt-2 flex items-center justify-between">
-              <p className="text-[11px] leading-[16px] text-gray-400">
-                같은 규칙은 중복 추가할 수 없어요
-              </p>
-              <p className="text-[11px] leading-[16px] text-gray-400">
-                {rules.length}/{maxRules}
-              </p>
-            </div>
-          </section>
+          <CalendarBottomSheet
+            open={isCalendarOpen}
+            onClose={() => setIsCalendarOpen(false)}
+            year={2026}
+            month={2}
+            monthLabel="26년 2월"
+            value={deadline}
+            onChange={(date) => setDeadline(date)}
+            onConfirm={(date) => {
+              setDeadline(date);
+              setIsCalendarOpen(false);
+            }}
+          />
         </div>
-      </div>
 
-      {/* Bottom button */}
-      <BottomCTAWrapper fixed>
-        <BottomCTAButton
-          label={submitting ? '작성 중...' : '초안 작성 완료'}
-          disabled={!canSubmit}
-          onClick={handleSubmit}
-        />
-      </BottomCTAWrapper>
+        {/* Bottom button */}
+        <BottomCTAWrapper fixed>
+          <BottomCTAButton
+            label={submitting ? '작성 중...' : '초안 작성 완료'}
+            disabled={!canSubmit}
+            onClick={handleSubmit}
+          />
+        </BottomCTAWrapper>
+      </div>
     </div>
   );
 }

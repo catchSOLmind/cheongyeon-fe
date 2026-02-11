@@ -10,7 +10,7 @@ export type AgreementStatus = 'DRAFT' | 'ACTIVE' | 'EXPIRED';
  * ============================== */
 export type AgreementMemberRole = 'OWNER' | 'MEMBER';
 
-export type AgreementSignStatus = 'PENDING' | 'SIGNED';
+export type AgreementSignStatus = 'PENDING' | 'AGREED';
 
 /* ==============================
  * Agreement Rule Item

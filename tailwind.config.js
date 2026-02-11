@@ -69,6 +69,7 @@ export default {
       },
       fontFamily: {
         sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+        sandoll: ['"Sandoll GothicNeo3"', 'system-ui', 'sans-serif'],
       },
 
       fontSize: {
