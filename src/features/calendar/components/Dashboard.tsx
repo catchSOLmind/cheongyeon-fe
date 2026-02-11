@@ -96,7 +96,7 @@ export function Dashboard( { agreementStatus }: Props) {
   }
 
   const isConfirmed = agreementStatus === 'CONFIRMED';
-  const isDraft = agreementStatus === 'DRAFT';
+  // const isDraft = agreementStatus === 'DRAFT';
   // const isMissing = agreementStatus === 'NONE';
 
 
@@ -120,10 +120,9 @@ export function Dashboard( { agreementStatus }: Props) {
     if (isConfirmed) {
       navigate('/agreement/main');
     }
-    else if (isDraft) {
+    else{
       navigate('/agreement/3');
     }
-    navigate('/agreement');
   };
 
   return (
