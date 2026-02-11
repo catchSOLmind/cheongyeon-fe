@@ -578,7 +578,7 @@ function DoneStep({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
 
   return (
-    <div className="px-5 pt-10 pb-8">
+    <div className="px-5 pt-6 pb-6">
       <img src={ImgAlarm} className="-mx-3 w-[70px] h-[70px]" />
       <h2 className="mt-3 text-display-s text-black">일정 변경 완료!</h2>
       <p className="mt-3 text-body-l text-gray-800">

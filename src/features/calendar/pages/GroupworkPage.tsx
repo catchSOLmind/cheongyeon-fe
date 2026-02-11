@@ -52,7 +52,7 @@ function GroupworkPage() {
   const isGroupIdReady = typeof groupId === 'number';
   const enabled = isGroupIdReady;
 
-  const { tasks, isLoading, agreementStatus } = useGroupTasks({
+  const { tasks, managerCall, isLoading, agreementStatus } = useGroupTasks({
     groupId: (groupId ?? 0) as number,
     date: selectedDateStr,
     enabled,
@@ -209,6 +209,7 @@ function GroupworkPage() {
         <GroupTaskList
           task={tasks}
           isLoading={isLoading}
+          managerCall={managerCall}
           selectedDate={selectedDate}
         />
       </div>
