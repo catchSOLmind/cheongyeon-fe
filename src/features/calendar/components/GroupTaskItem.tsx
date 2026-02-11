@@ -4,6 +4,7 @@ import IconCoin from '@/assets/todo/icon-coin.svg';
 
 interface TaskItemProps {
   task: GroupTaskWeekItem;
+  onClick?: () => void;
 }
 
 const formatTime = (time?: string | null): string => {
@@ -76,7 +77,7 @@ export default function TaskItem({ task }: TaskItemProps) {
 
             <div className="flex items-center gap-1">
               <img src={IconCoin} alt="포인트" className="w-4 h-4" />
-              <span className="text-body-s text-black">{task.point} 포인트</span>
+              <span className="text-body-s text-black">{task.point}포인트</span>
             </div>
           </div>
         </div>
