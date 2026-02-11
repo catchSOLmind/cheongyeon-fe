@@ -79,7 +79,6 @@ export const appRouter = createBrowserRouter([
       { path: '/calendar/feedback', element: <FeedbackPage /> },
       { path: '/calendar/feedback-finish', element: <FeedbackFinishPage /> },
       { path: '/calendar/feedback-report', element: <FeedbackReportPage /> },
-      { path: '/calendar/edit', element: <FeedbackPage /> }, // 디자인 완료 후 수정
       { path: '/agreement', element: <AgreementPage01/>},
       { path: '/agreement/2',element:<AgreementPage02/>},
       { path: '/agreement/3',element:<AgreementPage03/>},

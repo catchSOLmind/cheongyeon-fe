@@ -10,15 +10,17 @@ import { useFeedbackFields } from '../hooks/useFeedbackFields';
 import { complimentStickers } from '../data/feedbackStamps';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
-import { getFeedbackTemplate } from '../api/feedbackApi';
-import type { GroupMember } from '../types/feedback.types';
+import { getFeedbackTemplate, submitFeedback } from '../api/feedbackApi';
+import type { GroupMember, PraiseTypeCode } from '../types/feedback.types';
 import { getTestResultLabel } from '@/shared/utils/getTestResultLabel';
 
 import type { CategoryType } from '../types/category.types';
 import { categories as categoryOptions } from '../data/categoryTypeImages';
 
 import { postRefineFeedback } from '@/features/todo/api/feedbackApi';
-// import { postSubmitFeedback } from '../api/feedbackSubmitApi'; // 최종 제출 API (나중에 연결)
+import type {  SubmitFeedbackRequest } from '../types/feedbackSubmit.types';
+import { useNavigate } from 'react-router-dom';
+
 
 type Phase = 'editing' | 'refined';
 
@@ -27,8 +29,8 @@ function FeedbackPage() {
   const maxFeedbackCount = 5;
 
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   // =========================
   // 멤버 선택
@@ -39,7 +41,6 @@ function FeedbackPage() {
   // =========================
   // 칭찬 스티커 선택
   // =========================
-  const [selectedStickers, setSelectedStickers] = useState<string[]>([]);
 
   // =========================
   // 피드백 필드 훅 (CategoryType 버전)
@@ -70,6 +71,7 @@ function FeedbackPage() {
   // id별 로딩 여부 (해당 textarea 아래 로딩 박스 표시)
   const [refiningById, setRefiningById] = useState<Record<string, boolean>>({});
 
+
   // =========================
   // 초기 데이터 로드 (템플릿)
   // =========================
@@ -97,7 +99,9 @@ function FeedbackPage() {
     setIsMemberDropdownOpen(false);
   };
 
-  const handleStickerClick = (stickerId: string) => {
+ const [selectedStickers, setSelectedStickers] = useState<PraiseTypeCode[]>([]);
+
+  const handleStickerClick = (stickerId: PraiseTypeCode) => {
     setSelectedStickers((prev) =>
       prev.includes(stickerId)
         ? prev.filter((id) => id !== stickerId)
@@ -229,20 +233,49 @@ function FeedbackPage() {
   }, [hasAnyRefined]);
 
   // =========================
-  // 3) 최종 제출
-  // =========================
-  const handleSubmit = async () => {
-    if (phase !== 'refined') return;
+// 3) 최종 제출
+// =========================
+const handleSubmit = async () => {
+  if (phase !== 'refined') return;
+  if (!selectedMember) return;
 
-    // TODO: 최종 제출 API 연결
-    // await postSubmitFeedback({ ... })
+  // ✅ 칭찬 스티커는 필수라고 했으니, 최소 1개 보장(안전)
+  if (selectedStickers.length === 0) return;
 
-    console.log('최종 제출 payload', {
-      selectedMember,
-      selectedStickers,
-      feedbacks,
-    });
-  };
+  // 개선 피드백: 빈 텍스트 제외 + category 없는 건 제외
+  const improvements = feedbacks
+    .map((f) => ({
+      category: f.categoryType,
+      rawText: (originalTextsById[f.id] ?? '').trim(),
+      aiText: (f.text ?? '').trim(),
+    }))
+    .filter((x) => !!x.category && x.rawText.length > 0)
+    .map((x) => ({
+      category: x.category!, // filter로 보장
+      rawText: x.rawText,
+      aiText: x.aiText, // aiText는 빈 문자열이어도 서버가 허용하는지에 따라 선택
+    }));
+
+  
+    const body: SubmitFeedbackRequest = {
+      targetMemberId: selectedMember,
+      praiseTypes: selectedStickers,
+      ...(improvements.length > 0 ? { improvements } : {}),
+    };
+
+  try {
+    const res = await submitFeedback(body);
+
+    if (!res.isSuccess) {
+      console.error(res.code, res.message);
+      return;
+    }
+
+    navigate('/calendar/feedback-finish', { replace: true });
+  } catch (e) {
+    console.error('피드백 최종 제출 실패', e);
+  }
+};
 
   // CTA 활성 조건
   const canRefine =

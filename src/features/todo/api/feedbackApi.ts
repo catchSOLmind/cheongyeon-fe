@@ -2,6 +2,7 @@ import type { FeedbackPageLoadResponse } from '@/features/todo/types/feedback.ty
 import { authenticatedClient } from "@/features/auth/api/client";
 import type { WeeklyFeedbackResponse } from '../types/weeklyFeedback.types';
 import type { RefineFeedbackRequest, RefineFeedbackResponse } from '../types/refineFeedback.types';
+import type { SubmitFeedbackRequest, SubmitFeedbackResponse } from '../types/feedbackSubmit.types';
 
 
 export const getFeedbackTemplate = async (): Promise<FeedbackPageLoadResponse> => {
@@ -31,4 +32,19 @@ export const postRefineFeedback = async (
     body
   );
   return response.data;
+};
+
+
+/**
+ * 피드백 제출 (최종 저장)
+ * POST /api/feedback
+ */
+export const submitFeedback = async (
+  body: SubmitFeedbackRequest
+): Promise<SubmitFeedbackResponse> => {
+  const { data } = await authenticatedClient.post<SubmitFeedbackResponse>(
+    '/feedback',
+    body
+  );
+  return data;
 };
