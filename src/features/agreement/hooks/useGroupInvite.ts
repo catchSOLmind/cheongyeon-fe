@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { createInvitationLink } from '../api/makeGroupApi';
+import { createInvitation } from '../api/makeGroupApi';
 
 interface KakaoShareOptions {
   title: string;
@@ -16,18 +16,21 @@ export function useGroupInvite() {
       setIsLoading(true);
       setError(null);
 
-      // 1) 초대 링크 생성 
-      const inviteUrl = await createInvitationLink();
-      if (!inviteUrl) throw new Error('초대 링크가 비어있습니다.');
+      // 1) ✅ invitationId 받기 (number)
+      const invitationId = await createInvitation();
 
-      // console.log('생성된 초대 링크:', inviteUrl);
+      // 2) ✅ CloudFront 기반 inviteUrl 생성
+      const baseUrl = (import.meta.env.VITE_APP_BASE_URL || '').replace(/\/$/, '');
+      if (!baseUrl) throw new Error('VITE_APP_BASE_URL이 설정되지 않았습니다.');
 
-      // 2) 카카오 SDK 체크
+      const inviteUrl = `${baseUrl}/invite/${invitationId}`;
+
+      // 3) 카카오 SDK 체크
       const kakao = window.Kakao;
       if (!kakao) throw new Error('window.Kakao를 찾을 수 없습니다. SDK 로드 확인 필요');
       if (!kakao.isInitialized()) throw new Error('카카오 SDK가 초기화되지 않았습니다.');
 
-      // 3) 공유
+      // 4) 공유
       kakao.Share.sendDefault({
         objectType: 'feed',
         content: {

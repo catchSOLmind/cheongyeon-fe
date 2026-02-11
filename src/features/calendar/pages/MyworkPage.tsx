@@ -139,12 +139,12 @@ function MyworkPage() {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="flex items-center justify-between px-5 py-2 flex-shrink-0">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between px-5 py-2 flex-shrink-0 bg-white">
+        <div className="flex items-center pb-4">
           <span className="px-2 text-display-s text-[#262626]">
             {formatMonthYear(currentDate)}
           </span>
-          <img src={IconDropdown} alt="dropdown" className="w-5 h-5" />
+          <img src={IconDropdown} alt="dropdown" className="w-5 h-5 " />
         </div>
 
         <button
@@ -159,7 +159,7 @@ function MyworkPage() {
         </button>
       </div>
 
-      <div className="px-3 bg-white mt-4 flex-shrink-0">
+      <div className="px-3 bg-white flex-shrink-0">
         <Calendar
           currentDate={currentDate}
           onDateSelect={handleDateSelect}
