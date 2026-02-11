@@ -54,7 +54,7 @@ export const signAgreement = async (
   agreementId: number
 ): Promise<AgreementSignResponse> => {
   const response = await authenticatedClient.post<AgreementSignResponse>(
-    `/api/agreements/${agreementId}/sign`
+    `/agreements/${agreementId}/sign`
   );
   return response.data;
 };

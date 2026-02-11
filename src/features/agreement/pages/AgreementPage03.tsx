@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 
 const getSignLabel = (status?: string) => {
   if (status === 'AGREED') return '동의완료';
-  if (status === 'REJECTED') return '거절';
+  if (status === 'PENDING') return '대기중';
   return '대기중';
 };
 const isAgreed = (status?: string) => status === 'AGREED';
