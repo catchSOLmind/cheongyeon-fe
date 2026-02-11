@@ -15,7 +15,7 @@ function CalendarPage() {
         <div className="flex items-center justify-between h-14 px-5">
           <div className="flex items-center gap-1">
             <img src={cheongyeonLogo} alt="청연 로고" className="w-6 h-6" />
-            <h1 className="text-price-l font-medium text-black">우리집</h1>
+            <h1 className="text-price-l ont-sandoll font-normal text-black">우리집</h1>
           </div>
 
           {/* 상단 아이콘 */}

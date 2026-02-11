@@ -1,28 +1,33 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import Calendar from "../components/Calendar";
-import GroupTaskList from "../components/GroupTaskList";
-import FloatingActionButton from "../components/Floatingactionbutton";
+// src/features/calendar/pages/GroupworkPage.tsx
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import Calendar from '../components/Calendar';
+import GroupTaskList from '../components/GroupTaskList';
+import FloatingActionButton from '../components/Floatingactionbutton';
+import { Dashboard } from '../components/Dashboard';
+
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
-import { useGroupTasks } from "../hooks/useGroupTasks";
-import { formatDateKey } from "../utils/dateUtils";
-import { Dashboard } from "../components/Dashboard";
 import ImgDefault from '@/assets/common/img-default-profile.svg';
 import ImgNodata from '@/assets/calendar/img-no-data.png';
-import { useUserStore } from "@/features/auth/stores/useUserStore";
-import { getGroupTasksCalendar } from "../api/groupTaskApi";
-import { deleteMyTask } from "../api/myTaskEditApi";
-// import type { GroupTaskWeekItem } from "../types/groupTask.types";
+
+import { useGroupTasks } from '../hooks/useGroupTasks';
+import { formatDateKey } from '../utils/dateUtils';
+import { useUserStore } from '@/features/auth/stores/useUserStore';
+import { getGroupTasksCalendar } from '../api/groupTaskApi';
+import { deleteMyTask } from '../api/myTaskEditApi';
 
 function GroupworkPage() {
   const navigate = useNavigate();
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+
   // dot
   const [taskDates, setTaskDates] = useState<string[]>([]);
   const [, setCalendarLoading] = useState(false);
 
-  // ✅ 편집모드 추가
+  // 편집모드
   const [isEditMode, setIsEditMode] = useState(false);
 
   const profile = useUserStore((s) => s.profile);
@@ -32,10 +37,9 @@ function GroupworkPage() {
 
   const groupId = profile?.groupId;
 
+  // 프로필 확보
   useEffect(() => {
-    if (!isProfileFetched) {
-      fetchProfile();
-    }
+    if (!isProfileFetched) fetchProfile();
   }, [isProfileFetched, fetchProfile]);
 
   const formatMonthYear = (date: Date) => {
@@ -46,17 +50,37 @@ function GroupworkPage() {
 
   const selectedDateStr = formatDateKey(selectedDate);
 
+  // ✅ groupId가 "확정"되기 전에는 enabled를 false로 둬서 훅이 불필요하게 돌지 않게 함
+  const isGroupIdReady = typeof groupId === 'number'; // null/undefined면 아직 프로필 미확정
+  const enabled = isGroupIdReady; // 너 훅 구현에 따라 >0 조건이 필요하면 여기서 걸어도 됨
+
   const { tasks, isLoading, refetch, isSoloGroup } = useGroupTasks({
-    groupId: groupId ?? 0,
+    groupId: (groupId ?? 0) as number,
     date: selectedDateStr,
-    enabled: typeof groupId === 'number' && groupId > 0,
+    enabled,
   });
+
+  // ✅ 깜빡 방지 핵심: isSoloGroup을 "신뢰 가능한 시점"까지 no-data 분기를 막는다.
+  // - 프로필이 로딩 중이면 결정 불가
+  // - 훅이 enabled=false(= groupId 미확정)이면 isSoloGroup은 초기값일 수 있음
+  // - 훅이 돌더라도 isLoading 중에는 아직 판단값이 흔들릴 수 있음
+  const canDecideNoData = useMemo(() => {
+    if (!isProfileFetched) return false;
+    if (isProfileLoading) return false;
+    if (!isGroupIdReady) return false;
+    // enabled가 false면 isSoloGroup 값은 믿지 말자
+    if (!enabled) return false;
+    // 그룹 관련 데이터를 가져오는 중이면 아직 판단 유예 (깜빡 제거)
+    if (isLoading) return false;
+    return true;
+  }, [enabled, isGroupIdReady, isLoading, isProfileFetched, isProfileLoading]);
 
   // 날짜 바뀌면 편집모드 종료
   useEffect(() => {
     setIsEditMode(false);
   }, [selectedDateStr]);
 
+  // 달 변경 시 dot 데이터 가져오기
   useEffect(() => {
     if (!groupId || groupId <= 0) return;
 
@@ -102,23 +126,25 @@ function GroupworkPage() {
   };
 
   // FAB에서 edit 토글
-  const handleToggleEditMode = () => {
-    setIsEditMode((prev) => !prev);
-  };
+  const handleToggleEditMode = () => setIsEditMode((prev) => !prev);
 
   // 다른 곳 누르면 edit 종료
-  const handleExitEditMode = () => {
-    setIsEditMode(false);
-  };
+  const handleExitEditMode = () => setIsEditMode(false);
 
-  // 삭제 콜백 자리(그룹 삭제 API 붙일 곳)
-  const handleDeleteGroupTask = useCallback(async (occurrenceId: number) => {
-    await deleteMyTask(occurrenceId);
-    refetch();
-    console.log('[delete group task]', occurrenceId);
-  }, []);
+  // 삭제 콜백
+  const handleDeleteGroupTask = useCallback(
+    async (occurrenceId: number) => {
+      await deleteMyTask(occurrenceId);
+      refetch();
+      console.log('[delete group task]', occurrenceId);
+    },
+    [refetch]
+  );
 
-  if (isProfileLoading && !profile) {
+  /* =========================
+   * 1) 프로필 자체 로딩 화면
+   * ========================= */
+  if (!isProfileFetched || (isProfileLoading && !profile)) {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-body-m text-gray-500">프로필 정보를 불러오는 중...</p>
@@ -126,6 +152,22 @@ function GroupworkPage() {
     );
   }
 
+  /* =========================
+   * 2) 그룹 여부 판단 전(깜빡 방지용) 가드 화면
+   * - 이 구간이 없어서 no-data가 잠깐 떠버린 거
+   * ========================= */
+  if (!canDecideNoData) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)] bg-[#fafafa]">
+        <p className="text-body-m text-gray-500">그룹 정보를 확인하는 중...</p>
+      </div>
+    );
+  }
+
+  /* =========================
+   * 3) 이제서야 no-data 분기
+   * - 너 로직대로: 솔로가 아니면(no share group) no-data
+   * ========================= */
   if (!isSoloGroup) {
     return (
       <div className="h-[calc(100vh-200px)] bg-[#fafafa] flex items-center justify-center">
@@ -153,6 +195,9 @@ function GroupworkPage() {
     );
   }
 
+  /* =========================
+   * 4) 정상 화면
+   * ========================= */
   return (
     <div>
       <div className="flex items-center justify-between px-5 py-2">
@@ -201,10 +246,10 @@ function GroupworkPage() {
       </div>
 
       <FloatingActionButton
-          showFeedback={true}
-          showEdit={false} // 수정하기 false
-          showAddTask={true}
-          onClickEdit={handleToggleEditMode}
+        showFeedback={true}
+        showEdit={false}
+        showAddTask={true}
+        onClickEdit={handleToggleEditMode}
       />
     </div>
   );

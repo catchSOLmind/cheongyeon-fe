@@ -9,18 +9,18 @@ export default function TestStartPage() {
 
   const handleSkip = () => {
     navigate('/calendar');
-    console.log('Test skipped, navigating to /calendar');
+    //console.log('Test skipped, navigating to /calendar');
   };
 
   return (
     <div className="min-h-dvh w-full bg-primary-50 flex flex-col">
       {/* 상단 컨텐츠 */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 pt-14">
-        <p className="text-center text-body-m text-gray-700">
+        <p className="text-center text-body-m text-gray-700 font-sandoll font-normal">
           나의 청소 성향 테스트
         </p>
 
-        <h1 className="mt-2 text-center text-[28px] font-extrabold text-gray-900">
+        <h1 className="mt-2 text-center text-[28px] text-gray-900 font-sandoll font-normal">
           나의 청소 DNA는?
         </h1>
 
