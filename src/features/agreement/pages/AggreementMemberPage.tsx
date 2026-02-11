@@ -198,7 +198,7 @@ export default function AgreementMemberPage() {
 
               <div className="mt-3 rounded-lg border border-gray-200 bg-white overflow-hidden">
                 {members.map((m, idx) => {
-                  const agreed = m.signStatus === 'SIGNED';
+                  const agreed = m.signStatus === 'AGREED';
                   const isOwner = m.role === 'OWNER';
 
                   return (
