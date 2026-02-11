@@ -1,5 +1,5 @@
 // src/features/calendar/pages/GroupworkPage.tsx
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Calendar from '../components/Calendar';
@@ -15,7 +15,6 @@ import { useGroupTasks } from '../hooks/useGroupTasks';
 import { formatDateKey } from '../utils/dateUtils';
 import { useUserStore } from '@/features/auth/stores/useUserStore';
 import { getGroupTasksCalendar } from '../api/groupTaskApi';
-import { deleteMyTask } from '../api/myTaskEditApi';
 
 function GroupworkPage() {
   const navigate = useNavigate();
@@ -28,7 +27,7 @@ function GroupworkPage() {
   const [, setCalendarLoading] = useState(false);
 
   // 편집모드
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [, setIsEditMode] = useState(false);
 
   const profile = useUserStore((s) => s.profile);
   const fetchProfile = useUserStore((s) => s.fetchProfile);
@@ -54,7 +53,7 @@ function GroupworkPage() {
   const isGroupIdReady = typeof groupId === 'number'; // null/undefined면 아직 프로필 미확정
   const enabled = isGroupIdReady; // 너 훅 구현에 따라 >0 조건이 필요하면 여기서 걸어도 됨
 
-  const { tasks, isLoading, refetch, isSoloGroup , agreementStatus} = useGroupTasks({
+  const { tasks, isLoading, isSoloGroup , agreementStatus} = useGroupTasks({
     groupId: (groupId ?? 0) as number,
     date: selectedDateStr,
     enabled,
@@ -128,18 +127,6 @@ function GroupworkPage() {
   // FAB에서 edit 토글
   const handleToggleEditMode = () => setIsEditMode((prev) => !prev);
 
-  // 다른 곳 누르면 edit 종료
-  const handleExitEditMode = () => setIsEditMode(false);
-
-  // 삭제 콜백
-  const handleDeleteGroupTask = useCallback(
-    async (occurrenceId: number) => {
-      await deleteMyTask(occurrenceId);
-      refetch();
-      console.log('[delete group task]', occurrenceId);
-    },
-    [refetch]
-  );
 
   /* =========================
    * 1) 프로필 자체 로딩 화면
@@ -198,8 +185,8 @@ function GroupworkPage() {
    * ========================= */
   return (
     <div>
-      <div className="flex items-center justify-between px-5 py-2">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between px-5 py-2 flex-shrink-0 bg-white">
+        <div className="flex items-center pb-4">
           <span className="px-2 text-display-s text-[#262626]">
             {formatMonthYear(currentDate)}
           </span>
@@ -219,7 +206,7 @@ function GroupworkPage() {
         </button>
       </div>
 
-      <div className="px-3 bg-white mt-4">
+      <div className="px-3 bg-white">
         <Calendar
           currentDate={currentDate}
           onDateSelect={handleDateSelect}
@@ -232,10 +219,6 @@ function GroupworkPage() {
           task={tasks}
           isLoading={isLoading}
           selectedDate={selectedDate}
-          onTaskUpdate={refetch}
-          isEditMode={isEditMode}
-          onExitEditMode={handleExitEditMode}
-          onDeleteTask={handleDeleteGroupTask}
         />
       </div>
 

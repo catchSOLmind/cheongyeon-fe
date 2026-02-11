@@ -85,7 +85,6 @@ export default function AgreementPage02() {
 
       const agreementId = res.result.agreementId;
 
-      // 다음 단계(예: 초대 완료/동의 흐름 페이지)
       navigate('/agreement/3', { state: { agreementId } });
     } catch {
       console.error('다시시도');

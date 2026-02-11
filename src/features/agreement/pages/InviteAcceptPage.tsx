@@ -19,7 +19,7 @@ export default function InviteAcceptPage() {
         sessionStorage.removeItem('pendingInvitationId');
         sessionStorage.removeItem('postLoginAction');
 
-        navigate('/agreement/member', { replace: true });
+        navigate('/agrreement/membe', { replace: true });
       } catch (e) {
         setError(e instanceof Error ? e.message : '초대 수락 실패');
       }

@@ -24,7 +24,7 @@ function Calendar({
     setSelectedDate(currentDate);
   }, [currentDate]);
 
-  // ✅ 빠른 조회를 위해 Set으로 변환 (렌더링 최적화)
+  // 빠른 조회를 위해 Set으로 변환 (렌더링 최적화)
   const taskDateSet = useMemo(() => new Set(taskDates), [taskDates]);
 
   // 오늘 기준 주간 날짜 (항상 이번 주)
