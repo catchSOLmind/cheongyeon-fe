@@ -1,0 +1,31 @@
+
+import { useNavigate } from 'react-router-dom';
+import cheongyeonLogo from '@/assets/calendar/logo-cheongyeon-black.svg';
+
+interface AppHeaderProps {
+  title?: string;
+  className?: string;
+}
+
+// 헤더에 로고가 있는 버전 , 누르면 홈화면으로 이동한다
+export default function LogoHeader2({ title = '우리집', className = '' }: AppHeaderProps) {
+  const navigate = useNavigate();
+
+  return (
+    <div className={`bg-white sticky top-0 z-50 ${className}`}>
+      <div className="relative flex items-center justify-center h-14 px-5 border-b">
+        {/* 가운데: 로고 + 텍스트 */}
+        <button
+          type="button"
+          onClick={() => navigate('/calendar')}
+          className="flex items-center gap-1"
+          aria-label="캘린더로 이동"
+        >
+            {/* 산돌폰트*/}
+          <img src={cheongyeonLogo} alt="청연 로고" className="w-4 h-4" />
+          <h1 className="font-sandoll font-normal text-[16px] font-medium text-black">{title}</h1>
+        </button>
+      </div>
+    </div>
+  );
+}

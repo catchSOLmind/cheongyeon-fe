@@ -49,27 +49,20 @@ function GroupworkPage() {
 
   const selectedDateStr = formatDateKey(selectedDate);
 
-  // groupId가 "확정"되기 전에는 enabled를 false로 둬서 훅이 불필요하게 돌지 않게 함
-  const isGroupIdReady = typeof groupId === 'number'; // null/undefined면 아직 프로필 미확정
-  const enabled = isGroupIdReady; // 너 훅 구현에 따라 >0 조건이 필요하면 여기서 걸어도 됨
+  const isGroupIdReady = typeof groupId === 'number';
+  const enabled = isGroupIdReady;
 
-  const { tasks, isLoading, isSoloGroup , agreementStatus} = useGroupTasks({
+  const { tasks, isLoading, agreementStatus } = useGroupTasks({
     groupId: (groupId ?? 0) as number,
     date: selectedDateStr,
     enabled,
   });
 
-  // isSoloGroup을 "신뢰 가능한 시점"까지 no-data 분기를 막는다.
-  // - 프로필이 로딩 중이면 결정 불가
-  // - 훅이 enabled=false(= groupId 미확정)이면 isSoloGroup은 초기값일 수 있음
-  // - 훅이 돌더라도 isLoading 중에는 아직 판단값이 흔들릴 수 있음
   const canDecideNoData = useMemo(() => {
     if (!isProfileFetched) return false;
     if (isProfileLoading) return false;
     if (!isGroupIdReady) return false;
-    // enabled가 false면 isSoloGroup 값은 믿지 말자
     if (!enabled) return false;
-    // 그룹 관련 데이터를 가져오는 중이면 아직 판단 유예 (깜빡 제거)
     if (isLoading) return false;
     return true;
   }, [enabled, isGroupIdReady, isLoading, isProfileFetched, isProfileLoading]);
@@ -124,9 +117,7 @@ function GroupworkPage() {
     }
   };
 
-  // FAB에서 edit 토글
   const handleToggleEditMode = () => setIsEditMode((prev) => !prev);
-
 
   /* =========================
    * 1) 프로필 자체 로딩 화면
@@ -140,7 +131,7 @@ function GroupworkPage() {
   }
 
   /* =========================
-   * 2) 그룹 여부 판단 전(깜빡 방지용) 가드 화면
+   * 2) 그룹 여부 판단 전 가드 화면
    * ========================= */
   if (!canDecideNoData) {
     return (
@@ -151,9 +142,9 @@ function GroupworkPage() {
   }
 
   /* =========================
-   * 3) no-data 분기 (그룹 없는 사람)
+   * 3) no-data 분기 (agreementStatus === 'NONE')
    * ========================= */
-  if (!isSoloGroup) {
+  if (agreementStatus === 'NONE') {
     return (
       <div className="h-[calc(100vh-200px)] bg-[#fafafa] flex items-center justify-center">
         <div className="-mt-10 flex flex-col items-center text-center">
@@ -181,7 +172,7 @@ function GroupworkPage() {
   }
 
   /* =========================
-   * 4) 정상 화면
+   * 4) DRAFT or CONFIRMED — 정상 화면
    * ========================= */
   return (
     <div>

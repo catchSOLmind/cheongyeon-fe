@@ -101,9 +101,7 @@ export default function TestResultPage() {
           })}
         </div>
       </div>
-    </div>
-
-                    
+    </div>        
 
           {/* 3) Recommended tasks */}
           <div className="px-5">
@@ -158,7 +156,7 @@ export default function TestResultPage() {
                     rounded-[4px]
                     text-body-m text-gray-800
                   "
-                  onClick={() => navigate('/agreement')}>
+                  onClick={() => navigate('/calendar')}>
                   우리집 협약서 작성 시작하기
                   <img src= {Iconright} className="w-5 h-5"/>
                 </button>
