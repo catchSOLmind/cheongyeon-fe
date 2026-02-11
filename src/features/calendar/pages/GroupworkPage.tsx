@@ -154,17 +154,17 @@ function GroupworkPage() {
             alt="no group"
           />
           <span className="-mt-3 text-display-xs text-black">
-            캘린더를 공유중인 멤버가 없어요.
+            멤버들과 함께 협약서를 작성해보세요.
           </span>
           <span className="mt-2 text-body-m text-gray-500">
-            멤버를 등록하고 가사 업무를 분담해보세요
+            멤버를 등록하고 가사 업무를 분담해보세요.
           </span>
           <button
             type="button"
             className="mt-10 w-[120px] h-9 rounded-full bg-primary-50 text-primary text-body-m flex items-center justify-center"
             onClick={() => navigate('/agreement')}
           >
-            멤버 초대
+            협약서 작성하기
           </button>
         </div>
       </div>
