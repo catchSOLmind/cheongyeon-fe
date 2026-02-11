@@ -11,6 +11,9 @@ import ImgFeedback from '@/assets/agreement/icon-feedback-chat.svg';
 
 import { getAgreement, signAgreement } from '@/features/agreement/api/agreementApi';
 import type { AgreementDetail } from '@/features/agreement/types/agreementDetail.types';
+import { useNavigate } from 'react-router-dom';
+
+
 
 export default function AgreementMemberPage() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -36,20 +39,20 @@ export default function AgreementMemberPage() {
     return `${yy}년 ${mm}월 ${dd}일`;
   };
 
-  const fetchAgreement = async () => {
-    try {
-      setLoading(true);
+  // const fetchAgreement = async () => {
+  //   try {
+  //     setLoading(true);
 
-      const res = await getAgreement();
-      if (!res.isSuccess) return;
+  //     const res = await getAgreement();
+  //     if (!res.isSuccess) return;
 
-      setAgreement(res.result);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     setAgreement(res.result);
+  //   } catch (e) {
+  //     console.error(e);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     let alive = true;
@@ -85,6 +88,8 @@ export default function AgreementMemberPage() {
   const monthlyGoal = agreement?.monthlyGoal ?? '';
   const rules = agreement?.rules ?? [];
   const members = agreement?.members ?? [];
+  const navigate = useNavigate();
+
 
   // ✅ 동의 버튼 활성 조건 (예시: agreement 있고, 서명 중 아니고, 로딩 중 아니고)
   const canSubmit = Boolean(agreement?.agreementId) && !loading && !signing;
@@ -101,11 +106,13 @@ export default function AgreementMemberPage() {
       const res = await signAgreement(agreementId);
       if (!res.isSuccess) return;
 
+      navigate('/calendar', { replace: true });
+
+
       // ✅ 필요하면 여기서 res.result.allSigned 보고 다음 화면 이동도 가능
       // if (res.result.allSigned) navigate('/agreement/complete')
 
       // ✅ UI 최신화: 다시 불러오기
-      await fetchAgreement();
     } catch (e) {
       console.error(e);
     } finally {
