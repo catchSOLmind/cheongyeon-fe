@@ -21,13 +21,27 @@ export type GroupTaskWeekItem = {
   takeover: boolean;
 };
 
+/** 매니저 (예약/서비스) */
+export type ManagerCallItem = {
+  reservationItemId: number;
+  serviceName: string;
+  visitTime: string; // 예시가 string이므로 일단 string
+  point: number;
+};
+
+
+//협약의 작성상태
+export type AgreementStatus = 'NONE' | 'DRAFT' | 'CONFIRMED' ;
+
 export type GroupTasksResult = {
-  weekStart: string;     // YYYY-MM-DD
-  weekEnd: string;       // YYYY-MM-DD
-  weekDates: string[];   // ["YYYY-MM-DD", ...]
-  selectedDate: string;  // YYYY-MM-DD
+  agreementStatus: AgreementStatus;
+  weekStart: string; // YYYY-MM-DD
+  weekEnd: string; // YYYY-MM-DD
+  weekDates: string[]; // ["YYYY-MM-DD", ...]
+  selectedDate: string; // YYYY-MM-DD
   items: GroupTaskWeekItem[];
-  isSoloGroup: boolean;  // 추가 - 얘가 그룹인지 아닌지 판단 
+  managerCall: ManagerCallItem[];
+  isSoloGroup: boolean; 
 };
 
 export type GroupTasksRequest = {

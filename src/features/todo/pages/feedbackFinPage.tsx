@@ -2,8 +2,12 @@ import ImgFinish from '@/assets/todo/feedback/img-finish.png';
 import Header from '@/shared/components/Header';
 import { BottomCTAWrapper }from '@/shared/components/BottomCTAWrapper';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
+import { useNavigate } from 'react-router-dom';
+
 
 function FeedbackFinishPage() {
+const navigate = useNavigate();
+
   return (
     <div className="min-h-screen">
     <Header title="피드백 남기기" showBackButton />
@@ -18,9 +22,12 @@ function FeedbackFinishPage() {
     <div className="mt-2 text-center text-body-m text-gray-800">
     모아진 피드백은 우리집 리포트에서 확인할 수 있어요!
     </div>
-    <BottomCTAWrapper className='mt-[227px]'>
-        <BottomCTAButton label="우리집으로 돌아가기" />
-    </BottomCTAWrapper>
+    <BottomCTAWrapper className="mt-[227px]">
+  <BottomCTAButton
+    label="우리집으로 돌아가기"
+    onClick={() => navigate('/calendar', { replace: true })}
+  />
+</BottomCTAWrapper>
     </div>
 
 );

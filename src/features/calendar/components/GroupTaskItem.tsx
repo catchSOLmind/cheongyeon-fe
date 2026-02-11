@@ -5,7 +5,6 @@ import IconCoin from '@/assets/todo/icon-coin.svg';
 interface TaskItemProps {
   task: GroupTaskWeekItem;
   onClick?: () => void;
-  isEditMode?: boolean;
 }
 
 const formatTime = (time?: string | null): string => {
@@ -25,40 +24,40 @@ const getStatus = (status: TaskStatus) => {
         ? '진행중'
         : status === 'COMPLETED'
           ? '완료'
-          : '대기중';
+          : status === 'INCOMPLETED'
+            ? '미완료'
+            : '대기중';
 
   const className =
     status === 'WAITING'
       ? 'bg-primary-50 text-primary-400'
       : status === 'IN_PROGRESS'
-        ? 'bg-primary-500 text-primary-400'
+        ? 'bg-primary-50 text-primary-400'
         : status === 'COMPLETED'
           ? 'bg-primary text-white'
-          : 'bg-primary-50 text-primary-400';
+          : status === 'INCOMPLETED'
+            ? 'bg-gray-100 text-gray-700'
+            : 'bg-primary-50 text-primary-400';
 
   return { label, className };
 };
 
-export default function TaskItem({ task, onClick, isEditMode = false }: TaskItemProps) {
+export default function TaskItem({ task }: TaskItemProps) {
   const category = categories.find((c) => c.categoryType === task.category);
   const categoryIcon = category?.image;
 
   const { label: statusLabel, className: statusClassName } = getStatus(task.status);
 
-  const handleClick = () => {
-    if (isEditMode) return;   // ✅ 편집모드면 클릭 막기
-    onClick?.();
-  };
-
   return (
-    <div
-      className="w-full rounded-xl bg-white p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-      onClick={handleClick}
-    >
+    <div className="w-full rounded-xl bg-white p-4">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-[#FAE0F8] flex items-center justify-center">
           {categoryIcon ? (
-            <img src={categoryIcon} alt={category?.name ?? '카테고리'} className="w-8 h-8" />
+            <img
+              src={categoryIcon}
+              alt={category?.name ?? '카테고리'}
+              className="w-8 h-8"
+            />
           ) : (
             <div className="w-8 h-8 rounded bg-gray-200" />
           )}
@@ -78,7 +77,7 @@ export default function TaskItem({ task, onClick, isEditMode = false }: TaskItem
 
             <div className="flex items-center gap-1">
               <img src={IconCoin} alt="포인트" className="w-4 h-4" />
-              <span className="text-body-s text-black">{task.point} 포인트</span>
+              <span className="text-body-s text-black">{task.point}포인트</span>
             </div>
           </div>
         </div>
