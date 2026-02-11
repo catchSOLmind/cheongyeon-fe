@@ -1,36 +1,59 @@
 import { useEffect, useState } from 'react';
-import type { GroupTaskWeekItem } from '../types/groupTask.types'; 
+import type { GroupTaskWeekItem } from '../types/groupTask.types';
 import GroupTaskTaskItem from './GroupTaskItem';
 import IconStar from '@/assets/calendar/icon-star.svg';
-import EditBottomSheet from './EditBottomSheet';
-import StatusChangeBottomSheet from './StatusChangeBottomSheet';
-import ReasonChangeBottomSheet from './ReasonChangeBottomSheet';
-import { requestMyTaskAssignee, updateMyTaskStatus } from '../api/myTaskEditApi';
-import RescheduleFlowBottomSheet from './RescheduleBottomSheet';
-import EditAllFlowBottomSheet from '@/shared/components/EditAllBottomsheet';
+// import EditBottomSheet from './EditBottomSheet';
+// import StatusChangeBottomSheet from './StatusChangeBottomSheet';
+// import ReasonChangeBottomSheet from './ReasonChangeBottomSheet';
+// import { requestMyTaskAssignee, updateMyTaskStatus } from '../api/myTaskEditApi';
+// import RescheduleFlowBottomSheet from './RescheduleBottomSheet';
+// import EditAllFlowBottomSheet from '@/shared/components/EditAllBottomsheet';
 import EraserAnalyzePopup from '@/features/eraser/components/EraserAnalyzePopup';
-import AssigneeBottomSheet from '@/shared/group/AssigneeBottomSheet';
+// import AssigneeBottomSheet from '@/shared/group/AssigneeBottomSheet';
 import type { GroupMember } from '@/shared/group/groupMembers.types';
 import { useUserStore } from '@/features/auth/stores/useUserStore';
 import { getGroupMembers } from '@/shared/group/groupMemberApi';
 
-type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | 'allEdit' | 'member' | null;
+type SheetType =
+  | 'edit'
+  | 'calendar'
+  | 'status'
+  | 'reason'
+  | 'allEdit'
+  | 'member'
+  | null;
 
 interface GroupTaskListProps {
   task: GroupTaskWeekItem[];
   isLoading?: boolean;
   selectedDate: Date;
   onTaskUpdate?: () => void;
+
+  /** 편집모드만 추가 */
+  isEditMode?: boolean;
+  onExitEditMode?: () => void;
+  onDeleteTask?: (occurrenceId: number) => Promise<void> | void;
 }
 
-function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTaskListProps) {
+function GroupTaskList({
+  task,
+  isLoading,
+  selectedDate,
+  //onTaskUpdate,
+
+  isEditMode = false,
+  onExitEditMode,
+  onDeleteTask,
+}: GroupTaskListProps) {
   const [sheet, setSheet] = useState<SheetType>(null);
-  const [selectedTask, setSelectedTask] = useState<GroupTaskWeekItem | null>(null);
-  const [pickedDate,] = useState<Date | null>(null);
+  const [, setSelectedTask] = useState<GroupTaskWeekItem | null>(
+    null
+  );
+  //const [pickedDate] = useState<Date | null>(null);
   const [openEraserPopup, setOpenEraserPopup] = useState(false);
-  
+
   // 멤버
-  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [, setMembers] = useState<GroupMember[]>([]);
   const [, setMembersLoading] = useState(false);
 
   const groupId = useUserStore((s) => s.profile?.groupId ?? null);
@@ -52,6 +75,7 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
 
     run();
   }, [sheet, groupId]);
+
   // 날짜 포맷팅
   const formatDisplayDate = (date: Date): string => {
     const today = new Date();
@@ -66,11 +90,14 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
   };
 
   const openEditSheet = (item: GroupTaskWeekItem) => {
+    // 편집모드일 땐 바텀시트 열지 않기
+    if (isEditMode) return;
+
     setSelectedTask(item);
     setSheet('edit');
   };
 
-  const closeAllSheets = () => setSheet(null);
+  // const closeAllSheets = () => setSheet(null);
 
   if (isLoading) {
     return (
@@ -80,14 +107,24 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
     );
   }
 
-
   return (
-    <div className="px-5 py-4 bg-[#fafafa]">
+    <div className="px-5 py-4 bg-[#fafafa] relative">
+      {/* 편집모드 종료용 오버레이 */}
+      {isEditMode ? (
+        <button
+          type="button"
+          aria-label="exit edit mode"
+          onClick={() => onExitEditMode?.()}
+          className="absolute inset-0 z-[5] bg-transparent"
+        />
+      ) : null}
+
       {/* 날짜 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-cta-m text-gray-900 px-2">
           {formatDisplayDate(selectedDate)}
         </h2>
+
         <button
           onClick={() => setOpenEraserPopup(true)}
           className="flex items-center gap-1 px-2 py-1 bg-primary-50 rounded-lg text-body-m-bold"
@@ -115,16 +152,36 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
       ) : (
         <div className="space-y-3">
           {task.map((taskItem) => (
-            <GroupTaskTaskItem 
-              key={taskItem.occurrenceId}
-              task={taskItem}
-              onClick={() => openEditSheet(taskItem)}
-            />
+            <div key={taskItem.occurrenceId} className="relative">
+              {/* ✅ 편집모드일 때만 빨간 삭제 버튼 */}
+              {isEditMode ? (
+                <button
+                  type="button"
+                  aria-label="delete task"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteTask?.(taskItem.occurrenceId);
+                  }}
+                  className="absolute -top-2 -left-2 z-10 w-6 h-6 rounded-full bg-red-500 shadow flex items-center justify-center"
+                >
+                  <span className="text-white text-[16px] leading-none">−</span>
+                </button>
+              ) : null}
+
+              <GroupTaskTaskItem
+                task={taskItem}
+                onClick={() => openEditSheet(taskItem)}
+              />
+            </div>
           ))}
         </div>
       )}
 
-      {/* 편집 바텀시트 (부모 바텀시트) */}
+      {/*
+      ==========================
+      그룹 태스크일떈 편집 불가
+      ==========================
+
       <EditBottomSheet
         open={sheet === 'edit'}
         onClose={closeAllSheets}
@@ -139,7 +196,6 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
         }}
       />
 
-      {/* 상태 변경 바텀시트 */}
       <StatusChangeBottomSheet
         open={sheet === 'status'}
         task={selectedTask}
@@ -153,7 +209,6 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
         onClose={closeAllSheets}
       />
 
-      {/* 날짜 변경 바텀시트 */}
       <RescheduleFlowBottomSheet
         open={sheet === 'calendar'}
         initialDate={selectedDate}
@@ -165,7 +220,6 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
         onClose={closeAllSheets}
       />
 
-      {/* 미완료 사유 바텀시트 */}
       <ReasonChangeBottomSheet
         open={sheet === 'reason'}
         onClose={closeAllSheets}
@@ -182,7 +236,6 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
         }}
       />
 
-      {/* 전체 수정 바텀시트 */}
       <EditAllFlowBottomSheet
         open={sheet === 'allEdit'}
         onClose={closeAllSheets}
@@ -190,7 +243,6 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
         initialDate={pickedDate}
       />
 
-      {/* 멤버에게 부탁하기 바텀시트 */}
       <AssigneeBottomSheet
         open={sheet === 'member'}
         onClose={closeAllSheets}
@@ -207,6 +259,7 @@ function GroupTaskList({ task, isLoading, selectedDate, onTaskUpdate, }: GroupTa
           closeAllSheets();
         }}
       />
+      */}
     </div>
   );
 }

@@ -10,11 +10,19 @@ import { formatDateKey } from '../utils/dateUtils';
 import { useUserStore } from '@/features/auth/stores/useUserStore';
 import ImgDefault from '@/assets/common/img-default-profile.svg';
 
-import { completeMyTasks, getMyTasksCalendar } from '../api/taskApi';
+import {
+  completeMyTasks,
+  getMyTasksCalendar,
+} from '../api/taskApi';
+
+
 import type {
   MyTasksCalendarResponse,
   MyTasksCalendarParams,
 } from '@/features/calendar/types/myTaskCalendar.types';
+
+import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
+import { deleteMyTask } from '../api/myTaskEditApi';
 
 function MyworkPage() {
   const navigate = useNavigate();
@@ -29,6 +37,11 @@ function MyworkPage() {
   const [taskDates, setTaskDates] = useState<string[]>([]);
   const [calendarLoading, setCalendarLoading] = useState(false);
 
+  // 수정하기(편집모드)
+  const [isEditMode, setIsEditMode] = useState(false);
+  const handleExitEditMode = () => setIsEditMode(false);
+
+
   const formatMonthYear = (date: Date) => {
     const year = date.getFullYear().toString().slice(-2);
     const month = date.getMonth() + 1;
@@ -42,7 +55,39 @@ function MyworkPage() {
     enabled: true,
   });
 
-  const safeTasks = tasks ?? [];
+  // ✅ 화면 표시용 로컬 리스트 (배열로 고정)
+  const [localTasks, setLocalTasks] = useState<MyTaskWeekItem[]>([]);
+
+  useEffect(() => {
+    setLocalTasks(tasks ?? []);
+  }, [tasks]);
+
+  // 날짜 바뀌면 편집모드 자동 해제
+  useEffect(() => {
+    setIsEditMode(false);
+  }, [selectedDateStr]);
+
+  const handleToggleEditMode = () => {
+    setIsEditMode((prev) => !prev);
+  };
+
+  // 삭제: 즉시 API 호출 + optimistic UI + 실패 시 롤백
+  const handleDeleteTask = useCallback(
+    async (occurrenceId: number) => {
+      const prev = localTasks;
+
+      // optimistic
+      setLocalTasks((cur) => cur.filter((t) => t.occurrenceId !== occurrenceId));
+
+      try {
+        await deleteMyTask(occurrenceId);
+      } catch (e) {
+        console.error('[deleteMyTask] error:', e);
+        setLocalTasks(prev);
+      }
+    },
+    [localTasks]
+  );
 
   // 현재 월이 바뀔 때마다 /my-tasks/calendar 호출
   useEffect(() => {
@@ -122,19 +167,30 @@ function MyworkPage() {
         />
 
         {calendarLoading ? (
-          <div className="px-3 pt-2 text-body-s text-gray-400">캘린더 불러오는 중...</div>
+          <div className="px-3 pt-2 text-body-s text-gray-400">
+            캘린더 불러오는 중...
+          </div>
         ) : null}
       </div>
 
       <div className="flex-1 overflow-hidden">
         <TaskList
-          task={safeTasks}
+          task={localTasks}
           isLoading={isLoading}
           selectedDate={selectedDate}
           onTaskUpdate={refetch} // 확정 저장(바텀시트 confirm)에서만 사용
           onCompleteTask={handleCompleteTask} // 체크/완료 API는 여기로
+          isEditMode={isEditMode}
+          onDeleteTask={handleDeleteTask}
+          onExitEditMode={handleExitEditMode}
         />
-        <FloatingActionButton showFeedback={false} showEdit={true} showAddTask={true} />
+
+        <FloatingActionButton
+          showFeedback={false}
+          showEdit={true}
+          showAddTask={true}
+          onClickEdit={handleToggleEditMode}
+        />
       </div>
     </div>
   );

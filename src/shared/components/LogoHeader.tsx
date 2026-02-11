@@ -32,7 +32,7 @@ export default function LogoHeader({ title = '우리집', className = '' }: AppH
         >
             {/* 산돌폰트*/}
           <img src={cheongyeonLogo} alt="청연 로고" className="w-4 h-4" />
-          <h1 className="text-[16px] font-medium text-black">{title}</h1>
+          <h1 className="font-sandoll font-normal text-[16px] font-medium text-black">{title}</h1>
         </button>
       </div>
     </div>

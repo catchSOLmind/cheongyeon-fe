@@ -9,12 +9,14 @@ interface FloatingActionButtonProps {
   showFeedback?: boolean;
   showEdit?: boolean;
   showAddTask?: boolean;
+  onClickEdit?: () => void;
 }
 
 function FloatingActionButton({
   showFeedback = true,
   showEdit = true,
   showAddTask = true,
+  onClickEdit,
 }: FloatingActionButtonProps) {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -28,7 +30,7 @@ function FloatingActionButton({
 
   const handleEdit = () => {
     setIsExpanded(false);
-    navigate('/calendar/edit');
+    onClickEdit?.();
   };
 
   const handleAddFeedback = () => {

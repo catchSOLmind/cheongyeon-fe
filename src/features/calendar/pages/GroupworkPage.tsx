@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Calendar from "../components/Calendar";
 import GroupTaskList from "../components/GroupTaskList";
@@ -11,6 +11,8 @@ import ImgDefault from '@/assets/common/img-default-profile.svg';
 import ImgNodata from '@/assets/calendar/img-no-data.png';
 import { useUserStore } from "@/features/auth/stores/useUserStore";
 import { getGroupTasksCalendar } from "../api/groupTaskApi";
+import { deleteMyTask } from "../api/myTaskEditApi";
+// import type { GroupTaskWeekItem } from "../types/groupTask.types";
 
 function GroupworkPage() {
   const navigate = useNavigate();
@@ -20,6 +22,9 @@ function GroupworkPage() {
   const [taskDates, setTaskDates] = useState<string[]>([]);
   const [, setCalendarLoading] = useState(false);
 
+  // ✅ 편집모드 추가
+  const [isEditMode, setIsEditMode] = useState(false);
+
   const profile = useUserStore((s) => s.profile);
   const fetchProfile = useUserStore((s) => s.fetchProfile);
   const isProfileFetched = useUserStore((s) => s.isProfileFetched);
@@ -27,15 +32,6 @@ function GroupworkPage() {
 
   const groupId = profile?.groupId;
 
-  // 디버깅: groupId 확인
-  // console.log('🔍 GroupworkPage Debug:', {
-  //   profile,
-  //   groupId,
-  //   isProfileFetched,
-  //   isProfileLoading,
-  //   hasGroupId: typeof groupId === 'number' && groupId > 0
-  // });
-  
   useEffect(() => {
     if (!isProfileFetched) {
       fetchProfile();
@@ -55,6 +51,11 @@ function GroupworkPage() {
     date: selectedDateStr,
     enabled: typeof groupId === 'number' && groupId > 0,
   });
+
+  // 날짜 바뀌면 편집모드 종료
+  useEffect(() => {
+    setIsEditMode(false);
+  }, [selectedDateStr]);
 
   useEffect(() => {
     if (!groupId || groupId <= 0) return;
@@ -100,6 +101,23 @@ function GroupworkPage() {
     }
   };
 
+  // FAB에서 edit 토글
+  const handleToggleEditMode = () => {
+    setIsEditMode((prev) => !prev);
+  };
+
+  // 다른 곳 누르면 edit 종료
+  const handleExitEditMode = () => {
+    setIsEditMode(false);
+  };
+
+  // 삭제 콜백 자리(그룹 삭제 API 붙일 곳)
+  const handleDeleteGroupTask = useCallback(async (occurrenceId: number) => {
+    await deleteMyTask(occurrenceId);
+    refetch();
+    console.log('[delete group task]', occurrenceId);
+  }, []);
+
   if (isProfileLoading && !profile) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -108,7 +126,6 @@ function GroupworkPage() {
     );
   }
 
-  // 만약 그룹이 없으면 그룹이 없다는 이미지를 띄우고, 하단 버튼을 누르면 협약서 페이지로 이동한다
   if (!isSoloGroup) {
     return (
       <div className="h-[calc(100vh-200px)] bg-[#fafafa] flex items-center justify-center">
@@ -173,13 +190,22 @@ function GroupworkPage() {
           isLoading={isLoading}
           selectedDate={selectedDate}
           onTaskUpdate={refetch}
+          isEditMode={isEditMode}
+          onExitEditMode={handleExitEditMode}
+          onDeleteTask={handleDeleteGroupTask}
         />
       </div>
 
       <div className="px-3 bg-white mt-4">
         <Dashboard />
       </div>
-      <FloatingActionButton showFeedback showEdit showAddTask />
+
+      <FloatingActionButton
+          showFeedback={true}
+          showEdit={false} // 수정하기 false
+          showAddTask={true}
+          onClickEdit={handleToggleEditMode}
+      />
     </div>
   );
 }

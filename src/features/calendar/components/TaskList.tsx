@@ -16,14 +16,19 @@ import type { GroupMember } from '@/shared/group/groupMembers.types';
 import { useUserStore } from '@/features/auth/stores/useUserStore';
 import { getGroupMembers } from '@/shared/group/groupMemberApi';
 
-type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | 'allEdit' | 'member'| null;
+type SheetType = 'edit' | 'calendar' | 'status' | 'reason' | 'allEdit' | 'member' | null;
 
 interface TaskListProps {
   task: MyTaskWeekItem[];
   isLoading?: boolean;
   selectedDate: Date;
   onTaskUpdate?: () => void; // refetch
-  onCompleteTask: (occurrenceId: number) => Promise<void>; 
+  onCompleteTask: (occurrenceId: number) => Promise<void>;
+
+  /** 편집모드/삭제 */
+  isEditMode?: boolean;
+  onExitEditMode?: () => void;
+  onDeleteTask?: (occurrenceId: number) => Promise<void> | void;
 }
 
 export default function TaskList({
@@ -32,13 +37,17 @@ export default function TaskList({
   selectedDate,
   onTaskUpdate,
   onCompleteTask,
+  isEditMode = false,
+  onExitEditMode,
+  onDeleteTask,
 }: TaskListProps) {
   const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
   const [sheet, setSheet] = useState<SheetType>(null);
   const [selectedTask, setSelectedTask] = useState<MyTaskWeekItem | null>(null);
-  const [pickedDate,] = useState<Date | null>(null);
+  const [pickedDate] = useState<Date | null>(null);
   const [openEraserPopup, setOpenEraserPopup] = useState(false);
-  //멤버 
+
+  // 멤버
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [, setMembersLoading] = useState(false);
 
@@ -51,7 +60,7 @@ export default function TaskList({
       try {
         setMembersLoading(true);
 
-        if (!groupId) return; // store에서 가져온 groupId
+        if (!groupId) return;
         const res = await getGroupMembers(groupId);
         setMembers(res.result.members);
       } finally {
@@ -61,7 +70,6 @@ export default function TaskList({
 
     run();
   }, [sheet, groupId]);
-
 
   // 깜빡임 제거용: 낙관적 완료 상태
   const [localCompletedIds, setLocalCompletedIds] = useState<Set<number>>(new Set());
@@ -77,32 +85,29 @@ export default function TaskList({
   };
 
   const toggleLocalComplete = (occurrenceId: number) => {
-  setLocalCompletedIds((prev) => {
-    const next = new Set(prev);
+    setLocalCompletedIds((prev) => {
+      const next = new Set(prev);
 
-    if (next.has(occurrenceId)) {
-      next.delete(occurrenceId);
-    } else {
-      next.add(occurrenceId);
-    }
+      if (next.has(occurrenceId)) {
+        next.delete(occurrenceId);
+      } else {
+        next.add(occurrenceId);
+      }
 
-    return next;
-  });
-};
+      return next;
+    });
+  };
 
   // 체크 클릭: API 딱 1번 + refetch 없음(깜빡임 제거)
   const handleToggleComplete = async (occurrenceId: number) => {
     if (pendingIds.has(occurrenceId)) return;
 
-    toggleLocalComplete(occurrenceId); // UI 먼저
+    toggleLocalComplete(occurrenceId);
     setPendingIds((prev) => new Set(prev).add(occurrenceId));
 
     try {
-      await onCompleteTask(occurrenceId); // 여기서만 API 호출
-      // refetch 안 함 
-      // setTimeout(() => onTaskUpdate?.(), 800);
+      await onCompleteTask(occurrenceId);
     } catch (e) {
-      // 실패 시 롤백
       toggleLocalComplete(occurrenceId);
       console.error(e);
     } finally {
@@ -115,6 +120,9 @@ export default function TaskList({
   };
 
   const openEditSheet = (item: MyTaskWeekItem) => {
+    // 편집모드일 땐 바텀시트 열지 않기
+    if (isEditMode) return;
+
     setSelectedTask(item);
     setSheet('edit');
   };
@@ -126,21 +134,31 @@ export default function TaskList({
   }
 
   return (
-    <div className="px-5 py-4 bg-[#fafafa]">
+     <div className="px-5 py-4 bg-[#fafafa] relative">
+
+        {/* 편집모드 종료용 오버레이 */}
+        {isEditMode ? (
+          <button
+            type="button"
+            aria-label="exit edit mode"
+            onClick={() => onExitEditMode?.()}
+            className="absolute inset-0 z-[5] bg-transparent"
+          />
+        ) : null}
+
       {/* 날짜 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-cta-m text-gray-900 px-2">{formatDisplayDate(selectedDate)}</h2>
-        <button
-            onClick={() => setOpenEraserPopup(true)}
-            className="flex items-center gap-1 px-2 py-1 bg-primary-50 rounded-lg text-body-m-bold"
-          >
-            <img src={IconStar} alt="청연 지우개" className="w-5 h-5" />
-            <span>청연 지우개</span>
-          </button>
 
-          <EraserAnalyzePopup
-            open={openEraserPopup}
-            onClose={() => setOpenEraserPopup(false)}/>
+        <button
+          onClick={() => setOpenEraserPopup(true)}
+          className="flex items-center gap-1 px-2 py-1 bg-primary-50 rounded-lg text-body-m-bold"
+        >
+          <img src={IconStar} alt="청연 지우개" className="w-5 h-5" />
+          <span>청연 지우개</span>
+        </button>
+
+        <EraserAnalyzePopup open={openEraserPopup} onClose={() => setOpenEraserPopup(false)} />
       </div>
 
       {/* 할 일 리스트 */}
@@ -149,13 +167,29 @@ export default function TaskList({
       ) : (
         <div className="space-y-3">
           {task.map((taskItem) => (
-            <TaskItem
-              key={taskItem.occurrenceId}
-              task={taskItem}
-              isLocallyCompleted={localCompletedIds.has(taskItem.occurrenceId)}
-              onToggleComplete={() => handleToggleComplete(taskItem.occurrenceId)}
-              onOpenBottomSheet={openEditSheet}
-            />
+            <div key={taskItem.occurrenceId} className="relative">
+              {/* 편집모드일 때만 빨간 삭제 버튼 */}
+              {isEditMode ? (
+                <button
+                  type="button"
+                  aria-label="delete task"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteTask?.(taskItem.occurrenceId);
+                  }}
+                  className="absolute -top-2 -left-2 z-10 w-6 h-6 rounded-full bg-red-500 shadow flex items-center justify-center"
+                >
+                  <span className="text-white text-[16px] leading-none">−</span>
+                </button>
+              ) : null}
+
+              <TaskItem
+                task={taskItem}
+                isLocallyCompleted={localCompletedIds.has(taskItem.occurrenceId)}
+                onToggleComplete={() => handleToggleComplete(taskItem.occurrenceId)}
+                onOpenBottomSheet={openEditSheet}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -167,80 +201,80 @@ export default function TaskList({
         task={selectedTask}
         onOpenDateChange={() => setSheet('calendar')}
         onOpenStatusChange={() => setSheet('status')}
-        onOpenAllChange={() => setSheet('allEdit') }
+        onOpenAllChange={() => setSheet('allEdit')}
         onOpenAssignChange={() => setSheet('member')}
         onDeleted={() => {
-            onTaskUpdate?.();   
-            closeAllSheets();
-          }}
-        />
+          onTaskUpdate?.();
+          closeAllSheets();
+        }}
+      />
 
-        {/* 상태 변경 바텀시트 */}
-        <StatusChangeBottomSheet
-          open={sheet === 'status'}
-          task={selectedTask}
-          initialStatus={selectedTask?.status ?? 'WAITING'}
-          onConfirmStatus={async (status) => {
-            if (!selectedTask) return;
-            await updateMyTaskStatus(selectedTask.occurrenceId, { status });
-            onTaskUpdate?.();
-          }}
-          onOpenIncompleteReason={() => setSheet('reason')}
-          onClose={closeAllSheets}
-        />
+      {/* 상태 변경 바텀시트 */}
+      <StatusChangeBottomSheet
+        open={sheet === 'status'}
+        task={selectedTask}
+        initialStatus={selectedTask?.status ?? 'WAITING'}
+        onConfirmStatus={async (status) => {
+          if (!selectedTask) return;
+          await updateMyTaskStatus(selectedTask.occurrenceId, { status });
+          onTaskUpdate?.();
+        }}
+        onOpenIncompleteReason={() => setSheet('reason')}
+        onClose={closeAllSheets}
+      />
 
-          {/* 날짜 변경 바텀시트 */}
-          <RescheduleFlowBottomSheet
-            open={sheet === 'calendar'}
-            initialDate={selectedDate}
-            task={selectedTask}
-            onUpdated={() => {
-              onTaskUpdate?.();
-              closeAllSheets();
-            }}
-            onClose={closeAllSheets}
-          />
+      {/* 날짜 변경 바텀시트 */}
+      <RescheduleFlowBottomSheet
+        open={sheet === 'calendar'}
+        initialDate={selectedDate}
+        task={selectedTask}
+        onUpdated={() => {
+          onTaskUpdate?.();
+          closeAllSheets();
+        }}
+        onClose={closeAllSheets}
+      />
 
-          <ReasonChangeBottomSheet
-            open={sheet === 'reason'}
-            onClose={closeAllSheets}
-            task={selectedTask}
-            onConfirm={async ({ reasonCode, reasonText }) => {
-              if (!selectedTask) return;
-              await updateMyTaskStatus(selectedTask.occurrenceId, {
-                status: 'INCOMPLETED',
-                reasonCode,
-                reasonText,
-              });
-              onTaskUpdate?.();
-              closeAllSheets();
-            }}
-          />
+      <ReasonChangeBottomSheet
+        open={sheet === 'reason'}
+        onClose={closeAllSheets}
+        task={selectedTask}
+        onConfirm={async ({ reasonCode, reasonText }) => {
+          if (!selectedTask) return;
+          await updateMyTaskStatus(selectedTask.occurrenceId, {
+            status: 'INCOMPLETED',
+            reasonCode,
+            reasonText,
+          });
+          onTaskUpdate?.();
+          closeAllSheets();
+        }}
+      />
 
-          {/* 전체 수정 바텀시트*/}
-          <EditAllFlowBottomSheet
-            open={sheet === 'allEdit'}
-            onClose={closeAllSheets}
-            task={selectedTask}
-            initialDate={pickedDate}
-          />
+      {/* 전체 수정 바텀시트 */}
+      <EditAllFlowBottomSheet
+        open={sheet === 'allEdit'}
+        onClose={closeAllSheets}
+        task={selectedTask}
+        initialDate={pickedDate}
+      />
 
-          <AssigneeBottomSheet
-          open={sheet === 'member'}
-          onClose={closeAllSheets}
-          members={members}
-          selectedId={selectedTask?.primaryAssignedMemberId ?? null}
-          onConfirm={async (member) => {
-            if (!selectedTask) return;
+      <AssigneeBottomSheet
+        open={sheet === 'member'}
+        onClose={closeAllSheets}
+        members={members}
+        selectedId={selectedTask?.primaryAssignedMemberId ?? null}
+        onConfirm={async (member) => {
+          if (!selectedTask) return;
 
-            await requestMyTaskAssignee(selectedTask.occurrenceId, {
-              toMemberId: member.memberId,
-            });
+          await requestMyTaskAssignee(selectedTask.occurrenceId, {
+            toMemberId: member.memberId,
+          });
 
-            onTaskUpdate?.();   // refetch
-            closeAllSheets();   // 시트 닫기
-          }}
-        />
-        </div>
+          onTaskUpdate?.();
+          closeAllSheets();
+        }}
+      />
+    </div>
   );
 }
