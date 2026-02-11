@@ -1,4 +1,4 @@
-import googleLogo from '@/assets/auth/logo-google.svg';
+// import googleLogo from '@/assets/auth/logo-google.svg';
 import kakaoLogo from '@/assets/auth/logo-kakao.svg';
 import logoMain from '@/assets/auth/logo-cheongyeon-c.svg';
 
@@ -11,6 +11,12 @@ export default function LoginPage() {
   const handleClick = () => {
     window.location.href = getKakaoLoginUrl();
   };
+
+  // 게스트 로그인 
+  const handleGuestClick = () => {
+   //게스트 로그인 
+  };
+
 
   return (
     <div className="min-h-dvh w-full bg-primary flex flex-col items-center">
@@ -33,8 +39,19 @@ export default function LoginPage() {
           카카오로 빠른 로그인
         </button>
 
-        {/* Google */}
+        {/* GUEST */}
         <button
+          type="button"
+          className="w-[217px] h-[51px] mx-auto rounded-full bg-white
+                     text-black text-cta-m
+                     flex items-center justify-center gap-2"
+          onClick={handleGuestClick}
+        >
+          게스트 로그인 
+        </button>
+
+        {/* Google */}
+        {/* <button
           type="button"
           className="w-[217px] h-[51px] mx-auto rounded-full bg-white
                     text-black text-cta-m
@@ -42,7 +59,7 @@ export default function LoginPage() {
         >
           <img src={googleLogo} alt="" className="w-4 h-4" />
           Google로 로그인
-        </button>
+        </button> */}
       </div>
     </div>
   );
