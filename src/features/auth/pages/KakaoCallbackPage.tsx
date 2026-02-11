@@ -17,22 +17,16 @@ function KakaoCallbackPage() {
   const setProfileFromLogin = useUserStore((state) => state.setProfileFromLogin);
 
   useEffect(() => {
-    console.log('🔥 KakaoCallbackPage mounted');
     if (hasRequested.current) return;
     hasRequested.current = true;
 
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    console.log('📌 query string:', window.location.search);
-console.log('📌 kakao code:', code);
-
     // if (!code) {
     //   console.error('인가 코드 없음');
     //   navigate('/login', { replace: true });
     //   return;
     // }
-
-    console.log('🚀 카카오 로그인 API 호출 시작');
 
     publicClient
       .post<KakaoLoginResponse>('/oauth/kakao/login', null, {
@@ -43,7 +37,6 @@ console.log('📌 kakao code:', code);
         },
       })
       .then((response) => {
-          console.log('✅ 카카오 로그인 API 성공', response);
 
         const { accessToken, refreshToken, user } = response.data.result;
 
@@ -74,8 +67,6 @@ console.log('📌 kakao code:', code);
         const postLoginAction = sessionStorage.getItem('postLoginAction');
         const pendingInvitationId = sessionStorage.getItem('pendingInvitationId');
 
-        console.log('📦 postLoginAction:', postLoginAction);
-console.log('📦 pendingInvitationId:', pendingInvitationId);
 
         if (postLoginAction === 'ACCEPT_INVITE' && pendingInvitationId) {
           navigate('/invite/accept', { replace: true });

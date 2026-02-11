@@ -7,12 +7,12 @@ interface InvitationResponse {
   message: string;
   result: {
     invitationId: number;
-    inviteUrl: string; // 서버가 주지만 사용 안함 
+    inviteUrl: string;
   };
 }
 
-/** ✅ invitationId만 반환 */
-export const createInvitation = async (): Promise<number> => {
+// 초대링크 생성 
+export const createInvitation = async (): Promise<{ invitationId: number; inviteUrl: string }> => {
   const { data } = await authenticatedClient.post<InvitationResponse>(
     '/groups/invitations',
     {}
@@ -22,7 +22,7 @@ export const createInvitation = async (): Promise<number> => {
     throw new Error(data.message || '초대 링크 생성 실패');
   }
 
-  return data.result.invitationId;
+  return data.result; // invitationId + inviteUrl 둘 다 반환
 };
 
 /**

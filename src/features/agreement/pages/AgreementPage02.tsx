@@ -46,13 +46,12 @@ export default function AgreementPage02() {
   const { createAndShare, isLoading } = useGroupInvite();
 
   const handleInvite = async () => {
-    await createAndShare({
-      title: '청연-우리집 그룹에 초대합니다!',
-      description: '함께 활동해요!',
-      imageUrl: 'https://your-image-url.com/group-thumbnail.jpg',
-    });
-  };
-
+  try {
+    await createAndShare();
+  } catch {
+    // 필요하면 토스트 처리
+  }
+};
   const canSubmit = useMemo(() => {
     return (
       houseName.trim().length > 0 &&
