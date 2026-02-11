@@ -117,7 +117,7 @@ export default function MyPage() {
       </div>
     </div>
 
-    <div className="px-4 pb-8 -mt-32">
+    <div className="px-4 pb-8 mt-32">
       {/* 나의 성향 */}
       <div className="bg-white rounded-2xl px-4 py-4 shadow-sm">
         <button className="w-full flex items-center justify-between">
