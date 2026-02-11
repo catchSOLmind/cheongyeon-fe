@@ -13,9 +13,14 @@ import Iconfire from '@/assets/calendar/dashboard/icon-fire.svg';
 import Iconking from '@/assets/calendar/dashboard/icon-king.svg';
 import IconCheck from '@/assets/calendar/dashboard/icon-checkpercent.svg';
 import Icontop3 from '@/assets/calendar/dashboard/icon-top3.svg';
+import type { AgreementStatus } from '@/features/calendar/types/groupTask.types';
 
 
-export function Dashboard() {
+type Props = {
+  agreementStatus: AgreementStatus;
+};
+
+export function Dashboard( { agreementStatus }: Props) {
   const navigate = useNavigate();
 
   const groupId = useUserStore((s) => s.profile?.groupId ?? null);
@@ -90,39 +95,74 @@ export function Dashboard() {
     );
   }
 
+  const isConfirmed = agreementStatus === 'CONFIRMED';
+  const isDraft = agreementStatus === 'DRAFT';
+  // const isMissing = agreementStatus === 'NONE';
+
+
+  const bannerClass = isConfirmed
+    ? 'bg-primary-100'
+    : 'bg-gray-100';
+
+  const badgeClass = isConfirmed
+    ? 'bg-semantic-notify text-white'
+    : 'bg-gray-400 text-white';
+
+  const rightTopText = '30일 남음';
+
+  const description = isConfirmed
+    ? '청소 점수 꼴등은 다음 달 화장실 청소 전담'
+    : '우리집 협약서로 새로운 목표를 설정해보세요';
+
+  const buttonLabel = isConfirmed ? '우리집 협약서 확인' : '우리집 협약서 만들기';
+
+  const handleClick = () => {
+    if (isConfirmed) {
+      navigate('/agreement/main');
+    }
+    else if (isDraft) {
+      navigate('/agreement/3');
+    }
+    navigate('/agreement');
+  };
+
   return (
     <div className="bg-white py-6">
       <div className="mx-auto w-full px-5">
-        <h2 className="text-[16px] font-bold text-gray-900 mb-3">우리집 협약서</h2>
+        <h2 className=" font-sandoll font-normal text-[16px] font-bold text-gray-900 mb-3">우리집 협약서</h2>
 
-        <div className="rounded-2xl bg-white">
-          <div>
-            <div className="flex items-center gap-3 bg-primary-100 rounded-xl p-3">
-              <img src={ImgHome} alt="home" className="h-10 w-10 rounded-full" />
+            <div className="rounded-2xl bg-white">
+              <div>
+                <div className={`flex items-center gap-3 rounded-xl p-3 ${bannerClass}`}>
+                  <img src={ImgHome} alt="home" className="h-10 w-10 rounded-full" />
 
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center px-2 py-[1px] rounded-sm bg-semantic-notify text-white text-[10px] font-medium">
-                    목표
-                  </span>
-                  <span className="text-[10px] text-black font-medium">30일 남음</span>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className={`inline-flex items-center px-2 py-[1px] rounded-sm text-[10px] font-medium ${badgeClass}`}>
+                        {isConfirmed ? '목표' : '협약'}
+                      </span>
+                      {rightTopText && (
+                          <span className="text-[10px] text-black font-medium">
+                            {rightTopText}
+                          </span>
+                        )}
+                      </div>
+
+                    <p className="mt-2 text-[13px] leading-5 text-gray-800">
+                      {description}
+                    </p>
+                  </div>
                 </div>
 
-                <p className="mt-2 text-[13px] leading-5 text-gray-800">
-                  청소 점수 꼴등은 다음 달 화장실 청소 전담
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate('/agreement/main')}
-              className="mt-4 w-full h-[42px] rounded-lg border border-gray-200 bg-gray-50 text-body-m text-gray-800"
-            >
-              우리집 협약서 확인
-            </button>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={handleClick}
+          className="mt-4 w-full h-[42px] rounded-lg border border-gray-200 bg-gray-50 text-body-m text-gray-800"
+        >
+          {buttonLabel}
+        </button>
+      </div>
+    </div>
 
         {/* 배너 */}
         <div className="mt-7 rounded-[20px] overflow-hidden bg-white">
@@ -154,7 +194,7 @@ export function Dashboard() {
 
         {/* 우리집 관리 */}
         <div className="mt-6 flex items-center">
-          <h2 className="text-body-m-bold text-gray-900">우리집 관리</h2>
+          <h2 className="font-sandoll font-normal text-body-m-bold text-gray-900">우리집 관리</h2>
           <img src={IconRight} className=" ml-1 h-5 w-5" />
         </div>
 

@@ -49,7 +49,7 @@ function Header({
         </div>
 
         {/* 중앙 타이틀 */}
-        <h1 className={`absolute left-1/2 -translate-x-1/2 font-sandoll font-normal text-body-l-bold ${textColor}`}>
+        <h1 className={`absolute left-1/2 -translate-x-1/2 text-900 text-body-l-bold ${textColor}`}>
           {title}
         </h1>
 
