@@ -11,6 +11,7 @@ import { requestMyTaskAssignee, updateMyTaskStatus } from '../api/myTaskEditApi'
 import RescheduleFlowBottomSheet from './RescheduleBottomSheet';
 import EditAllFlowBottomSheet from '@/shared/components/EditAllBottomsheet';
 import EraserAnalyzePopup from '@/features/eraser/components/EraserAnalyzePopup';
+
 import AssigneeBottomSheet from '@/shared/group/AssigneeBottomSheet';
 import type { GroupMember } from '@/shared/group/groupMembers.types';
 import { useUserStore } from '@/features/auth/stores/useUserStore';
@@ -47,7 +48,7 @@ export default function TaskList({
   const [pickedDate] = useState<Date | null>(null);
   const [openEraserPopup, setOpenEraserPopup] = useState(false);
 
-  // 멤버
+  // 멤버(“담당자 변경” 바텀시트용)
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [, setMembersLoading] = useState(false);
 
@@ -87,13 +88,8 @@ export default function TaskList({
   const toggleLocalComplete = (occurrenceId: number) => {
     setLocalCompletedIds((prev) => {
       const next = new Set(prev);
-
-      if (next.has(occurrenceId)) {
-        next.delete(occurrenceId);
-      } else {
-        next.add(occurrenceId);
-      }
-
+      if (next.has(occurrenceId)) next.delete(occurrenceId);
+      else next.add(occurrenceId);
       return next;
     });
   };
@@ -127,24 +123,25 @@ export default function TaskList({
     setSheet('edit');
   };
 
-  const closeAllSheets = () => setSheet(null);
+  const closeAllSheets = () => {
+    setSheet(null);
+  };
 
   if (isLoading) {
     return <div className="px-5 py-4 text-center text-gray-500">로딩 중...</div>;
   }
 
   return (
-     <div className="px-5 py-4 bg-[#fafafa] relative">
-
-        {/* 편집모드 종료용 오버레이 */}
-        {isEditMode ? (
-          <button
-            type="button"
-            aria-label="exit edit mode"
-            onClick={() => onExitEditMode?.()}
-            className="absolute inset-0 z-[5] bg-transparent"
-          />
-        ) : null}
+    <div className="px-5 py-4 bg-[#fafafa] relative">
+      {/* 편집모드 종료용 오버레이 */}
+      {isEditMode ? (
+        <button
+          type="button"
+          aria-label="exit edit mode"
+          onClick={() => onExitEditMode?.()}
+          className="absolute inset-0 z-[5] bg-transparent"
+        />
+      ) : null}
 
       {/* 날짜 헤더 */}
       <div className="flex items-center justify-between mb-4">
@@ -251,7 +248,7 @@ export default function TaskList({
         }}
       />
 
-      {/* 전체 수정 바텀시트 */}
+      {/* ✅ 전체 수정 바텀시트: 내부에서 detail fetch (프리패치/props 싱크 제거) */}
       <EditAllFlowBottomSheet
         open={sheet === 'allEdit'}
         onClose={closeAllSheets}
@@ -259,6 +256,7 @@ export default function TaskList({
         initialDate={pickedDate}
       />
 
+      {/* 담당자 변경 바텀시트(기존 유지) */}
       <AssigneeBottomSheet
         open={sheet === 'member'}
         onClose={closeAllSheets}
