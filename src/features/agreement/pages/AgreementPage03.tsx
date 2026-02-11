@@ -1,7 +1,5 @@
 // src/features/agreement/pages/AgreementPage03.tsx
 import { useEffect, useMemo, useState } from 'react';
-
-import Header from '@/shared/components/Header';
 import Steppers from '@/features/agreement/components/Steppers';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
 import { BottomCTAButton } from '@/shared/components/BottomCTAButton';
@@ -14,6 +12,7 @@ import { confirmAgreement } from '@/features/agreement/api/agreementApi';
 import type { AgreementDetail } from '@/features/agreement/types/agreementDetail.types';
 
 import { useNavigate } from 'react-router-dom';
+import LogoHeader2 from '@/shared/components/LogoHeader2';
 
 
 const getSignLabel = (status?: string) => {
@@ -156,6 +155,19 @@ export default function AgreementPage03() {
     return Boolean(agreement && hasOwner && allAgreed && !loading && !confirming);
   }, [agreement, hasOwner, allAgreed, loading, confirming]);
 
+
+  useEffect(() => {
+  // 현재 페이지를 히스토리에 한 번 더 쌓아서 뒤로가기 눌러도 여기로 돌아오게
+  window.history.pushState(null, '', window.location.href);
+
+  const handlePopState = () => {
+    window.history.pushState(null, '', window.location.href);
+  };
+
+  window.addEventListener('popstate', handlePopState);
+  return () => window.removeEventListener('popstate', handlePopState);
+}, []);
+
   /* =======================
    * CTA -> 팝업 오픈
    * ======================= */
@@ -201,7 +213,7 @@ export default function AgreementPage03() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header title="우리집 협약서" showBackButton />
+      <LogoHeader2 title="우리집 협약서" />
 
       <div className="mx-auto w-full max-w-[390px] px-5 pb-36">
         {/* Stepper */}
