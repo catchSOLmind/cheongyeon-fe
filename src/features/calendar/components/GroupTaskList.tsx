@@ -43,6 +43,7 @@ function GroupTaskList({
       item: m,
     }));
 
+
     return [...managerRows, ...taskRows];
   }, [task, managerCall]);
 
@@ -85,10 +86,12 @@ function GroupTaskList({
           <span>청연 지우개</span>
         </button>
 
-        <EraserAnalyzePopup
-          open={openEraserPopup}
-          onClose={() => setOpenEraserPopup(false)}
-        />
+        {openEraserPopup && (
+          <EraserAnalyzePopup
+            open
+            onClose={() => setOpenEraserPopup(false)}
+          />
+        )}
       </div>
 
       {/* 리스트 */}

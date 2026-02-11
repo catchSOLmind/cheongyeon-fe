@@ -164,8 +164,6 @@ function AddTodoBottomSheet({
       isFavorite: favoriteIds.has(it.taskTypeId),
       date,
       time,
-      assigneeId: undefined,
-      assigneeName: undefined,
     }));
 
     addDrafts(newDrafts);

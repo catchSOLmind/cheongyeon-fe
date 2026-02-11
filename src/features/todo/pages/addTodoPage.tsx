@@ -135,7 +135,7 @@ const handleSubmitToCalendar = async () => {
 
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-gray-50">
       <Header title="할 일 추가" showBackButton />
 
       <div className="px-5 py-6 pb-16">
