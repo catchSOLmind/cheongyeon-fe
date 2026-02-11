@@ -91,7 +91,7 @@ export default function AgreementResultPage() {
             <h2 className="mt-[16px] font-sandoll font-normal text-[16px] text-black">
               우리집 한 달 목표
             </h2>
-            <button className="text-body-m-bold text-semantic-badge">수정</button>
+            {/* <button className="text-body-m-bold text-semantic-badge">수정</button> */}
           </div>
           <div className="bg-red-50 rounded-lg px-2 py-3 flex items-center gap-2 text-body-s text-gray-900">
             <img src={IconRed} className="w-5 h-5" />

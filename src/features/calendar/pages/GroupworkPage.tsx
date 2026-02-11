@@ -199,7 +199,7 @@ function GroupworkPage() {
 
       <div className="px-3 bg-white">
         <Calendar
-          currentDate={currentDate}
+          currentDate={selectedDate}
           onDateSelect={handleDateSelect}
           taskDates={taskDates}
         />
