@@ -50,17 +50,17 @@ function GroupworkPage() {
 
   const selectedDateStr = formatDateKey(selectedDate);
 
-  // ✅ groupId가 "확정"되기 전에는 enabled를 false로 둬서 훅이 불필요하게 돌지 않게 함
+  // groupId가 "확정"되기 전에는 enabled를 false로 둬서 훅이 불필요하게 돌지 않게 함
   const isGroupIdReady = typeof groupId === 'number'; // null/undefined면 아직 프로필 미확정
   const enabled = isGroupIdReady; // 너 훅 구현에 따라 >0 조건이 필요하면 여기서 걸어도 됨
 
-  const { tasks, isLoading, refetch, isSoloGroup } = useGroupTasks({
+  const { tasks, isLoading, refetch, isSoloGroup , agreementStatus} = useGroupTasks({
     groupId: (groupId ?? 0) as number,
     date: selectedDateStr,
     enabled,
   });
 
-  // ✅ 깜빡 방지 핵심: isSoloGroup을 "신뢰 가능한 시점"까지 no-data 분기를 막는다.
+  // isSoloGroup을 "신뢰 가능한 시점"까지 no-data 분기를 막는다.
   // - 프로필이 로딩 중이면 결정 불가
   // - 훅이 enabled=false(= groupId 미확정)이면 isSoloGroup은 초기값일 수 있음
   // - 훅이 돌더라도 isLoading 중에는 아직 판단값이 흔들릴 수 있음
@@ -154,7 +154,6 @@ function GroupworkPage() {
 
   /* =========================
    * 2) 그룹 여부 판단 전(깜빡 방지용) 가드 화면
-   * - 이 구간이 없어서 no-data가 잠깐 떠버린 거
    * ========================= */
   if (!canDecideNoData) {
     return (
@@ -165,8 +164,7 @@ function GroupworkPage() {
   }
 
   /* =========================
-   * 3) 이제서야 no-data 분기
-   * - 너 로직대로: 솔로가 아니면(no share group) no-data
+   * 3) no-data 분기 (그룹 없는 사람)
    * ========================= */
   if (!isSoloGroup) {
     return (
@@ -242,7 +240,7 @@ function GroupworkPage() {
       </div>
 
       <div className="px-3 bg-white mt-4">
-        <Dashboard />
+        <Dashboard agreementStatus={agreementStatus ?? 'NONE'} />
       </div>
 
       <FloatingActionButton
