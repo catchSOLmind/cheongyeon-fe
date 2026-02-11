@@ -21,15 +21,16 @@ function KakaoCallbackPage() {
 
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    publicClient
-      .post<KakaoLoginResponse>('/oauth/kakao/login', null, {
-        params: {
-          code,
-          // 배포 전 필요 시만 사용
-          //redirectUri: import.meta.env.VITE_KAKAO_REDIRECT_URI,
-        },
-      })
-      .then((response) => {
+
+    const run = async () => {
+      try {
+        const response = await publicClient.post<KakaoLoginResponse>(
+          '/oauth/kakao/login',
+          null,
+          {
+            params: { code },
+          }
+        );
 
         const { accessToken, refreshToken, user } = response.data.result;
 
@@ -37,7 +38,7 @@ function KakaoCallbackPage() {
         setAccessToken(accessToken);
         setRefreshToken(refreshToken);
 
-        // 2) 인증 상태 업데이트 (await 추가)
+        // 2) 인증 상태 업데이트
         await initializeAuth();
 
         // 3) 전역 프로필 저장
