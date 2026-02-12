@@ -4,12 +4,12 @@ import IconPaper from '@/assets/calendar/icon-paper.svg';
 import MyworkPage from './MyworkPage';
 import GroupworkPage from './GroupworkPage';
 import useSlideIndicator from '../hooks/useSlideIndicator';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 
 
 function CalendarPage() {
   const { activeTab, indicatorStyle, myTabRef, allTabRef, handleTabClick } = useSlideIndicator('my');
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
 
   return (
@@ -28,7 +28,7 @@ function CalendarPage() {
               src={IconPaper}
               alt="문서"
               className="w-6 h-6 cursor-pointer"
-              onClick={() => navigate('/calendar/feedback-report')}
+              // onClick={() => navigate('/calendar/feedback-report')}
             />
             <img src={IconBell} alt="알림" className="w-6 h-6" />
           </div>
