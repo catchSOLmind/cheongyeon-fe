@@ -3,6 +3,7 @@ import kakaoLogo from '@/assets/auth/logo-kakao.svg';
 import logoMain from '@/assets/auth/logo-cheongyeon-c.svg';
 
 import { getKakaoLoginUrl } from '../utils/kakaoAuth';
+import { useGuestLogin } from './useGuestLogin';
 
 
 export default function LoginPage() {
@@ -12,10 +13,7 @@ export default function LoginPage() {
     window.location.href = getKakaoLoginUrl();
   };
 
-  // 게스트 로그인 
-  const handleGuestClick = () => {
-   //게스트 로그인 
-  };
+  const { runGuestLogin } = useGuestLogin();
 
 
   return (
@@ -41,14 +39,14 @@ export default function LoginPage() {
 
         {/* GUEST */}
         <button
-          type="button"
-          className="w-[217px] h-[51px] mx-auto rounded-full bg-white
-                     text-black text-cta-m
-                     flex items-center justify-center gap-2"
-          onClick={handleGuestClick}
-        >
-          게스트 로그인 
-        </button>
+            type="button"
+            className="w-[217px] h-[51px] mx-auto rounded-full bg-white
+                      text-black text-cta-m
+                      flex items-center justify-center gap-2"
+            onClick={runGuestLogin}  
+          >
+            게스트 로그인 
+          </button>
 
         {/* Google */}
         {/* <button

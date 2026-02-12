@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/set-state-in-effect */
+// src/shared/components/EditAllBottomsheet.tsx
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import BottomSheet from '@/shared/components/BottomSheet';
 import { BottomCTAWrapper } from '@/shared/components/BottomCTAWrapper';
@@ -10,11 +13,27 @@ import Header from '@/shared/components/Header';
 import Imgcoin from '@/assets/todo/icon-coin.svg';
 import ImgStar from '@/assets/todo/icon-star.svg';
 import ImgStarFill from '@/assets/todo/icon-star-fill.svg';
+
 import type { MyTaskWeekItem } from '@/features/calendar/types/task.types';
 import type { GroupTaskWeekItem } from '@/features/calendar/types/groupTask.types';
-import { getMyTaskDetail } from '@/features/calendar/api/taskDetailApi';
-import type { MyTaskDetailResponse } from '@/features/calendar/types/taskDetail.types';
 
+import type { MyTaskDetailResponse } from '@/features/calendar/types/taskDetail.types';
+import { getMyTaskDetail } from '@/features/calendar/api/taskDetailApi';
+
+import { getGroupMembers } from '@/shared/group/groupMemberApi';
+import type { GroupMember } from '@/shared/group/groupMembers.types';
+
+/** ChoiceReasonPage가 기대하는 state shape */
+type CategoryType = MyTaskDetailResponse['taskType']['category'];
+type NavState = {
+  occurrenceId: number;
+  taskName: string;
+  categoryType: CategoryType;
+  fromDate: string;
+  fromTime: string;
+  toDate: string;
+  toTime: string;
+};
 
 // ---------- Calendar UI utils ----------
 function getCalendarCells(year: number, month: number) {
@@ -44,8 +63,25 @@ function getCalendarCells(year: number, month: number) {
 function formatMonthLabel(year: number, month: number) {
   return `${String(year).slice(2)}년 ${month}월`;
 }
-function formatDateLabel(d: Date) {
+
+// ✅ 드래프트 UI와 동일한 날짜/시간 라벨
+function formatKoreanDateFromDate(d: Date) {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+
+function formatKoreanTimeFromPicked(v: { ampm: '오전' | '오후'; hour: number; minute: number }) {
+  return `${v.ampm} ${v.hour}:${String(v.minute).padStart(2, '0')}`;
+}
+
+function parseTimeToPicked(time: string) {
+  // "HH:mm" or "HH:mm:ss"
+  const [hhStr, mmStr] = time.split(':');
+  const hh = Number(hhStr);
+  const mm = Number(mmStr ?? '0');
+
+  const ampm: '오전' | '오후' = hh < 12 ? '오전' : '오후';
+  const hour12 = hh % 12 === 0 ? 12 : hh % 12;
+  return { ampm, hour: hour12, minute: mm ?? 0 };
 }
 
 // ---------- WheelPicker (공통) ----------
@@ -53,119 +89,112 @@ type WheelPickerProps<T extends string | number> = {
   items: T[];
   value: T;
   onChange: (v: T) => void;
-  itemHeight?: number; // 한 줄 높이
-  visibleCount?: number; // 보이는 줄 수 (홀수)
+  itemHeight?: number;
+  visibleCount?: number;
   renderItem?: (v: T) => React.ReactNode;
 };
 
-function WheelPicker<T extends string | number>({
+// ✅ 드래프트 UI와 동일한 WheelPicker 스타일
+function WheelPickerUI<T extends string | number>({
   items,
   value,
   onChange,
-  itemHeight = 20,
+  itemHeight = 40,
   visibleCount = 5,
   renderItem,
 }: WheelPickerProps<T>) {
   const ref = useRef<HTMLDivElement | null>(null);
-
   const half = Math.floor(visibleCount / 2);
   const containerHeight = itemHeight * visibleCount;
-
-  const [activeIndex, setActiveIndex] = useState<number>(() => {
-    const idx = items.findIndex((x) => x === value);
-    return Math.max(0, idx);
-  });
-
-  const programmaticRef = useRef(false);
 
   const valueIndex = useMemo(() => {
     const idx = items.findIndex((x) => x === value);
     return Math.max(0, idx);
   }, [items, value]);
 
+  const [activeIndex, setActiveIndex] = useState<number>(valueIndex);
+
+  const isProgrammaticRef = useRef(false);
+  const scrollTimeoutRef = useRef<number | null>(null);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    programmaticRef.current = true;
+    isProgrammaticRef.current = true;
     el.scrollTo({ top: valueIndex * itemHeight, behavior: 'auto' });
-    setActiveIndex(valueIndex);
 
-    const t = window.setTimeout(() => {
-      programmaticRef.current = false;
-    }, 0);
-
-    return () => window.clearTimeout(t);
+    requestAnimationFrame(() => {
+      setActiveIndex(valueIndex);
+      requestAnimationFrame(() => {
+        isProgrammaticRef.current = false;
+      });
+    });
   }, [valueIndex, itemHeight]);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    let timer: number | null = null;
+    const handleScroll = () => {
+      if (isProgrammaticRef.current) return;
 
-    const settle = () => {
-      const idx = Math.round(el.scrollTop / itemHeight);
-      const clamped = Math.max(0, Math.min(items.length - 1, idx));
-
-      programmaticRef.current = true;
-      el.scrollTo({ top: clamped * itemHeight, behavior: 'smooth' });
+      const currentIndex = Math.round(el.scrollTop / itemHeight);
+      const clamped = Math.max(0, Math.min(items.length - 1, currentIndex));
       setActiveIndex(clamped);
 
-      onChange(items[clamped]);
+      if (scrollTimeoutRef.current) window.clearTimeout(scrollTimeoutRef.current);
 
-      window.setTimeout(() => {
-        programmaticRef.current = false;
-      }, 120);
+      scrollTimeoutRef.current = window.setTimeout(() => {
+        const finalIndex = Math.round(el.scrollTop / itemHeight);
+        const finalClamped = Math.max(0, Math.min(items.length - 1, finalIndex));
+
+        isProgrammaticRef.current = true;
+        el.scrollTo({ top: finalClamped * itemHeight, behavior: 'smooth' });
+        setActiveIndex(finalClamped);
+        onChange(items[finalClamped]);
+
+        window.setTimeout(() => {
+          isProgrammaticRef.current = false;
+        }, 150);
+      }, 100);
     };
 
-    const onScroll = () => {
-      if (programmaticRef.current) return;
-
-      const idx = Math.round(el.scrollTop / itemHeight);
-      setActiveIndex(Math.max(0, Math.min(items.length - 1, idx)));
-
-      if (timer) window.clearTimeout(timer);
-      timer = window.setTimeout(settle, 80);
-    };
-
-    el.addEventListener('scroll', onScroll, { passive: true });
+    el.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
-      el.removeEventListener('scroll', onScroll);
-      if (timer) window.clearTimeout(timer);
+      el.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) window.clearTimeout(scrollTimeoutRef.current);
     };
   }, [items, itemHeight, onChange]);
 
   const spacer = half * itemHeight;
 
   return (
-    <div className="relative w-20">
-      <div
-        className="pointer-events-none absolute left-0 right-0"
-        style={{ top: containerHeight / 2 - itemHeight / 2, height: itemHeight }}
-      />
-
+    <div className="relative" style={{ height: containerHeight }}>
       <div
         ref={ref}
-        className="overflow-y-scroll scrollbar-hide snap-y snap-mandatory overscroll-contain"
+        className="overflow-y-scroll h-full scrollbar-hide"
         style={{
-          height: containerHeight,
           scrollSnapType: 'y mandatory',
           WebkitOverflowScrolling: 'touch',
         }}
       >
         <div style={{ height: spacer }} />
-
         {items.map((it, idx) => {
           const dist = Math.abs(idx - activeIndex);
+
           const textClass =
-            dist === 0 ? 'text-gray-900' : dist === 1 ? 'text-gray-500' : 'text-gray-300';
+            dist === 0
+              ? 'text-gray-900 text-[20px] font-semibold'
+              : dist === 1
+                ? 'text-gray-500 text-[16px] font-semibold'
+                : 'text-gray-300 text-[14px] font-semibold';
 
           return (
             <div
               key={`${String(it)}-${idx}`}
-              className={`snap-center flex items-center justify-center text-body-m-bold ${textClass}`}
-              style={{ height: itemHeight }}
+              style={{ height: itemHeight, scrollSnapAlign: 'center' }}
+              className={`flex items-center justify-center cursor-pointer ${textClass}`}
               onClick={() => onChange(it)}
               role="button"
               tabIndex={0}
@@ -174,21 +203,11 @@ function WheelPicker<T extends string | number>({
             </div>
           );
         })}
-
         <div style={{ height: spacer }} />
       </div>
     </div>
   );
 }
-
-// ---------- Mock (UI용) ----------
-const MOCK_MEMBERS = [
-  { id: 1, name: '길동이', avatarUrl: null },
-  { id: 2, name: '길동이', avatarUrl: null },
-  { id: 3, name: '길동이', avatarUrl: null },
-  { id: 4, name: '길동이', avatarUrl: null },
-  { id: 5, name: '길동이', avatarUrl: null },
-];
 
 // ---------- Flow ----------
 type Step = 'FORM' | 'CALENDAR' | 'TIME' | 'ASSIGNEE' | 'DONE';
@@ -201,6 +220,9 @@ type Props = {
   calendarCtaLabel?: string; // "변경하기" | "연결하기"
 };
 
+type AssigneeUI = { id: number; name: string; avatarUrl?: string | null };
+type MemberUI = { id: number; name: string; avatarUrl?: string | null };
+
 export default function EditAllFlowBottomSheet({
   open,
   onClose,
@@ -210,49 +232,52 @@ export default function EditAllFlowBottomSheet({
 }: Props) {
   const [step, setStep] = useState<Step>('FORM');
 
-  const [viewYear, setViewYear] = useState(
-    (initialDate ?? new Date()).getFullYear()
-  );
-  const [viewMonth, setViewMonth] = useState(
-    (initialDate ?? new Date()).getMonth() + 1
-  );
+  const [viewYear, setViewYear] = useState((initialDate ?? new Date()).getFullYear());
+  const [viewMonth, setViewMonth] = useState((initialDate ?? new Date()).getMonth() + 1);
 
   const [pickedDate, setPickedDate] = useState<Date | null>(initialDate);
 
-  // 시간 (UI용)
+  // 시간
   const [pickedTime, setPickedTime] = useState({
     ampm: '오전' as '오전' | '오후',
     hour: 11,
     minute: 0,
   });
 
-  // 담당자 (UI용)
-  const [assignee, setAssignee] = useState<{
-    id: number;
-    name: string;
-    avatarUrl?: string | null;
-  } | null>(null);
+  // 담당자
+  const [assignee, setAssignee] = useState<AssigneeUI | null>(null);
 
-  // 상세 (나중에 FormStep에 내려서 표시할 거면 detail 필요)
-  const [, setDetail] = useState<MyTaskDetailResponse | null>(null);
-  const [, setDetailLoading] = useState(false);
+  // detail/로딩
+  const [detail, setDetail] = useState<MyTaskDetailResponse | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
+  // members
+  const [members, setMembers] = useState<MemberUI[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+
+  // open 시 기본 초기화
   useEffect(() => {
     if (!open) return;
 
-    // open될 때 기본 초기화
     setStep('FORM');
-    setDetail(null);
     setAssignee(null);
 
-    // initialDate 기반 UI 초기화는 유지
     setPickedDate(initialDate);
     const base = initialDate ?? new Date();
     setViewYear(base.getFullYear());
     setViewMonth(base.getMonth() + 1);
 
-    // task 없으면 끝
-    const occurrenceId = task?.occurrenceId;
+    setDetail(null);
+    setDetailLoading(false);
+    setMembers([]);
+    setMembersLoading(false);
+  }, [open, initialDate]);
+
+  // ✅ open + occurrenceId 변경 시마다 detail fetch
+  useEffect(() => {
+    if (!open) return;
+
+    const occurrenceId = (task as any)?.occurrenceId as number | undefined;
     if (!occurrenceId) return;
 
     let alive = true;
@@ -262,41 +287,7 @@ export default function EditAllFlowBottomSheet({
         setDetailLoading(true);
         const res = await getMyTaskDetail(occurrenceId);
         if (!alive) return;
-
         setDetail(res);
-
-        // 1) 날짜: "YYYY-MM-DD" → 안전 파싱
-        if (res.date) {
-          const [y, m, d] = res.date.split('-').map(Number);
-          const next = new Date(y, m - 1, d); 
-          setPickedDate(next);
-          setViewYear(next.getFullYear());
-          setViewMonth(next.getMonth() + 1);
-        }
-
-        // 2) 시간: "HH:mm" | null
-        if (res.time) {
-          const [hhStr, mmStr] = res.time.split(':');
-          const hh = Number(hhStr);
-          const mm = Number(mmStr ?? '0');
-
-          const ampm: '오전' | '오후' = hh < 12 ? '오전' : '오후';
-          const hour12 = hh % 12 === 0 ? 12 : hh % 12;
-
-          setPickedTime({ ampm, hour: hour12, minute: mm });
-        }
-
-        // 3) 담당자: res.assignee (너 타입 기준)
-        if (res.assignee) {
-          setAssignee({
-            id: res.assignee.memberId,
-            name: res.assignee.nickname,
-            avatarUrl: res.assignee.profileImageUrl ?? null,
-          });
-        } else {
-          setAssignee(null);
-        }
-
       } catch (e) {
         console.error('[getMyTaskDetail] error:', e);
       } finally {
@@ -307,11 +298,94 @@ export default function EditAllFlowBottomSheet({
     return () => {
       alive = false;
     };
-  }, [open, task?.occurrenceId, initialDate]);
+  }, [open, (task as any)?.occurrenceId]);
 
+  // detail -> UI state 반영
+  useEffect(() => {
+    if (!open) return;
+    if (!detail) return;
+
+    // 날짜
+    if (detail.date) {
+      const [y, m, d] = detail.date.split('-').map(Number);
+      const next = new Date(y, m - 1, d);
+      setPickedDate(next);
+      setViewYear(next.getFullYear());
+      setViewMonth(next.getMonth() + 1);
+    }
+
+    // 시간
+    if (detail.time) {
+      setPickedTime(parseTimeToPicked(detail.time));
+    }
+
+    // 담당자
+    if (detail.assignee) {
+      setAssignee({
+        id: detail.assignee.memberId,
+        name: detail.assignee.nickname,
+        avatarUrl: detail.assignee.profileImageUrl ?? null,
+      });
+    } else {
+      setAssignee(null);
+    }
+  }, [open, detail]);
+
+  // detail.groupId -> members fetch
+  useEffect(() => {
+    if (!open) return;
+    const groupId = detail?.groupId;
+    if (!groupId) return;
+
+    let alive = true;
+
+    (async () => {
+      try {
+        setMembersLoading(true);
+        const res = await getGroupMembers(groupId);
+        if (!alive) return;
+
+        const raw = (res as any).result;
+        const list: GroupMember[] = Array.isArray(raw) ? raw : raw?.members ?? [];
+
+        setMembers(
+          list.map((m) => ({
+            id: m.memberId,
+            name: m.nickname,
+            avatarUrl: m.profileImageUrl ?? null,
+          })),
+        );
+      } catch (e) {
+        console.error('[getGroupMembers] error:', e);
+        if (alive) setMembers([]);
+      } finally {
+        if (alive) setMembersLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [open, detail?.groupId]);
+
+  // ChoiceReasonPage state
+  const reasonNavState = useMemo<NavState | null>(() => {
+    if (!detail) return null;
+    if (!detail.occurrenceId) return null;
+
+    return {
+      occurrenceId: detail.occurrenceId,
+      taskName: detail.taskType?.name ?? '',
+      categoryType: detail.taskType?.category,
+      fromDate: detail.date,
+      fromTime: detail.time ?? '',
+      toDate: detail.date,
+      toTime: detail.time ?? '',
+    };
+  }, [detail]);
 
   const STEP_HEIGHT: Record<Step, string> = {
-    FORM: 'calc(100dvh - 10px)', // 상단 10px 남기고 꽉 채우기
+    FORM: 'calc(100dvh - 10px)',
     CALENDAR: '423px',
     TIME: '360px',
     ASSIGNEE: '485px',
@@ -328,10 +402,7 @@ export default function EditAllFlowBottomSheet({
       showHeaderDivider={false}
       showHandle={true}
       height={height}
-      className={[
-        'px-0',
-        'max-h-[calc(100dvh-10px)]',
-      ].join(' ')}
+      className={['px-0', 'max-h-[calc(100dvh-10px)]'].join(' ')}
       contentClassName="px-0 pt-0"
     >
       {step === 'FORM' && (
@@ -343,6 +414,9 @@ export default function EditAllFlowBottomSheet({
           pickedTime={pickedTime}
           assignee={assignee}
           onSave={() => setStep('DONE')}
+          detailLoading={detailLoading}
+          taskTitle={detail?.taskType?.name ?? '업무'}
+          taskPoint={detail?.taskType?.point ?? null}
         />
       )}
 
@@ -371,7 +445,8 @@ export default function EditAllFlowBottomSheet({
 
       {step === 'ASSIGNEE' && (
         <AssigneeStep
-          members={MOCK_MEMBERS}
+          members={members}
+          loading={membersLoading}
           selectedId={assignee?.id ?? null}
           onConfirm={(m) => {
             setAssignee(m);
@@ -380,7 +455,7 @@ export default function EditAllFlowBottomSheet({
         />
       )}
 
-      {step === 'DONE' && <DoneStep onClose={onClose} />}
+      {step === 'DONE' && <DoneStep onClose={onClose} reasonState={reasonNavState} />}
     </BottomSheet>
   );
 }
@@ -394,6 +469,9 @@ function FormStep({
   pickedTime,
   assignee,
   onSave,
+  detailLoading,
+  taskTitle,
+  taskPoint,
 }: {
   pickedDate: Date | null;
   onOpenCalendar: () => void;
@@ -402,6 +480,9 @@ function FormStep({
   pickedTime: { ampm: '오전' | '오후'; hour: number; minute: number };
   assignee: { id: number; name: string; avatarUrl?: string | null } | null;
   onSave: () => void;
+  detailLoading: boolean;
+  taskTitle: string;
+  taskPoint: number | null;
 }) {
   const [repeatOn, setRepeatOn] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -423,11 +504,15 @@ function FormStep({
     setSelectedDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
   };
 
-  const timeLabel = `${pickedTime.ampm} ${pickedTime.hour}:${String(pickedTime.minute).padStart(2, '0')}`;
+  // ✅ 드래프트 UI 동일 라벨
+  const dateLabel = pickedDate ? formatKoreanDateFromDate(pickedDate) : '날짜를 선택해주세요';
+  const timeLabel = formatKoreanTimeFromPicked(pickedTime);
 
   return (
     <div className="pb-24">
-      <Header title="창틀청소" showBackButton />
+      <Header title={taskTitle} showBackButton />
+
+      {detailLoading ? <div className="px-5 pt-2 text-body-s text-gray-400">상세 불러오는 중...</div> : null}
 
       {/* 업무 목록 */}
       <div className="mt-9 px-3">
@@ -439,16 +524,13 @@ function FormStep({
           </div>
 
           <div className="flex-1">
-            <p className="text-body-m-bold text-gray-700">창틀 청소</p>
-            {/* “1시간 + 코인 + 30포인트” 가로 정렬 */}
+            <p className="text-body-m-bold text-gray-700">{taskTitle}</p>
             <div className="mt-1 flex items-center gap-1.5 text-body-s text-gray-500">
-              <span>1시간</span>
               <img src={Imgcoin} alt="" className="w-4 h-4" />
-              <span>30 포인트</span>
+              <span>{taskPoint ?? 0} 포인트</span>
             </div>
           </div>
 
-          {/* 즐겨찾기(별) */}
           <button
             type="button"
             className="h-10 w-10 flex items-center justify-center"
@@ -468,9 +550,7 @@ function FormStep({
           className="w-full rounded-xl border border-gray-300 bg-[#FAFAFA] px-4 py-4 text-left"
           onClick={onOpenCalendar}
         >
-          <p className="text-body-m-bold text-gray-800">
-            {pickedDate ? formatDateLabel(pickedDate) : '날짜를 선택해주세요'}
-          </p>
+          <p className="text-body-m-bold text-gray-800">{dateLabel}</p>
         </button>
       </div>
 
@@ -486,7 +566,7 @@ function FormStep({
         </button>
       </div>
 
-      {/* 반복 */}
+      {/* 반복 (UI는 그대로) */}
       <div className="mt-4 px-3">
         <p className="text-label-m text-gray-600 mb-[10px]">반복</p>
 
@@ -494,7 +574,6 @@ function FormStep({
           <div className="flex items-center justify-between">
             <p className="text-body-m-bold text-gray-800">반복 주기 설정</p>
 
-            {/* 토글 우측 고정 */}
             <button
               type="button"
               onClick={() => {
@@ -504,9 +583,10 @@ function FormStep({
                   return next;
                 });
               }}
-              className={['relative w-12 h-7 rounded-full transition-colors', repeatOn ? 'bg-primary' : 'bg-gray-200'].join(
-                ' '
-              )}
+              className={[
+                'relative w-12 h-7 rounded-full transition-colors',
+                repeatOn ? 'bg-primary' : 'bg-gray-200',
+              ].join(' ')}
               aria-pressed={repeatOn}
               aria-label="반복 주기 설정"
             >
@@ -519,7 +599,6 @@ function FormStep({
             </button>
           </div>
 
-          {/* 토글 ON일 때 요일 버튼 */}
           {repeatOn && (
             <div className="mt-4">
               <div className="grid grid-cols-7 gap-1">
@@ -530,9 +609,10 @@ function FormStep({
                       key={w.key}
                       type="button"
                       onClick={() => toggleDay(w.key)}
-                      className={['h-16 rounded-lg text-body-l-bold transition-colors', active ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'].join(
-                        ' '
-                      )}
+                      className={[
+                        'h-16 rounded-lg text-body-l-bold transition-colors',
+                        active ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800',
+                      ].join(' ')}
                     >
                       {w.label}
                     </button>
@@ -553,9 +633,14 @@ function FormStep({
           className="w-full rounded-xl border border-gray-300 bg-white px-3 py-3 flex items-center gap-3"
           onClick={onOpenAssignee}
         >
-          <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-            👤
+          <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center shrink-0">
+            {assignee?.avatarUrl ? (
+              <img src={assignee.avatarUrl} alt={assignee.name} className="w-full h-full object-cover" />
+            ) : (
+              '👤'
+            )}
           </div>
+
           <p className="text-body-m-bold text-gray-800">{assignee?.name ?? '담당자를 선택해주세요'}</p>
         </button>
       </div>
@@ -591,7 +676,9 @@ function CalendarStep({
   const cells = useMemo(() => getCalendarCells(viewYear, viewMonth), [viewYear, viewMonth]);
 
   const selectedDay =
-    pickedDate && pickedDate.getFullYear() === viewYear && pickedDate.getMonth() === viewMonth - 1 ? pickedDate.getDate() : null;
+    pickedDate && pickedDate.getFullYear() === viewYear && pickedDate.getMonth() === viewMonth - 1
+      ? pickedDate.getDate()
+      : null;
 
   const handlePickDay = (day: number) => {
     const next = new Date(viewYear, viewMonth - 1, day);
@@ -656,7 +743,12 @@ function CalendarStep({
                   cell.isCurrentMonth ? (isSelected ? 'text-primary' : 'text-gray-800') : 'text-gray-800',
                 ].join(' ')}
               >
-                <span className={['w-10 h-10 rounded-full flex items-center justify-center', isSelected ? 'bg-primary-50' : 'bg-transparent'].join(' ')}>
+                <span
+                  className={[
+                    'w-10 h-10 rounded-full flex items-center justify-center',
+                    isSelected ? 'bg-primary-50' : 'bg-transparent',
+                  ].join(' ')}
+                >
                   {cell.day}
                 </span>
               </button>
@@ -675,7 +767,13 @@ function CalendarStep({
 }
 
 // ---------- Step 3: 완료 ----------
-function DoneStep({ onClose }: { onClose: () => void }) {
+function DoneStep({
+  onClose,
+  reasonState,
+}: {
+  onClose: () => void;
+  reasonState: NavState | null;
+}) {
   const navigate = useNavigate();
 
   return (
@@ -697,7 +795,13 @@ function DoneStep({ onClose }: { onClose: () => void }) {
           className="h-12 rounded-lg bg-primary text-white text-body-m-bold"
           onClick={() => {
             onClose();
-            navigate('/calendar/reason');
+
+            if (!reasonState?.occurrenceId) {
+              navigate('/calendar');
+              return;
+            }
+
+            navigate('/calendar/reason', { state: reasonState });
           }}
         >
           이유 선택하기
@@ -708,7 +812,7 @@ function DoneStep({ onClose }: { onClose: () => void }) {
 }
 
 // ---------- Step 4: 시간 고르기 (UI) ----------
-export function TimeStep({
+function TimeStep({
   value,
   onConfirm,
 }: {
@@ -720,21 +824,25 @@ export function TimeStep({
   const hours = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
   const minutes = useMemo(() => [0, 10, 20, 30, 40, 50], []);
 
+  useEffect(() => {
+    setLocal(value);
+  }, [value]);
+
   return (
     <div className="px-5 pt-4 pb-24">
+      {/* ✅ 드래프트처럼 타이틀(원하면 제거 가능) */}
       <div className="relative flex items-center justify-center">
         <h2 className="text-body-l-bold text-gray-900">시간 선택</h2>
       </div>
 
-      <div className="-mt-8">
+      <div className="mt-4">
         <div className="relative rounded-2xl">
-          {/* 중앙 선택 하이라이트 */}
+          {/* ✅ 중앙 하이라이트 바 */}
           <div className="pointer-events-none absolute left-2 right-2 top-1/2 -translate-y-1/2 h-12 rounded-xl bg-gray-100" />
 
           <div className="grid grid-cols-3 text-center">
-            {/* 오전/오후 */}
             <div className="flex items-center justify-center">
-              <WheelPicker
+              <WheelPickerUI
                 items={['오전', '오후'] as const}
                 value={local.ampm}
                 onChange={(v) => setLocal((p) => ({ ...p, ampm: v }))}
@@ -743,9 +851,8 @@ export function TimeStep({
               />
             </div>
 
-            {/* 시 */}
             <div className="flex items-center justify-center">
-              <WheelPicker
+              <WheelPickerUI
                 items={hours}
                 value={local.hour}
                 onChange={(v) => setLocal((p) => ({ ...p, hour: v }))}
@@ -755,9 +862,8 @@ export function TimeStep({
               />
             </div>
 
-            {/* 분 */}
             <div className="flex items-center justify-center">
-              <WheelPicker
+              <WheelPickerUI
                 items={minutes}
                 value={local.minute}
                 onChange={(v) => setLocal((p) => ({ ...p, minute: v }))}
@@ -777,28 +883,36 @@ export function TimeStep({
   );
 }
 
-
 // ---------- Step 5: 담당자 고르기 (UI) ----------
 function AssigneeStep({
   members,
+  loading,
   selectedId,
   onConfirm,
 }: {
-  members: { id: number; name: string; avatarUrl?: string | null }[];
+  members: MemberUI[];
+  loading: boolean;
   selectedId: number | null;
-  onConfirm: (m: { id: number; name: string; avatarUrl?: string | null }) => void;
+  onConfirm: (m: MemberUI) => void;
 }) {
   const [localId, setLocalId] = useState<number | null>(selectedId);
+
+  useEffect(() => {
+    setLocalId(selectedId);
+  }, [selectedId]);
+
   const picked = members.find((m) => m.id === localId) ?? null;
 
   return (
     <div className="flex flex-col h-full">
       <Header title="담당자 선택" />
 
-      {/* 스크롤 영역 */}
+      {loading ? <div className="px-5 pt-3 text-body-s text-gray-400">멤버 불러오는 중...</div> : null}
+
       <div className="mt-5 flex-1 overflow-y-auto px-1 space-y-[8px]">
         {members.map((m) => {
           const active = m.id === localId;
+
           return (
             <button
               key={m.id}
@@ -809,7 +923,14 @@ function AssigneeStep({
                 active ? 'border border-primary bg-primary-50' : 'bg-white',
               ].join(' ')}
             >
-              <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">👤</div>
+              <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
+                {m.avatarUrl ? (
+                  <img src={m.avatarUrl} alt={m.name} className="h-full w-full object-cover" />
+                ) : (
+                  '👤'
+                )}
+              </div>
+
               <span className="text-body-m-bold text-gray-800">{m.name}</span>
             </button>
           );
@@ -817,11 +938,7 @@ function AssigneeStep({
       </div>
 
       <BottomCTAWrapper fixed showTopBorder>
-        <BottomCTAButton
-          label="지정하기"
-          disabled={!picked}
-          onClick={() => picked && onConfirm(picked)}
-        />
+        <BottomCTAButton label="지정하기" disabled={!picked} onClick={() => picked && onConfirm(picked)} />
       </BottomCTAWrapper>
     </div>
   );
