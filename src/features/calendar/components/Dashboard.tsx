@@ -14,6 +14,8 @@ import Iconking from '@/assets/calendar/dashboard/icon-king.svg';
 import IconCheck from '@/assets/calendar/dashboard/icon-checkpercent.svg';
 import Icontop3 from '@/assets/calendar/dashboard/icon-top3.svg';
 import type { AgreementStatus } from '@/features/calendar/types/groupTask.types';
+import type { CategoryType } from '@/features/todo/types/category.types';
+import { categoryMetaMap } from '../data/dashBoardTask';
 
 
 type Props = {
@@ -153,15 +155,15 @@ export function Dashboard( { agreementStatus }: Props) {
                   </div>
                 </div>
 
-        <button
-          type="button"
-          onClick={handleClick}
-          className="mt-4 w-full h-[42px] rounded-lg border border-gray-200 bg-gray-50 text-body-m text-gray-800"
-        >
-          {buttonLabel}
-        </button>
-      </div>
-    </div>
+            <button
+              type="button"
+              onClick={handleClick}
+              className="mt-4 w-full h-[42px] rounded-lg border border-gray-200 bg-gray-50 text-body-m text-gray-800"
+            >
+              {buttonLabel}
+            </button>
+          </div>
+        </div>
 
         {/* 배너 */}
         <div className="mt-7 rounded-[20px] overflow-hidden bg-white">
@@ -342,12 +344,12 @@ export function Dashboard( { agreementStatus }: Props) {
                 <p className="text-body-s text-gray-400">데이터가 없어요</p>
               ) : (
                 postponeTop3.map((row) => (
-                  <BarRow
-                    key={row.memberId}
-                    name={row.nickname}
-                    value={maxPostpone === 0 ? 0 : row.postponeCount / maxPostpone}
-                  />
-                ))
+                <BarRow
+                  key={row.memberId}
+                  name={categoryMetaMap.get(row.nickname as CategoryType) ?? row.nickname}
+                  value={maxPostpone === 0 ? 0 : row.postponeCount / maxPostpone}
+                />
+              ))
               )}
             </div>
 
