@@ -5,9 +5,9 @@ import type { GetGroupDashboardResponse, GroupDashboardResult } from '@/features
 export const getGroupDashboard = async (
   groupId: number
 ): Promise<GroupDashboardResult> => {
-  const res = await authenticatedClient.get<GetGroupDashboardResponse>(
+  const response = await authenticatedClient.get<GetGroupDashboardResponse>(
     `/groups/${groupId}/dashboard`
   );
 
-  return res.data; 
+  return response.data; 
 };

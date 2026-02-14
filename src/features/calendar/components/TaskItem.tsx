@@ -4,6 +4,8 @@ import { categories } from '@/features/todo/data/categoryTypeImages';
 import IconCoin from '@/assets/todo/icon-coin.svg';
 import IconCheckFill from '@/assets/calendar/img-check-fill.svg';
 import IconCheck from '@/assets/calendar/img-check.svg';
+import { getStatusUI } from '../utils/status.utils';
+import { formatTime } from '../utils/time.utils';
 
 interface TaskItemProps {
   task: MyTaskWeekItem;
@@ -11,37 +13,6 @@ interface TaskItemProps {
   onToggleComplete?: () => void;
   onOpenBottomSheet?: (task: MyTaskWeekItem) => void;
 }
-
-const formatTime = (time?: string | null): string => {
-  if (!time) return '';
-  const [hours, minutes] = time.split(':');
-  const hour = parseInt(hours, 10);
-  const period = hour < 12 ? '오전' : '오후';
-  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${period} ${displayHour}:${minutes}`;
-};
-
-const getStatus = (status: TaskStatus) => {
-  const label =
-    status === 'WAITING'
-      ? '대기중'
-      : status === 'IN_PROGRESS'
-        ? '진행중'
-        : status === 'COMPLETED'
-          ? '완료'
-          : '미완료';
-
-  const className =
-    status === 'WAITING'
-      ? 'bg-primary-50 text-primary-400'
-      : status === 'IN_PROGRESS'
-        ? 'bg-primary-50 text-primary-400'
-        : status === 'COMPLETED'
-          ? 'bg-primary text-white'
-          : 'bg-primary-50 text-primary-400';
-
-  return { label, className };
-};
 
 export default function TaskItem({
   task,
@@ -59,7 +30,7 @@ export default function TaskItem({
   const categoryIcon = category?.image;
 
   const effectiveStatus: TaskStatus = isCompleted ? 'COMPLETED' : task.status;
-  const { label: statusLabel, className: statusClassName } = getStatus(effectiveStatus);
+  const { label: statusLabel, className: statusClassName } = getStatusUI(effectiveStatus);
 
   return (
     <div

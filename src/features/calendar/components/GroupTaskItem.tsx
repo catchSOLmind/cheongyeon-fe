@@ -1,52 +1,19 @@
-import type { GroupTaskWeekItem, TaskStatus } from '../types/groupTask.types';
+import type { GroupTaskWeekItem } from '../types/groupTask.types';
 import { categories } from '@/features/todo/data/categoryTypeImages';
 import IconCoin from '@/assets/todo/icon-coin.svg';
+import { getStatusUI } from '../utils/status.utils';
+import { formatTime } from '../utils/time.utils';
 
 interface TaskItemProps {
   task: GroupTaskWeekItem;
   onClick?: () => void;
 }
 
-const formatTime = (time?: string | null): string => {
-  if (!time) return '';
-  const [hours, minutes] = time.split(':');
-  const hour = parseInt(hours, 10);
-  const period = hour < 12 ? '오전' : '오후';
-  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${period} ${displayHour}:${minutes}`;
-};
-
-const getStatus = (status: TaskStatus) => {
-  const label =
-    status === 'WAITING'
-      ? '대기중'
-      : status === 'IN_PROGRESS'
-        ? '진행중'
-        : status === 'COMPLETED'
-          ? '완료'
-          : status === 'INCOMPLETED'
-            ? '미완료'
-            : '대기중';
-
-  const className =
-    status === 'WAITING'
-      ? 'bg-primary-50 text-primary-400'
-      : status === 'IN_PROGRESS'
-        ? 'bg-primary-50 text-primary-400'
-        : status === 'COMPLETED'
-          ? 'bg-primary text-white'
-          : status === 'INCOMPLETED'
-            ? 'bg-gray-100 text-gray-700'
-            : 'bg-primary-50 text-primary-400';
-
-  return { label, className };
-};
-
 export default function TaskItem({ task }: TaskItemProps) {
   const category = categories.find((c) => c.categoryType === task.category);
   const categoryIcon = category?.image;
 
-  const { label: statusLabel, className: statusClassName } = getStatus(task.status);
+  const { label: statusLabel, className: statusClassName } = getStatusUI(task.status);
 
   return (
     <div className="w-full rounded-xl bg-white p-4">

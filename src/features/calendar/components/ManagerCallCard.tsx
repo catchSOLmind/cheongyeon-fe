@@ -9,7 +9,6 @@ interface ManagerCallCardProps {
 
 function ManagerCallCard({ item }: ManagerCallCardProps) {
   const formatTime = (time: string) => {
-    // visitTime이 "2026-02-11 14:00" 형식이면
     const parts = time.split(' ');
     return parts.length > 1 ? parts[1] : time;
   };
@@ -18,12 +17,12 @@ function ManagerCallCard({ item }: ManagerCallCardProps) {
     <div className="w-full rounded-xl bg-white p-4">
       <div className="flex items-center gap-3">
 
-        {/* 카테고리 자리 → 매니저 기본 아이콘 */}
+        {/* 매니저 기본 아이콘 */}
         <div className="w-8 h-8 rounded-lg bg-[#FAE0F8] flex items-center justify-center">
           <img
             src={ManagerDefaultIcon}
             alt="매니저"
-            className="w-6 h-6"
+            className="w-8 h-8"
           />
         </div>
 

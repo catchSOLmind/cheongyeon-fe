@@ -1,17 +1,16 @@
 // src/features/calendar/types/dashboard.types.ts
 
+
+// dashboard API의 응답 타입
 export type GroupDashboardResult = {
   thisMonthStreakDays: number;
-
   thisWeekCleaningKing: {
     memberId: number;
     nickname: string;
     profileImageUrl: string;
     completedCount: number;
   } | null;
-
   houseworkCompletionRate: number;
-
   postponeTop3: Array<{
     rank: number;
     memberId: number;
@@ -20,5 +19,6 @@ export type GroupDashboardResult = {
     postponeCount: number;
   }>;
 };
+
 
 export type GetGroupDashboardResponse = GroupDashboardResult;

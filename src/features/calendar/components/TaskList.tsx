@@ -232,6 +232,7 @@ export default function TaskList({
         onClose={closeAllSheets}
       />
 
+      {/* 바뀐 이유 바텀시트 */}
       <ReasonChangeBottomSheet
         open={sheet === 'reason'}
         onClose={closeAllSheets}
@@ -248,7 +249,7 @@ export default function TaskList({
         }}
       />
 
-      {/* ✅ 전체 수정 바텀시트: 내부에서 detail fetch (프리패치/props 싱크 제거) */}
+      {/* 전체 수정 바텀시트*/}
       <EditAllFlowBottomSheet
         open={sheet === 'allEdit'}
         onClose={closeAllSheets}
@@ -256,7 +257,7 @@ export default function TaskList({
         initialDate={pickedDate}
       />
 
-      {/* 담당자 변경 바텀시트(기존 유지) */}
+      {/* 담당자 변경 바텀시트 */}
       <AssigneeBottomSheet
         open={sheet === 'member'}
         onClose={closeAllSheets}
