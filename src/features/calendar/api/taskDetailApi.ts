@@ -5,8 +5,8 @@ import type { MyTaskDetailResponse } from '@/features/calendar/types/taskDetail.
 export const getMyTaskDetail = async (
   occurrenceId: number
 ): Promise<MyTaskDetailResponse> => {
-  const { data } = await authenticatedClient.get<MyTaskDetailResponse>(
+  const response = await authenticatedClient.get<MyTaskDetailResponse>(
     `/my-tasks/${occurrenceId}`
   );
-  return data;
+  return response.data;
 };

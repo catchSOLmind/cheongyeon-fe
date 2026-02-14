@@ -6,7 +6,7 @@ import TaskList from '../components/TaskList';
 import FloatingActionButton from '../components/Floatingactionbutton';
 import IconDropdown from '@/assets/calendar/icon-dropdown.svg';
 import { useMyTasks } from '../hooks/useMyTasks';
-import { formatDateKey } from '../utils/dateUtils';
+import { formatDateKey } from '../utils/date.utils';
 import { useUserStore } from '@/features/auth/stores/useUserStore';
 import ImgDefault from '@/assets/common/img-default-profile.svg';
 

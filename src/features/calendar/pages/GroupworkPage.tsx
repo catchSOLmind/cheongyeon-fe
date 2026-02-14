@@ -12,7 +12,7 @@ import ImgDefault from '@/assets/common/img-default-profile.svg';
 import ImgNodata from '@/assets/calendar/img-no-data.png';
 
 import { useGroupTasks } from '../hooks/useGroupTasks';
-import { formatDateKey } from '../utils/dateUtils';
+import { formatDateKey } from '../utils/date.utils';
 import { useUserStore } from '@/features/auth/stores/useUserStore';
 import { getGroupTasksCalendar } from '../api/groupTaskApi';
 
