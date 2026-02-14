@@ -46,7 +46,7 @@ jobs:
       # dist 폴더의 내용을 S3 버킷에 동기화 (기존 파일 삭제 옵션 포함)
       - name: Deploy to S3
         run: |
-          aws s3 sync dist/ s3://${{ secrets.AWS_S3_BUCKET }}/ --delete
+          aws s3 sync dist/ s3://${{ secrets.AWS_S3_BUCKET }}/frontend/ --delete
 
       # 7. CloudFront 캐시 무효화
       # 배포된 새 파일이 즉시 반영되도록 캐시 무효화
@@ -57,4 +57,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
           DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
-          PATHS: "/*"
+          PATHS: "/frontend/*"
+
