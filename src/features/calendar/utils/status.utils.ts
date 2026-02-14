@@ -1,4 +1,4 @@
-// TASK ITEM 에서 상태를 괸리하는 타입
+// TASK ITEM 에서 상태를 괸리하는 유틸
 import type { TaskStatus } from '../types/task.types';
 
 type StatusUI = {

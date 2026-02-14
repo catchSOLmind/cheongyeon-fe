@@ -1,7 +1,7 @@
 /** YYYY-MM-DD */
 export type ISODateString = `${number}-${number}-${number}`;
 
-/** GET /api/my-tasks/calendar query */
+/** GET /api/group-tasks/calendar query */
 export type GroupTasksCalendarRequest = {
   groupId : number;
   year: number;  // int32

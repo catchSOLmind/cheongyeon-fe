@@ -6,7 +6,7 @@ export const formatTime = (time?: string | null): string => {
   const [hoursStr, minutesStr = '00'] = time.split(':');
   const hour = Number(hoursStr);
 
-  if (Number.isNaN(hour)) return '';
+  if (Number.isNaN(hour) || hour < 0 || hour > 23) return '';
 
   const period = hour < 12 ? '오전' : '오후';
   const displayHour = hour % 12 === 0 ? 12 : hour % 12;
