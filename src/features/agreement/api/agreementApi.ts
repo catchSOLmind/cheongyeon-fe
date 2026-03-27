@@ -48,8 +48,10 @@ export const confirmAgreement = async (
 };
 
 
-// 협약서에 서명합니다
-// POST /api/agreements/{agreementId}/sign
+/**
+ * 협약서 서명 
+ * - Member만 가능
+ */
 export const signAgreement = async (
   agreementId: number
 ): Promise<AgreementSignResponse> => {
