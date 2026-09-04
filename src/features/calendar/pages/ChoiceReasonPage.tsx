@@ -13,7 +13,7 @@ type NavState = {
   occurrenceId: number;
   taskName: string;
   categoryType: CategoryType;
-  fromDate: string; // "YYYY-MM-DD" or "1월 21일 (수)" whatever 너가 넘긴 값
+  fromDate: string; // "YYYY-MM-DD" 
   fromTime: string; // "HH:mm"
   toDate: string;   // "YYYY-MM-DD"
   toTime: string;   // "HH:mm"
